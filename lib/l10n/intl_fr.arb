@@ -1,0 +1,173 @@
+{
+  "@@locale": "fr",
+
+  "appTitle": "Réservation de vols",
+   "flight": "Vol",
+  "skipButton": "Passer",
+  "onBoardTitle1": "Bienvenue chez Maan Flight",
+  "onBoardTitle2": "Trouvez facilement n’importe quel endroit",
+  "onBoardTitle3": "Profitez de l’expérience complète",
+  "onBoardSubTitle1": "Un service simple et efficace pour organiser vos voyages en toute tranquillité.",
+  "onBoardSubTitle2": "Un service simple et efficace pour organiser vos voyages en toute tranquillité.",
+  "onBoardSubTitle3": "Un service simple et efficace pour organiser vos voyages en toute tranquillité.",
+
+  "wcTitle": "Commencez votre voyage avec",
+  "wcSubTitle": "Réservation de vols",
+  "wcDescription": "Planifiez vos vols rapidement et facilement grâce à notre application intuitive.",
+
+  "createAccButton": "Créer un compte",
+  "loginButton": "Se connecter",
+  "loginTitle": "Connectez-vous à votre compte",
+
+  "emailLabel": "E-mail",
+  "emailHint": "Entrez votre e-mail",
+  "passwordLabel": "Mot de passe",
+  "passwordHint": "Entrez votre mot de passe",
+  "forgotPassword": "Mot de passe oublié ?",
+  "orSignUpTitle": "Ou s’inscrire avec",
+  "alreadyHaveAcc": "Vous avez déjà un compte ? ",
+  "signUpButton": "S’inscrire",
+
+  "nameLabel": "Nom complet",
+  "nameHint": "Entrez votre nom complet",
+  "phoneLabel": "Téléphone",
+  "phoneHint": "Entrez votre numéro de téléphone",
+
+  "noAccTitle1": "Vous n’avez pas de compte ? ",
+  "noAccTitle2": "Créer un nouveau compte",
+
+  "otpTitle": "OTP",
+  "verification": "Vérification",
+  "otpDesc1": "Un code à 6 chiffres a été envoyé à votre adresse e-mail, ",
+  "otpDesc2": "riead2562@gmail.com",
+  "otpResendTitle1": "Vous n’avez pas reçu le code ? ",
+  "otpResendTitle2": "Renvoyer le code",
+  "verifyButton": "Vérifier",
+
+  "fpAppBarTitle": "Mot de passe oublié",
+  "fpDesc1": "Veuillez entrer votre numéro de téléphone ci-dessous pour recevoir votre code OTP.",
+  "SendOtpTitle": "Envoyer OTP",
+
+  "navBarTitle1": "Accueil",
+  "navBarTitle2": "Mes réservations",
+  "navBarTitle3": "Historique",
+  "navBarTitle4": "Profil",
+
+  "hello": "Bonjour 👋 ",
+  "bookFlightTitle": "Réservez votre vol en toute confiance",
+
+  "fromTitle": "De",
+  "toTitle": "À",
+
+  "tab1": "Aller simple",
+  "tab2": "Aller-retour",
+  "tab3": "Multi-destinations",
+
+  "dateTitle": "Date",
+  "travellerTitle": "Voyageurs",
+  "adults": "Adultes",
+  "child": "Enfants",
+  "infants": "Bébés",
+
+  "confirm": "Confirmer",
+  "done": "Terminé",
+  "classTitle": "Classe",
+
+  "searchFlight": "Rechercher un vol",
+  "recentSearch": "Recherches récentes",
+  "flightOfferTitle": "Offres de vols",
+
+  "returnDate": "Date de retour",
+  "addFightButton": "Ajouter un vol",
+
+  "searchScreenTitle": "D’où partez-vous ?",
+  "currentLocation": "Position actuelle",
+  "useCurrentLocation": "Utiliser la position actuelle",
+  "recentPlaceTitle": "Lieux récents",
+
+  "filter": "Filtrer",
+  "departure": "Départ",
+  "arrival": "Arrivée",
+  "cancelButton": "Annuler",
+  "applyButton": "Appliquer",
+
+  "flightDetails": "Détails du vol",
+  "onwardTitle": "Aller",
+  "returnTitle": "Retour",
+
+  "selectService": "Sélectionner les services",
+  "bagPolicyTitle": "Politique des bagages",
+  "refundPolicyTitle": "Politique de remboursement en cas d’annulation",
+  "promoCodeTitle": "Entrer un code promo",
+
+  "viewAllButton": "Voir tout",
+  "continueButton": "Continuer",
+
+  "selectGenderTitle": "Sélectionner le sexe",
+  "nameTitle": "Prénom et deuxième prénom",
+  "lastNameTitle": "Nom de famille",
+  "lastNameHint": "Entrez le nom de famille",
+
+  "contactInfoTitle": "Informations de contact",
+  "paymentTitle": "Paiement",
+  "viewDetails": "Voir les détails",
+  "paymentMethod": "Moyen de paiement",
+  "paymentCardTitle": "Vos cartes de paiement",
+  "addNewCardTitle": "Ajouter une nouvelle carte",
+
+  "DoneButton": "Terminé",
+  "ticketStatusTitle": "Statut du billet",
+  "myBookingTitle": "Mes réservations",
+  "profileTitle": "Profil",
+  "settingTitle": "Paramètres",
+  "language": "Langue",
+  "englishTitle": "Anglais",
+  "notificationTitle": "Notifications",
+
+  "paid": "Payé",
+  "convenienceFee": "Frais de service ajoutés",
+  "completed": "Terminé",
+
+  "passengerMale": "{name} (Homme)",
+  "@passengerMale": {
+    "description": "Nom du passager avec genre masculin",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "profileMyProfile": "Mon profil",
+  "profileSetting": "Paramètres",
+  "profilePayments": "Paiements",
+  "profilePrivacy": "Politique de confidentialité",
+  "profileShare": "Partager l’application",
+  "profileLogout": "Se déconnecter",
+  "myProfileTitle": "Mon Profil",
+   "editButton": "Modifier",
+   "fullNameLabel": "Nom complet",
+   "emailLabel": "Email",
+   "currencyTitle": "Devise",
+   "privacyPolicyTitle": "Politique de confidentialité",
+  "privacyPolicyIntroduction": "Chez H24 Voyages, nous nous engageons à protéger votre vie privée et à garantir que vos informations personnelles sont traitées de manière sûre et responsable.",
+
+  "privacyInfoCollectionTitle": "Informations que nous collectons",
+  "privacyInfoCollection": "Nous collectons des informations personnelles lorsque vous effectuez une réservation, créez un compte ou utilisez nos services. Cela peut inclure votre nom, adresse e-mail, numéro de téléphone, informations de paiement et détails de voyage.",
+
+  "privacyUseTitle": "Utilisation de vos informations",
+  "privacyUse": "Vos informations sont utilisées pour traiter vos réservations, vous contacter concernant vos voyages, fournir un support client et améliorer nos services.",
+
+  "privacySharingTitle": "Partage des informations",
+  "privacySharing": "Nous pouvons partager vos informations avec nos partenaires tels que les compagnies aériennes, hôtels et prestataires de paiement uniquement lorsque cela est nécessaire pour fournir nos services ou lorsque la loi l’exige.",
+
+  "privacySecurityTitle": "Sécurité de vos données",
+  "privacySecurity": "Nous mettons en œuvre des mesures de sécurité appropriées pour protéger vos informations personnelles. Toutefois, aucune méthode de transmission sur Internet n’est totalement sécurisée.",
+
+  "privacyContactTitle": "Nous contacter",
+  "privacyContact": "Si vous avez des questions concernant cette Politique de confidentialité, vous pouvez nous contacter à l’adresse suivante : info@h24voyages.com.",
+   "classEconomy": "Économie",
+   "classBusiness": "Affaires",
+   "totalPrice": "Prix total",
+  "proceedToBook": "Réserver ce vole",
+  "nonStop": "Sans escale",
+  "stopCount": "{count} escale",
+  "inFlight": "{hours} en vol"
+}

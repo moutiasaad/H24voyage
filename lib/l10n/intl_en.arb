@@ -1,0 +1,169 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Flight Booking",
+  "flight": "Flight",
+  "skipButton": "Skip",
+  "onBoardTitle1": "Welcome to Maan Flight",
+  "onBoardTitle2": "Easily Find Any Place",
+  "onBoardTitle3": "Get The Full Experience",
+  "onBoardSubTitle1": "Pretium, ipsum pretium aliquet mollis cond imentum magna accumsan. Odio elit \ntellus id diam sit. Massa",
+  "onBoardSubTitle2": "Pretium, ipsum pretium aliquet mollis cond imentum magna accumsan. Odio elit \ntellus id diam sit. Massa",
+  "onBoardSubTitle3": "Pretium, ipsum pretium aliquet mollis cond imentum magna accumsan. Odio elit \ntellus id diam sit. Massa",
+
+  "wcTitle": "Start Your Journey with",
+  "wcSubTitle": "Flight Booking",
+  "wcDescription": "Pretium, ipsum pretium aliquet mollis cond imentum magna accumsan. Odio elit \ntellus id diam sit. Massa",
+
+  "createAccButton": "Create An Account",
+  "loginButton": "Log In",
+  "loginTitle": "Log In Your Account",
+
+  "emailLabel": "Email",
+  "emailHint": "Enter your email",
+  "passwordLabel": "Password",
+  "passwordHint": "Enter your password",
+  "forgotPassword": "Forgot Password?",
+  "orSignUpTitle": "Or Sign up with",
+  "alreadyHaveAcc": "Already have an account? ",
+  "signUpButton": "Sign Up",
+
+  "nameLabel": "Full Name",
+  "nameHint": "Enter your full name",
+  "phoneLabel": "Phone",
+  "phoneHint": "Enter your phone number",
+
+  "noAccTitle1": "Don’t have an account? ",
+  "noAccTitle2": "Create New Account",
+
+  "otpTitle": "OTP",
+  "verification": "Verification",
+  "otpDesc1": "6-digits pin has been sent to your email address, ",
+  "otpDesc2": "riead2562@gmail.com",
+  "otpResendTitle1": "Didn’t receive code? ",
+  "otpResendTitle2": "Resend Code",
+  "verifyButton": "Verify",
+
+  "fpAppBarTitle": "Forgot Password",
+  "fpDesc1": "Please enter your phone number below to receive your OTP number.",
+  "SendOtpTitle": "Send OTP",
+
+  "navBarTitle1": "Home",
+  "navBarTitle2": "My Booking",
+  "navBarTitle3": "History",
+  "navBarTitle4": "Profile",
+
+  "hello": "Hello 👋 ",
+  "bookFlightTitle": "Book your flight with confidence",
+
+  "fromTitle": "From",
+  "toTitle": "To",
+
+  "tab1": "One Ways",
+  "tab2": "Round Trip",
+  "tab3": "Multicity",
+
+  "dateTitle": "Date",
+  "travellerTitle": "Travelers",
+  "adults": "Adults",
+  "child": "Child",
+  "infants": "Infants",
+
+  "confirm": "Confirm",
+  "done": "Done",
+  "classTitle": "Class",
+
+  "searchFlight": "Search Flight",
+  "recentSearch": "Recent Searched",
+  "flightOfferTitle": "Flight Booking Offers",
+
+  "returnDate": "Return Date",
+  "addFightButton": "Add Fight",
+
+  "searchScreenTitle": "Where from?",
+  "currentLocation": "Current Location",
+  "useCurrentLocation": "Use Current Location",
+  "recentPlaceTitle": "Recent Places",
+
+  "filter": "Filter",
+  "departure": "Departure",
+  "arrival": "Arrival",
+  "cancelButton": "Cancel",
+  "applyButton": "Apply",
+
+  "flightDetails": "Flight Details",
+  "onwardTitle": "Onward",
+  "returnTitle": "Return",
+
+  "selectService": "Select Services",
+  "bagPolicyTitle": "Baggage Policy",
+  "refundPolicyTitle": "Cancellation Refund Policy",
+  "promoCodeTitle": "Enter Promocode",
+
+  "viewAllButton": "View All",
+  "continueButton": "Continue",
+
+  "selectGenderTitle": "Select Gender",
+  "nameTitle": "First & Middle Name",
+  "lastNameTitle": "Last Name",
+  "lastNameHint": "Enter Last Name",
+
+  "contactInfoTitle": "Contact Information",
+  "paymentTitle": "Payment",
+  "viewDetails": "View Details",
+  "paymentMethod": "Payment Method",
+  "paymentCardTitle": "Your payment cards",
+  "addNewCardTitle": "Add New Card",
+
+  "DoneButton": "Done",
+  "ticketStatusTitle": "Ticket Status",
+  "myBookingTitle": "My Booking",
+  "profileTitle": "Profile",
+  "settingTitle": "Setting",
+  "language": "Language",
+  "englishTitle": "English",
+  "notificationTitle": "Notification",
+
+  "paid": "Paid",
+  "convenienceFee": "Convenience Fee Added",
+  "completed": "Completed",
+
+  "passengerMale": "{name} (Male)",
+  "@passengerMale": {
+    "description": "Passenger name with male gender",
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "profileMyProfile": "My Profile",
+  "profileSetting": "Setting",
+  "profilePayments": "Payments",
+  "profilePrivacy": "Privacy Policy",
+  "profileShare": "Share App",
+  "profileLogout": "Log Out",
+  "myProfileTitle": "My Profile",
+  "editButton": "Edit",
+  "fullNameLabel": "Full Name",
+  "emailLabel": "Email",
+  "currencyTitle": "Currency",
+  "privacyPolicyTitle": "Privacy Policy",
+  "privacyPolicyIntroduction": "At H24 Voyages, we are committed to protecting your privacy and ensuring that your personal information is handled in a safe and responsible manner.",
+  "privacyInfoCollectionTitle": "Information We Collect",
+  "privacyInfoCollection": "We collect personal information when you make a booking or register on our site...",
+  "privacyUseTitle": "How We Use Your Information",
+  "privacyUse": "Your data is used to process bookings, communicate updates, and provide customer support...",
+  "privacySharingTitle": "Sharing of Information",
+  "privacySharing": "We may share data with partners such as airlines, hotels, and payment processors as necessary...",
+  "privacySecurityTitle": "Security of Your Data",
+  "privacySecurity": "We implement security measures to protect your data, but no transmission over the internet can be guaranteed secure.",
+  "privacyContactTitle": "Contact Us",
+  "privacyContact": "If you have any questions about this Privacy Policy, please contact us at info@h24voyages.com.",
+  "classEconomy": "Economy",
+  "classBusiness": "Business",
+  "totalPrice": "Total Price",
+  "proceedToBook": "Proceed to Book",
+  "nonStop": "Non stop",
+  "stopCount": "{count} stop",
+  "nonStop": "{hours} in flight",
+   "inFlight": "{hours} in flight"
+}
