@@ -13,9 +13,10 @@ class History extends StatefulWidget {
 
 class _HistoryState extends State<History> {
   List<String> name = [
-    'DAC - DEL',
-    'DAC - JFK',
+    'ALG - TUN',
+    'ALG - TUN',
   ];
+
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,7 @@ class _HistoryState extends State<History> {
             padding: EdgeInsets.zero,
             itemBuilder: (context) => [
               PopupMenuItem(
-                child: const Text('All Clear').onTap(() {
+                child: const Text('Tout est clair').onTap(() {
                   setState(() {});
                   Navigator.pop(context);
                 }),
@@ -95,7 +96,7 @@ class _HistoryState extends State<History> {
                                   ),
                                   image: DecorationImage(
                                     fit: BoxFit.fill,
-                                    image: AssetImage('images/history.png'),
+                                    image: AssetImage('images/history_orange.png'),
                                   ),
                                 ),
                               ),
@@ -116,7 +117,7 @@ class _HistoryState extends State<History> {
                                           height: 15,
                                         ),
                                         Text(
-                                          'Economy',
+                                          'Économie',
                                           style: kTextStyle.copyWith(fontSize: 12, color: Colors.white),
                                         ),
                                       ],
@@ -138,7 +139,7 @@ class _HistoryState extends State<History> {
                                                               borderRadius: BorderRadius.circular(8),
                                                             ),
                                                             title: const Text(
-                                                              'Are yor sure you want ot clear the history?',
+                                                              'Êtes-vous sûr de vouloir effacer l''historique ?',
                                                               style: TextStyle(
                                                                 fontSize: 16,
                                                               ),
@@ -167,7 +168,7 @@ class _HistoryState extends State<History> {
                                                                             borderRadius: BorderRadius.circular(40),
                                                                           )),
                                                                       child: const Text(
-                                                                        'No',
+                                                                        'Non',
                                                                         style: TextStyle(
                                                                           color: Colors.red,
                                                                         ),
@@ -196,7 +197,7 @@ class _HistoryState extends State<History> {
                                                                             borderRadius: BorderRadius.circular(40),
                                                                           )),
                                                                       child: const Text(
-                                                                        'Yes',
+                                                                        'Oui',
                                                                         style: TextStyle(
                                                                           color: kWhite,
                                                                         ),
@@ -219,7 +220,7 @@ class _HistoryState extends State<History> {
                                           height: 15,
                                         ),
                                         const Text(
-                                          '\$3,000',
+                                          '3,000 $currencySign',
                                           style: TextStyle(fontWeight: FontWeight.bold, color: kWhite),
                                         )
                                       ],
@@ -235,7 +236,7 @@ class _HistoryState extends State<History> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  'Dhaka - New Delhi',
+                                  'Algérie - Tunisie',
                                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(
@@ -245,11 +246,11 @@ class _HistoryState extends State<History> {
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: const [
                                     Text(
-                                      '23 Jan - 30 Jan - Round Trip',
+                                      '23-30 janvier - Aller-retour',
                                       style: TextStyle(fontSize: 10, color: kTitleColor),
                                     ),
                                     Text(
-                                      '1 Adult, 0 Child, 0 Infant',
+                                      '1 adulte, 0 enfant, 0 nourrisson',
                                       style: TextStyle(fontSize: 10, color: kTitleColor),
                                     ),
                                   ],

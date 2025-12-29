@@ -758,60 +758,71 @@ class _FlightDetailsState extends State<FlightDetails>
                                                 color: kSecondaryColor)),
                                         child: Column(
                                           children: [
-                                            ListTile(
-                                              dense: true,
-                                              horizontalTitleGap: 0,
-                                              contentPadding: const EdgeInsets.only(right: 12.0),
-                                              leading: Radio<FareOption>(
-                                                value: fareOptions[i],
-                                                groupValue: selectedFare,
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    selectedFare = value!;
-                                                  });
-                                                },
+                                          ListTile(
+                                          dense: true,
+                                          horizontalTitleGap: 0,
+                                          contentPadding: const EdgeInsets.only(right: 12.0),
+                                          leading: Radio<FareOption>(
+                                            value: fareOptions[i],
+                                            groupValue: selectedFare,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                selectedFare = value!;
+                                              });
+                                            },
+                                          ),
+
+                                          // ✅ TITLE ROW
+                                          title: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  'Tarif proposé par la compagnie aérienne',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis, // 🔧 prevent overflow
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
                                               ),
-                                              title: Row(
-                                                children: [
-                                                  Text(
-                                                    'Tarif proposé par la compagnie aérienne',
-                                                    style: kTextStyle.copyWith(
-                                                      color: kTitleColor,
-                                                      fontWeight:
-                                                      FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  const Spacer(),
-                                                  Text(
-                                                    '${fareOptions[i].oldPrice} $currencySign',
-                                                    style: kTextStyle.copyWith(
-                                                      color: kSubTitleColor,
-                                                      decoration: TextDecoration.lineThrough,
-                                                      fontSize: 12.0,
-                                                    ),
-                                                  ),
-                                                ],
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '${fareOptions[i].oldPrice} $currencySign',
+                                                style: kTextStyle.copyWith(
+                                                  color: kSubTitleColor,
+                                                  decoration: TextDecoration.lineThrough,
+                                                  fontSize: 12.0,
+                                                ),
                                               ),
-                                              subtitle: Row(
-                                                children: [
-                                                  Text(
-                                                   fareOptions[i].title,
-                                                    style: kTextStyle.copyWith(
-                                                      color: kSubTitleColor,
-                                                    ),
+                                            ],
+                                          ),
+
+                                          // ✅ SUBTITLE ROW
+                                          subtitle: Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  fareOptions[i].title,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis, // 🔧 prevent overflow
+                                                  style: kTextStyle.copyWith(
+                                                    color: kSubTitleColor,
                                                   ),
-                                                  const Spacer(),
-                                                  Text(
-                                                    '${fareOptions[i].price} $currencySign',
-                                                    style: kTextStyle.copyWith(
-                                                      color: kTitleColor,
-                                                      fontWeight: FontWeight.bold,
-                                                      fontSize: 16.0,
-                                                    ),
-                                                  ),
-                                                ],
+                                                ),
                                               ),
-                                            ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                '${fareOptions[i].price} $currencySign',
+                                                style: kTextStyle.copyWith(
+                                                  color: kTitleColor,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16.0,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                             const SizedBox(height: 10.0),
                                             Row(
                                               children: [

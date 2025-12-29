@@ -743,66 +743,64 @@ class _BookProceedState extends State<BookProceed>
                         itemBuilder: (_, i) {
                           return Column(
                             children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Icon(
-                                    IconlyBold.discount,
-                                    color: kPrimaryColor,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        discountList[i],
-                                        style: kTextStyle.copyWith(
-                                            color: kTitleColor,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(
-                                        height: 8,
-                                      ),
-                                      Text(
-                                        'Bénéficiez d’une remise immédiate de 278 NIR',
-                                        style: kTextStyle.copyWith(
-                                            color: kSubTitleColor),
-                                      ),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  GestureDetector(
-                                    child: Icon(
-                                        selectedDiscountList.contains(
-                                          discountList[i],
-                                        )
-                                            ? Icons.check_box_rounded
-                                            : Icons
-                                                .check_box_outline_blank_rounded,
-                                        color: selectedDiscountList.contains(
-                                          discountList[i],
-                                        )
-                                            ? kPrimaryColor
-                                            : kSubTitleColor),
-                                    onTap: () {
-                                      setState(
-                                        () {
-                                          selectedDiscountList.contains(
-                                            discountList[i],
-                                          )
-                                              ? selectedDiscountList.remove(
-                                                  discountList[i],
-                                                )
-                                              : selectedDiscountList.add(
-                                                  discountList[i],
-                                                );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ],
+                            Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                IconlyBold.discount,
+                                color: kPrimaryColor,
                               ),
+                              const SizedBox(width: 8),
+
+                              // ✅ Texts take only available space
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      discountList[i],
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: kTextStyle.copyWith(
+                                        color: kTitleColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Bénéficiez d’une remise immédiate de 278 NIR',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: kTextStyle.copyWith(
+                                        color: kSubTitleColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const SizedBox(width: 8),
+
+                              // ✅ Trailing checkbox stays visible
+                              GestureDetector(
+                                child: Icon(
+                                  selectedDiscountList.contains(discountList[i])
+                                      ? Icons.check_box_rounded
+                                      : Icons.check_box_outline_blank_rounded,
+                                  color: selectedDiscountList.contains(discountList[i])
+                                      ? kPrimaryColor
+                                      : kSubTitleColor,
+                                ),
+                                onTap: () {
+                                  setState(() {
+                                    selectedDiscountList.contains(discountList[i])
+                                        ? selectedDiscountList.remove(discountList[i])
+                                        : selectedDiscountList.add(discountList[i]);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                               const SizedBox(height: 10),
                               const Divider(
                                 thickness: 1.0,

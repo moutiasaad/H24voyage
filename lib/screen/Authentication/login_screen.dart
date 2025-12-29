@@ -32,7 +32,7 @@ class _LogInState extends State<LogIn> {
       ),
       body: Container(
         decoration: const BoxDecoration(
-          color: kPrimaryColor,
+          color: kWebsiteGreyBg,
         ),
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -43,11 +43,11 @@ class _LogInState extends State<LogIn> {
               Center(
                 child: Container(
                   height: 70,
-                  width: 78,
+                  width: 150,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
-                      image: AssetImage('images/logo2.png'),
-                      fit: BoxFit.cover,
+                      image: AssetImage('assets/logo.png'),
+                      fit: BoxFit.fill,
                     ),
                   ),
                 ),

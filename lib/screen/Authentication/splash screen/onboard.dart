@@ -24,13 +24,13 @@ class _OnBoardState extends State<OnBoard> {
 
   List<Map<String, dynamic>> sliderList = [
     {
-      "icon": 'images/onboard1.png',
+      "icon": 'images/onboard1_orange.png',
     },
     {
-      "icon": 'images/onboard2.png',
+      "icon": 'images/onboard2_orange.png',
     },
     {
-      "icon": 'images/onboard3.png',
+      "icon": 'images/onboard3_orange.png',
     },
   ];
 

@@ -19,8 +19,8 @@ class _MyProfileState extends State<MyProfile> {
   XFile? image;
 
   // 🔁 Dynamic user data (later you can load from backend)
-  String fullName = 'Sahidul Islam';
-  String email = 'shaidulislamma@gmail.com';
+  String fullName = 'John Doe';
+  String email = 'johendoe@gmail.com';
   String phone = '017XXXXXXXX';
 
   Future<void> getImage() async {
@@ -102,12 +102,12 @@ class _MyProfileState extends State<MyProfile> {
                       borderRadius: BorderRadius.circular(100),
                       image: image == null
                           ? const DecorationImage(
-                        image: AssetImage('images/man.png'),
+                        image: AssetImage('assets/logo.png'),
                         fit: BoxFit.cover,
                       )
                           : DecorationImage(
                         image: FileImage(File(image!.path)),
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fill,
                       ),
                     ),
                   ),
@@ -198,7 +198,7 @@ class _MyProfileState extends State<MyProfile> {
                           labelText: t.phoneLabel, // ✅ translated
                           prefixIcon: const CountryCodePicker(
                             showFlag: true,
-                            initialSelection: 'BD',
+                            initialSelection: 'DZ',
                           ),
                         ),
                       ),

@@ -116,34 +116,54 @@ class _TicketStatusState extends State<TicketStatus> {
                         decoration: const BoxDecoration(
                           shape: BoxShape.rectangle,
                           image: DecorationImage(
-                              image: AssetImage('assets/logo.png'),
-                            fit: BoxFit.contain,),
+                            image: AssetImage('assets/logo.png'),
+                            fit: BoxFit.contain,
+                          ),
                         ),
                       ),
-                      const Spacer(),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            'E-billet',
-                            style: kTextStyle.copyWith(
+
+                      const SizedBox(width: 8),
+
+                      /// ✅ Make right part flexible
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'E-billet',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: kTextStyle.copyWith(
                                 color: kTitleColor,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            'Réservation ID- EMT9456544',
-                            style: kTextStyle.copyWith(
-                                color: kSubTitleColor, fontSize: 12.0),
-                          ),
-                          Text(
-                            'Réservation effectuée le mercredi 9 février 2023 à 14h27',
-                            style: kTextStyle.copyWith(
-                                color: kSubTitleColor, fontSize: 12.0),
-                          ),
-                        ],
-                      )
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Réservation ID- EMT9456544',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
+                              style: kTextStyle.copyWith(
+                                color: kSubTitleColor,
+                                fontSize: 12.0,
+                              ),
+                            ),
+                            Text(
+                              'Réservation effectuée le mercredi 9 février 2023 à 14h27',
+                              maxLines: 2, // allow wrap to second line
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
+                              style: kTextStyle.copyWith(
+                                color: kSubTitleColor,
+                                fontSize: 12.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
+
                   const SizedBox(height: 10.0),
                   Row(
                     children: List.generate(
@@ -204,46 +224,52 @@ class _TicketStatusState extends State<TicketStatus> {
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'ALG',
-                                        style: kTextStyle.copyWith(
-                                            color: kTitleColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12),
-                                      ),
-                                      const SizedBox(width: 5.0),
-                                      Text(
-                                        '15:45',
-                                        style: kTextStyle.copyWith(
-                                            color: kTitleColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5.0),
-                                  Text(
-                                    'Dim. 6 janv. 2023',
-                                    style: kTextStyle.copyWith(
-                                        color: kSubTitleColor, fontSize: 12),
-                                  ),
-                                  const SizedBox(height: 5.0),
-                                  Text(
-                                    'Terminal 3',
-                                    style: kTextStyle.copyWith(
-                                        color: kSubTitleColor, fontSize: 12),
-                                  ),
-                                ],
+                              /// ⬅️ From
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text('ALG',
+                                            style: kTextStyle.copyWith(
+                                                color: kTitleColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12)),
+                                        const SizedBox(width: 5),
+                                        Text('15:45',
+                                            style: kTextStyle.copyWith(
+                                                color: kTitleColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Dim. 6 janv. 2023',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: kTextStyle.copyWith(
+                                          color: kSubTitleColor, fontSize: 12),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Terminal 3',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: kTextStyle.copyWith(
+                                          color: kSubTitleColor, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(width: 5.0),
+
+                              const SizedBox(width: 6),
+
+                              /// 🛫 Center (duration + line)
                               Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     '3h 40m',
@@ -252,100 +278,113 @@ class _TicketStatusState extends State<TicketStatus> {
                                         fontWeight: FontWeight.bold,
                                         fontSize: 12),
                                   ),
-                                  const SizedBox(height: 2.0),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        height: 10.0,
-                                        width: 10.0,
-                                        decoration: const BoxDecoration(
-                                            color: kPrimaryColor,
-                                            shape: BoxShape.circle),
-                                      ),
-                                      Stack(
-                                        alignment: Alignment.center,
+                                  const SizedBox(height: 2),
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final lineWidth = constraints.maxWidth.clamp(50.0, 80.0);
+                                      return Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Container(
-                                            height: 2.0,
-                                            width: 80,
+                                            height: 10,
+                                            width: 10,
                                             decoration: const BoxDecoration(
-                                              color: kPrimaryColor,
-                                            ),
+                                                color: kPrimaryColor, shape: BoxShape.circle),
+                                          ),
+                                          Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              Container(
+                                                height: 2,
+                                                width: lineWidth,
+                                                color: kPrimaryColor,
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets.all(5),
+                                                decoration: const BoxDecoration(
+                                                  color: kPrimaryColor,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                  Icons.arrow_right_alt_outlined,
+                                                  size: 16,
+                                                  color: kWhite,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                           Container(
-                                            padding: const EdgeInsets.all(5.0),
-                                            decoration: const BoxDecoration(
-                                              color: kPrimaryColor,
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: const Icon(
-                                              Icons.arrow_right_alt_outlined,
-                                              size: 16,
+                                            height: 10,
+                                            width: 10,
+                                            decoration: BoxDecoration(
                                               color: kWhite,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(color: kPrimaryColor),
                                             ),
                                           ),
                                         ],
-                                      ),
-                                      Container(
-                                        height: 10.0,
-                                        width: 10.0,
-                                        decoration: BoxDecoration(
-                                          color: kWhite,
-                                          shape: BoxShape.circle,
-                                          border:
-                                              Border.all(color: kPrimaryColor),
-                                        ),
-                                      ),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                  const SizedBox(height: 2.0),
+                                  const SizedBox(height: 2),
                                   Text(
                                     'Économie',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: kTextStyle.copyWith(
                                         color: kSubTitleColor, fontSize: 12),
                                   ),
                                 ],
                               ),
-                              const SizedBox(width: 5.0),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'ALG',
-                                        style: kTextStyle.copyWith(
-                                            color: kTitleColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12),
-                                      ),
-                                      const SizedBox(width: 5.0),
-                                      Text(
-                                        '15:45',
-                                        style: kTextStyle.copyWith(
-                                            color: kTitleColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5.0),
-                                  Text(
-                                    'Dim. 6 janv. 2023',
-                                    style: kTextStyle.copyWith(
-                                        color: kSubTitleColor, fontSize: 12),
-                                  ),
-                                  const SizedBox(height: 5.0),
-                                  Text(
-                                    'Terminal 3',
-                                    style: kTextStyle.copyWith(
-                                        color: kSubTitleColor, fontSize: 12),
-                                  ),
-                                ],
+
+                              const SizedBox(width: 6),
+
+                              /// ➡️ To
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text('ALG',
+                                            style: kTextStyle.copyWith(
+                                                color: kTitleColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12)),
+                                        const SizedBox(width: 5),
+                                        Text('15:45',
+                                            style: kTextStyle.copyWith(
+                                                color: kTitleColor,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Dim. 6 janv. 2023',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.end,
+                                      style: kTextStyle.copyWith(
+                                          color: kSubTitleColor, fontSize: 12),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      'Terminal 3',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.end,
+                                      style: kTextStyle.copyWith(
+                                          color: kSubTitleColor, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                         ),
+
                         Container(
                           padding: const EdgeInsets.all(5.0),
                           decoration: const BoxDecoration(

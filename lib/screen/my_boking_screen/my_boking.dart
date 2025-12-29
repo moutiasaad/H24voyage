@@ -115,22 +115,22 @@ class _MyBookingState extends State<MyBooking> {
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 image: DecorationImage(
-                                  image: AssetImage('images/indigo.png'),
+                                    image: AssetImage('assets/TU.png'),
                                   fit: BoxFit.cover,
                                 ),
                               ),
                             ),
                             title: Row(
                               children: [
-                                Text('Dhaka', style: kTextStyle.copyWith(color: kTitleColor)),
+                                Text('Algérie', style: kTextStyle.copyWith(color: kTitleColor)),
                                 const SizedBox(width: 2.0),
                                 const Icon(Icons.swap_horiz, color: kLightNeutralColor),
                                 const SizedBox(width: 2.0),
-                                Text('New Delhi', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                Text('Tunisie', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
                               ],
                             ),
                             subtitle: Text(
-                              'Thu, 6 Jan | 11:40pm - 05:25pm | 5h 25m | 1 Stop',
+                              'jeu. 6 janvier | 23h40 - 17h25 | 5h 25min | 1 arrêt',
                               style: kTextStyle.copyWith(fontSize: 12, color: kSubTitleColor),
                             ),
                           ),
@@ -139,7 +139,7 @@ class _MyBookingState extends State<MyBooking> {
                           const Divider(thickness: 1.0, color: kBorderColorTextField),
 
                           Text(
-                            t.passengerMale('Shaidul Islam'),
+                            t.passengerMale('John Doe'),
                             style: const TextStyle(fontSize: 12, color: kTitleColor),
                           ),
                         ],

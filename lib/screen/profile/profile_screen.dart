@@ -61,8 +61,8 @@ class _ProfileState extends State<Profile> {
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: AssetImage('images/man.png'),
-                      fit: BoxFit.cover,
+                      image: AssetImage('assets/logo.png'),
+                      fit: BoxFit.fill,
                     ),
                   ),
                 ),
@@ -71,14 +71,14 @@ class _ProfileState extends State<Profile> {
 
               const Center(
                 child: Text(
-                  'Sahidul Islam',
+                  'Johen Doe',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
               const SizedBox(height: 5),
               Center(
                 child: Text(
-                  'shaidulislamma@gmail.com',
+                  'johendoe@gmail.com',
                   style: kTextStyle.copyWith(fontSize: 14, color: kSubTitleColor),
                 ),
               ),

@@ -107,25 +107,34 @@ class _PaymentState extends State<Payment> {
                       minLeadingWidth: 0,
                       title: Row(
                         children: [
-                          Text(
-                            'À payer : ${14500} $currencySign',
-                            style: kTextStyle.copyWith(
-                              color: kTitleColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.0,
+                          Expanded(
+                            child: Text(
+                              'À payer : ${14500} $currencySign',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: kTextStyle.copyWith(
+                                color: kTitleColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14.0,
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 2.0),
+                          const SizedBox(width: 4.0),
                           const Icon(
                             IconlyBold.discount,
                             color: kPrimaryColor,
+                            size: 18,
                           ),
-                          const SizedBox(width: 2.0),
-                          Text(
-                            'Économisez ${50} $currencySign',
-                            style: kTextStyle.copyWith(
-                              color: kSubTitleColor,
-                              fontSize: 12,
+                          const SizedBox(width: 4.0),
+                          Flexible(
+                            child: Text(
+                              'Économisez ${50} $currencySign',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: kTextStyle.copyWith(
+                                color: kSubTitleColor,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],
