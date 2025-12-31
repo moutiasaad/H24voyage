@@ -1,4 +1,5 @@
 import 'package:flight_booking/screen/home/home.dart';
+import 'package:flight_booking/screen/my_boking_screen/my_boking.dart';
 import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
@@ -87,8 +88,15 @@ class _PaymentMethodState extends State<PaymentMethod> {
                 GestureDetector(
                   onTap: (){
                     setState(() {
-                      const Home().launch(context);
-                      finish(context);
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const Home(initialIndex: 1), // ✅ MyBooking
+                        ),
+                            (route) => false,
+                      );
+                      // const Home().launch(context);
+                      // finish(context);
                     });
                   },
                   child: Row(

@@ -1,3 +1,5 @@
+import 'package:flight_booking/screen/home/home.dart';
+import 'package:flight_booking/screen/my_boking_screen/my_boking.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -63,7 +65,15 @@ class _TicketStatusState extends State<TicketStatus> {
                     elevation: 0.0,
                     backgroundColor: kPrimaryColor,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const Home(initialIndex: 1), // ✅ MyBooking
+                      ),
+                          (route) => false,
+                    );
+                  },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [

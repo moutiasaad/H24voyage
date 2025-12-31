@@ -8,14 +8,16 @@ import '../profile/profile_screen.dart';
 import 'home_screen.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  final int initialIndex;
+
+  const Home({Key? key, this.initialIndex = 0}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-  int _currentPage = 0;
+  late int _currentPage;
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
@@ -23,6 +25,12 @@ class _HomeState extends State<Home> {
     History(),
     Profile(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.initialIndex; // ✅ important
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,34 +44,31 @@ class _HomeState extends State<Home> {
           unselectedItemColor: kSubTitleColor,
           backgroundColor: Colors.white,
           showUnselectedLabels: true,
+          currentIndex: _currentPage,
+          onTap: (int index) {
+            setState(() => _currentPage = index);
+          },
           items: [
-            /// Home
             BottomNavigationBarItem(
               icon: const Icon(IconlyBold.home),
               label: lang.S.of(context).navBarTitle1,
             ),
-
             BottomNavigationBarItem(
               icon: const Icon(IconlyBold.bookmark),
               label: lang.S.of(context).navBarTitle2,
             ),
-
             BottomNavigationBarItem(
               icon: const Icon(IconlyBold.document),
               label: lang.S.of(context).navBarTitle3,
             ),
-
             BottomNavigationBarItem(
               icon: const Icon(IconlyBold.profile),
               label: lang.S.of(context).navBarTitle4,
             ),
           ],
-          onTap: (int index) {
-            setState(() => _currentPage = index);
-          },
-          currentIndex: _currentPage,
         ),
       ),
     );
   }
 }
+

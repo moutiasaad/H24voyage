@@ -192,9 +192,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 fontSize: 28.0,
                               ),
                               children: const [
-                                TextSpan(text: 'Réservez votre vol en '),
+                                TextSpan(text: 'Réservez votre vol  '),
                                 TextSpan(
-                                  text: '\ntoute',
+                                  text: '\nen toute',
                                   style: TextStyle(
                                     decoration: TextDecoration.underline,
                                     decorationThickness: 3,
