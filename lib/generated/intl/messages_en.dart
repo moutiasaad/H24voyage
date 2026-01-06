@@ -117,7 +117,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Pretium, ipsum pretium aliquet mollis cond imentum magna accumsan. Odio elit \ntellus id diam sit. Massa",
     ),
     "onBoardTitle1": MessageLookupByLibrary.simpleMessage(
-      "Welcome to Maan Flight",
+      "Welcome to H24 Voyages",
     ),
     "onBoardTitle2": MessageLookupByLibrary.simpleMessage(
       "Easily Find Any Place",

@@ -61,7 +61,7 @@ class _ProfileState extends State<Profile> {
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     image: DecorationImage(
-                      image: AssetImage('assets/logo.png'),
+                      image: AssetImage('images/profile1.png'),
                       fit: BoxFit.fill,
                     ),
                   ),

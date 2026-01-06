@@ -69,10 +69,10 @@ class S {
     return Intl.message('Skip', name: 'skipButton', desc: '', args: []);
   }
 
-  /// `Welcome to Maan Flight`
+  /// `Welcome to H24 Voyages`
   String get onBoardTitle1 {
     return Intl.message(
-      'Welcome to Maan Flight',
+      'Welcome to H24 Voyages',
       name: 'onBoardTitle1',
       desc: '',
       args: [],

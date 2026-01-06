@@ -133,7 +133,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Un service simple et efficace pour organiser vos voyages en toute tranquillité.",
     ),
     "onBoardTitle1": MessageLookupByLibrary.simpleMessage(
-      "Bienvenue chez Maan Flight",
+      "Bienvenue chez H24 Voyages",
     ),
     "onBoardTitle2": MessageLookupByLibrary.simpleMessage(
       "Trouvez facilement n’importe quel endroit",
