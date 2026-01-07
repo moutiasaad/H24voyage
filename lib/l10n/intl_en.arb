@@ -64,7 +64,7 @@
   "tab3": "Multicity",
 
   "dateTitle": "Date",
-  "travellerTitle": "Travelers",
+  "travellerTitle": "Passengers",
   "adults": "Adults",
   "child": "Child",
   "infants": "Infants",
@@ -77,7 +77,10 @@
   "recentSearch": "Recent Searched",
   "flightOfferTitle": "Flight Booking Offers",
 
+  "departDate": "Departure Date",
+  "departDateTitle": "Departure",
   "returnDate": "Return Date",
+  "returnDateTitle": "Return",
   "addFightButton": "Add Fight",
 
   "searchScreenTitle": "Where from?",

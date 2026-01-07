@@ -1,5 +1,5 @@
-import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 import 'onboard.dart';
 
@@ -10,20 +10,28 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+
   @override
   void initState() {
     super.initState();
-    init();
+    _animationController = AnimationController(vsync: this);
   }
 
-  Future<void> init() async {
-    await Future.delayed(const Duration(seconds: 2)).then(
-      (value) => Navigator.push(
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _onAnimationFinished() {
+    if (mounted) {
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (BuildContext context) => const OnBoard()),
-      ),
-    );
+      );
+    }
   }
 
   @override
@@ -35,17 +43,16 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: kWebsiteGreyBg,
+        backgroundColor: const Color(0xFFFFDDD3), // Light orange (20% orange mixed with white)
         body: Center(
-          child: Container(
-            height: 200,
-            width: 200,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('assets/logo.png'),
-                fit: BoxFit.contain,
-              ),
-            ),
+          child: Lottie.asset(
+            'assets/splash.json',
+            controller: _animationController,
+            repeat: false,
+            onLoaded: (composition) {
+              _animationController.duration = composition.duration;
+              _animationController.forward().then((_) => _onAnimationFinished());
+            },
           ),
         ),
       ),

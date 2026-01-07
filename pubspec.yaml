@@ -51,6 +51,7 @@ dependencies:
   country_code_picker: ^3.0.0
   pinput: ^3.0.1
   syncfusion_flutter_datepicker: ^32.1.19
+  lottie: ^3.0.0
   material_design_icons_flutter: ^7.0.7296
   flutter_credit_card: ^4.0.7
   community_material_icon: ^5.9.55

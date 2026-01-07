@@ -449,10 +449,10 @@ class S {
     return Intl.message('Date', name: 'dateTitle', desc: '', args: []);
   }
 
-  /// `Travelers`
+  /// `Passengers`
   String get travellerTitle {
     return Intl.message(
-      'Travelers',
+      'Passengers',
       name: 'travellerTitle',
       desc: '',
       args: [],
@@ -519,9 +519,34 @@ class S {
     );
   }
 
+  /// `Departure Date`
+  String get departDate {
+    return Intl.message(
+      'Departure Date',
+      name: 'departDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Departure`
+  String get departDateTitle {
+    return Intl.message(
+      'Departure',
+      name: 'departDateTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Return Date`
   String get returnDate {
     return Intl.message('Return Date', name: 'returnDate', desc: '', args: []);
+  }
+
+  /// `Return`
+  String get returnDateTitle {
+    return Intl.message('Return', name: 'returnDateTitle', desc: '', args: []);
   }
 
   /// `Add Fight`

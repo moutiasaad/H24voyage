@@ -6,10 +6,12 @@ import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
+import 'package:intl/intl.dart';
 
 import '../search/search.dart';
 import '../search/search_result.dart';
 import '../widgets/button_global.dart';
+import '../widgets/CustomDatePicker.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -24,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(length: 3, vsync: this, initialIndex: 1);
 
     // ✅ Default airports (Dzyar 🇩🇿 -> Tunisia/France 🇹🇳🇫🇷)
     fromAirport = airports.firstWhere((a) => a.code == "ALG"); // Algiers
@@ -42,45 +44,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int infantCount = 0;
   int flightNumber = 0;
   bool showCounter = false;
+  int selectedIndex = 1; // Default to Aller-retour (Round-trip) at index 1
 
   List<String> classKeys = ['economy', 'business'];
   String selectedClass = 'economy';
   // String selectedClass = 'Economy';
 
-  DropdownButton<String> getClass(BuildContext context) {
-    final t = lang.S.of(context);
-
-    List<DropdownMenuItem<String>> dropDownItems = [
-      DropdownMenuItem(
-        value: 'economy',
-        child: Text(t.classEconomy),
-      ),
-      DropdownMenuItem(
-        value: 'business',
-        child: Text(t.classBusiness),
-      ),
-    ];
-
-    return DropdownButton<String>(
-      icon: const Icon(
-        IconlyLight.arrowDown2,
-        color: kSubTitleColor,
-      ),
-      items: dropDownItems,
-      value: selectedClass,
-      onChanged: (value) {
-        setState(() {
-          selectedClass = value!;
-        });
-      },
-    );
-  }
-
-
+  DateTime? departureDate;
+  DateTime? returnDate;
+  bool isFlexibleDates = false;
   DateTimeRange? _selectedDateRange;
-
-  String departureDateTitle = 'Departure Date';
-  String returnDateTitle = 'Return Date';
 
   DateTime selectedDate = DateTime.now();
 
@@ -99,20 +72,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   //   }
   // }
 
-  void _showDepartureDate() async {
-    final DateTimeRange? result = await showDateRangePicker(
-      context: context,
-      firstDate: selectedDate,
-      lastDate: DateTime(2030, 12, 31),
-      currentDate: DateTime.now(),
-      saveText: 'Fait',
-    );
-    if (result != null && result != _selectedDateRange) {
-      setState(() {
-        _selectedDateRange = result;
-        returnDateTitle = _selectedDateRange.toString().substring(26, 36);
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
+    final locale = Localizations.localeOf(context).languageCode;
+    return DateFormat('dd MMM', locale).format(date);
+  }
 
-        departureDateTitle = _selectedDateRange.toString().substring(0, 10);
+  void _showCustomDatePicker() async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => CustomDatePicker(
+        initialStartDate: departureDate,
+        initialEndDate: returnDate,
+        isRoundTrip: selectedIndex == 1,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        departureDate = result['departure'] as DateTime?;
+        returnDate = result['return'] as DateTime?;
+        isFlexibleDates = result['flexible'] as bool? ?? false;
+
+        // Update the DateTimeRange for compatibility with SearchResult
+        if (departureDate != null && returnDate != null) {
+          _selectedDateRange = DateTimeRange(
+            start: departureDate!,
+            end: returnDate!,
+          );
+        }
       });
     }
   }
@@ -274,6 +264,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   color: const Color(0xFFEDF0FF),
                                 ),
                                 child: TabBar(
+                                  controller: tabController,
                                   labelStyle: kTextStyle.copyWith(color: Colors.white),
                                   unselectedLabelColor: kSubTitleColor,
                                   indicatorColor: kPrimaryColor,
@@ -306,184 +297,244 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               Column(
                                 children: [
                                   Stack(
-                                    alignment: Alignment.center,
+                                    clipBehavior: Clip.none,
                                     children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: SizedBox(
-                                              height: 90,
-                                              child: InputDecorator(
-                                                decoration: kInputDecoration.copyWith(
-                                                  contentPadding: const EdgeInsets.only(left: 10.0),
-                                                  labelText: lang.S.of(context).fromTitle,
-                                                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                ),
-                                                child: ListTile(
-                                                  onTap: () async {
-                                                    final result = await showModalBottomSheet<Airport>(
-                                                      context: context,
-                                                      isScrollControlled: true,
-                                                      backgroundColor: Colors.transparent,
-                                                      shape: const RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                                                      ),
-                                                      builder: (_) => const SearchBottomSheet(),
-                                                    );
-
-                                                    if (result != null) {
-                                                      setState(() {
-                                                        fromAirport = result;
-                                                      });
-                                                    }
-                                                  },
-                                                  title: Text(
-                                                    fromAirport != null ? '(${fromAirport!.code})' : '(ALG)',
-                                                    style: kTextStyle.copyWith(
-                                                      color: kTitleColor,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  subtitle: Text(
-                                                    fromAirport != null
-                                                        ? fromAirport!.city
-                                                        : 'Algerie , Algerie ',
-                                                    style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                  ),
-                                                ),
+                                  Column(
+                                    children: [
+                                      InputDecorator(
+                                        decoration: kInputDecoration.copyWith(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                          labelText: lang.S.of(context).fromTitle,
+                                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                                        ),
+                                        child: InkWell(
+                                          onTap: () async {
+                                            final result = await showModalBottomSheet<Airport>(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              backgroundColor: Colors.transparent,
+                                              shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                                               ),
+                                              builder: (_) => const SearchBottomSheet(),
+                                            );
+
+                                            if (result != null) {
+                                              setState(() {
+                                                fromAirport = result;
+                                              });
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.flight_takeoff,
+                                                  color: kSubTitleColor,
+                                                  size: 24,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        fromAirport != null ? '(${fromAirport!.code})' : '(ALG)',
+                                                        style: kTextStyle.copyWith(
+                                                          color: kTitleColor,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        fromAirport != null
+                                                            ? fromAirport!.city
+                                                            : 'Algerie , Algerie ',
+                                                        style: kTextStyle.copyWith(
+                                                          color: kSubTitleColor,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: SizedBox(
-                                              height: 90,
-                                              child: InputDecorator(
-                                                decoration: kInputDecoration.copyWith(
-                                                  contentPadding: const EdgeInsets.only(left: 10.0),
-                                                  labelText: lang.S.of(context).toTitle,
-                                                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                  border: OutlineInputBorder(
-                                                    borderRadius: BorderRadius.circular(8.0),
-                                                  ),
-                                                ),
-                                                child: ListTile(
-                                                  onTap: () async {
-                                                    final result = await showModalBottomSheet<Airport>(
-                                                      context: context,
-                                                      isScrollControlled: true,
-                                                      backgroundColor: Colors.transparent,
-                                                      shape: const RoundedRectangleBorder(
-                                                        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                                                      ),
-                                                      builder: (_) => const SearchBottomSheet(),
-                                                    );
-
-                                                    if (result != null) {
-                                                      setState(() {
-                                                        toAirport = result;
-                                                      });
-                                                    }
-                                                  },
-                                                  title: Text(
-                                                    toAirport != null ? '(${toAirport!.code})' : '(NYC)',
-                                                    style: kTextStyle.copyWith(
-                                                      color: kTitleColor,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  subtitle: Text(
-                                                    toAirport != null
-                                                        ? toAirport!.city
-                                                        : 'New York, United States',
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                  ),
-
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                        ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 20.0),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: kWhite,
-                                            border: Border.all(
-                                              color: kPrimaryColor.withOpacity(0.3),
-                                            ),
+                                      const SizedBox(height: 12), // Space between the two inputs
+                                      InputDecorator(
+                                        decoration: kInputDecoration.copyWith(
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                          labelText: lang.S.of(context).toTitle,
+                                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(8.0),
                                           ),
-                                          child: const Icon(
-                                            Icons.swap_horiz_outlined,
-                                            color: kPrimaryColor,
+                                        ),
+                                        child: InkWell(
+                                          onTap: () async {
+                                            final result = await showModalBottomSheet<Airport>(
+                                              context: context,
+                                              isScrollControlled: true,
+                                              backgroundColor: Colors.transparent,
+                                              shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                                              ),
+                                              builder: (_) => const SearchBottomSheet(),
+                                            );
+
+                                            if (result != null) {
+                                              setState(() {
+                                                toAirport = result;
+                                              });
+                                            }
+                                          },
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                            child: Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.flight_land,
+                                                  color: kSubTitleColor,
+                                                  size: 24,
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Text(
+                                                        toAirport != null ? '(${toAirport!.code})' : '(NYC)',
+                                                        style: kTextStyle.copyWith(
+                                                          color: kTitleColor,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        toAirport != null
+                                                            ? toAirport!.city
+                                                            : 'New York, United States',
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: kTextStyle.copyWith(
+                                                          color: kSubTitleColor,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  TextFormField(
-                                    readOnly: true,
-                                    keyboardType: TextInputType.name,
-                                    cursorColor: kTitleColor,
-                                    showCursor: false,
-                                    textInputAction: TextInputAction.next,
-
-                                    // ✅ Open date picker when tapping anywhere
-                                    onTap: () {
-                                      _showDepartureDate();
-                                    },
-
-                                    decoration: kInputDecoration.copyWith(
-                                      labelText: lang.S.of(context).dateTitle,
-                                      labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                      hintText: departureDateTitle,
-                                      hintStyle: kTextStyle.copyWith(color: kTitleColor),
-                                      focusColor: kTitleColor,
-                                      border: const OutlineInputBorder(),
-                                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                                      suffixIcon: const Icon(
-                                        IconlyLight.calendar,
-                                        color: kSubTitleColor,
+                                  // Positioned swap button - overlapping both inputs
+                                  Positioned(
+                                    right: 12,
+                                    top: 0,
+                                    bottom: 0,
+                                    child: Center(
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            // Swap the airports
+                                            final temp = fromAirport;
+                                            fromAirport = toAirport;
+                                            toAirport = temp;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8.0),
+                                          decoration: const BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: kPrimaryColor,
+                                          ),
+                                          child: const Icon(
+                                            Icons.swap_vert,
+                                            color: kWhite,
+                                            size: 18,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-
-                                  const SizedBox(height: 20.0).visible(selectedIndex == 1),
-                                  TextFormField(
-                                    readOnly: true,
-                                    keyboardType: TextInputType.name,
-                                    cursorColor: kTitleColor,
-                                    showCursor: false,
-                                    textInputAction: TextInputAction.next,
-
-                                    // ✅ Tap anywhere to open return date picker
-                                    onTap: () {
-                                      setState(() {
-                                        isReturn = true;
-                                      });
-                                      _showDepartureDate();
-                                    },
-
-                                    decoration: kInputDecoration.copyWith(
-                                      labelText: lang.S.of(context).returnDate,
-                                      labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                      hintText: returnDateTitle,
-                                      hintStyle: kTextStyle.copyWith(color: kTitleColor),
-                                      focusColor: kTitleColor,
-                                      border: const OutlineInputBorder(),
-                                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                                      suffixIcon: const Icon(
-                                        IconlyLight.calendar,
-                                        color: kSubTitleColor,
+                                ],
+                              ),
+                              const SizedBox(height: 10.0),
+                              // For Aller-retour: Show both dates side by side
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      readOnly: true,
+                                      keyboardType: TextInputType.name,
+                                      cursorColor: kTitleColor,
+                                      showCursor: false,
+                                      textInputAction: TextInputAction.next,
+                                      onTap: () {
+                                        _showCustomDatePicker();
+                                      },
+                                      controller: TextEditingController(
+                                        text: _formatDate(departureDate),
+                                      ),
+                                      decoration: kInputDecoration.copyWith(
+                                        labelText: lang.S.of(context).departDate,
+                                        labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                        hintText: lang.S.of(context).departDateTitle,
+                                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
+                                        focusColor: kTitleColor,
+                                        border: const OutlineInputBorder(),
+                                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                                        prefixIcon: const Icon(
+                                          IconlyLight.calendar,
+                                          color: kSubTitleColor,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10.0).visible(selectedIndex == 1),
+                                  Expanded(
+                                    child: TextFormField(
+                                      readOnly: true,
+                                      keyboardType: TextInputType.name,
+                                      cursorColor: kTitleColor,
+                                      showCursor: false,
+                                      textInputAction: TextInputAction.next,
+                                      onTap: () {
+                                        _showCustomDatePicker();
+                                      },
+                                      controller: TextEditingController(
+                                        text: _formatDate(returnDate),
+                                      ),
+                                      decoration: kInputDecoration.copyWith(
+                                        labelText: lang.S.of(context).returnDate,
+                                        labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                        hintText: lang.S.of(context).returnDateTitle,
+                                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
+                                        focusColor: kTitleColor,
+                                        border: const OutlineInputBorder(),
+                                        floatingLabelBehavior: FloatingLabelBehavior.always,
+                                        prefixIcon: const Icon(
+                                          IconlyLight.calendar,
+                                          color: kSubTitleColor,
+                                          size: 24,
+                                        ),
                                       ),
                                     ),
                                   ).visible(selectedIndex == 1),
-
-                                  const SizedBox(height: 20.0),
+                                ],
+                              ),
+                              const SizedBox(height: 10.0),
                         TextFormField(
                           readOnly: true,
                           keyboardType: TextInputType.name,
@@ -716,27 +767,145 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
 
                                   const SizedBox(height: 20.0),
-                                  FormField(
-                                    builder: (FormFieldState<dynamic> field) {
-                                      return InputDecorator(
-                                        decoration: kInputDecoration.copyWith(
-                                          enabledBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8.0),
-                                            ),
-                                            borderSide: BorderSide(color: kBorderColorTextField, width: 2),
-                                          ),
-                                          contentPadding: const EdgeInsets.all(7.0),
-                                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                                          labelText: lang.S.of(context).classTitle,
-                                          labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                  TextFormField(
+                                    readOnly: true,
+                                    keyboardType: TextInputType.name,
+                                    cursorColor: kTitleColor,
+                                    showCursor: false,
+                                    textInputAction: TextInputAction.next,
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30.0),
                                         ),
-                                        child: DropdownButtonHideUnderline(
-                                          child: getClass(context),
-                                        ),
-
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return StatefulBuilder(
+                                            builder: (BuildContext context, setModalState) {
+                                              final t = lang.S.of(context);
+                                              return Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(20.0),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              t.classTitle,
+                                                              style: kTextStyle.copyWith(
+                                                                color: kTitleColor,
+                                                                fontSize: 18.0,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
+                                                            ),
+                                                            const Spacer(),
+                                                            const Icon(
+                                                              FeatherIcons.x,
+                                                              size: 18.0,
+                                                              color: kTitleColor,
+                                                            ).onTap(() => finish(context)),
+                                                          ],
+                                                        ),
+                                                        Text(
+                                                          '${fromAirport?.city ?? 'Algerie'} a ${toAirport?.city ?? 'Tunisie'}, ${_formatDate(departureDate)}',
+                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding: const EdgeInsets.all(20.0),
+                                                    decoration: const BoxDecoration(
+                                                      borderRadius: BorderRadius.only(
+                                                        topRight: Radius.circular(30.0),
+                                                        topLeft: Radius.circular(30.0),
+                                                      ),
+                                                      color: kWhite,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: kDarkWhite,
+                                                          spreadRadius: 5.0,
+                                                          blurRadius: 7.0,
+                                                          offset: Offset(0, -5),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: Column(
+                                                      children: [
+                                                        ListTile(
+                                                          contentPadding: EdgeInsets.zero,
+                                                          title: Text(
+                                                            t.classEconomy,
+                                                            style: kTextStyle.copyWith(
+                                                              color: kTitleColor,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                          trailing: selectedClass == 'economy'
+                                                              ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                              : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                          onTap: () {
+                                                            setState(() {
+                                                              selectedClass = 'economy';
+                                                            });
+                                                            Navigator.pop(context);
+                                                          },
+                                                        ),
+                                                        const Divider(
+                                                          thickness: 1.0,
+                                                          color: kBorderColorTextField,
+                                                        ),
+                                                        ListTile(
+                                                          contentPadding: EdgeInsets.zero,
+                                                          title: Text(
+                                                            t.classBusiness,
+                                                            style: kTextStyle.copyWith(
+                                                              color: kTitleColor,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                          trailing: selectedClass == 'business'
+                                                              ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                              : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                          onTap: () {
+                                                            setState(() {
+                                                              selectedClass = 'business';
+                                                            });
+                                                            Navigator.pop(context);
+                                                          },
+                                                        ),
+                                                        const Divider(
+                                                          thickness: 1.0,
+                                                          color: kBorderColorTextField,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
                                       );
                                     },
+                                    decoration: kInputDecoration.copyWith(
+                                      labelText: lang.S.of(context).classTitle,
+                                      labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                      hintText: selectedClass == 'economy'
+                                          ? lang.S.of(context).classEconomy
+                                          : lang.S.of(context).classBusiness,
+                                      hintStyle: kTextStyle.copyWith(color: kTitleColor),
+                                      border: const OutlineInputBorder(),
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      suffixIcon: const Icon(
+                                        IconlyLight.arrowDown2,
+                                        color: kSubTitleColor,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(height: 10.0),
                                   ButtonGlobalWithoutIcon(
@@ -787,162 +956,205 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 20.0),
+                                        const SizedBox(height: 10.0),
                                         Stack(
-                                          alignment: Alignment.center,
+                                          clipBehavior: Clip.none,
                                           children: [
-                                            Row(
+                                            Column(
                                               children: [
-                                                Expanded(
-                                                  child: SizedBox(
-                                                    height: 90,
-                                                    child: InputDecorator(
-                                                      decoration: kInputDecoration.copyWith(
-                                                        contentPadding: const EdgeInsets.only(left: 10.0),
-                                                        labelText: lang.S.of(context).fromTitle,
-                                                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                        border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.circular(8.0),
+                                                InputDecorator(
+                                                  decoration: kInputDecoration.copyWith(
+                                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                                    labelText: lang.S.of(context).fromTitle,
+                                                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(8.0),
+                                                    ),
+                                                  ),
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      final result = await showModalBottomSheet<Airport>(
+                                                        context: context,
+                                                        isScrollControlled: true,
+                                                        backgroundColor: Colors.transparent,
+                                                        shape: const RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                                                         ),
-                                                      ),
-                                                      child: ListTile(
-                                                        contentPadding: EdgeInsets.zero,
-                                                        horizontalTitleGap: 0,
-                                                        onTap: () async {
-                                                          final result = await showModalBottomSheet<Airport>(
-                                                            context: context,
-                                                            isScrollControlled: true,
-                                                            backgroundColor: Colors.transparent,
-                                                            shape: const RoundedRectangleBorder(
-                                                              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                                                            ),
-                                                            builder: (_) => const SearchBottomSheet(),
-                                                          );
+                                                        builder: (_) => const SearchBottomSheet(),
+                                                      );
 
-                                                          if (result != null) {
-                                                            setState(() {
-                                                              fromAirport = result;
-                                                            });
-                                                          }
-                                                        },
-                                                        title: Text(
-                                                          fromAirport != null ? '(${fromAirport!.code})' : '(ALG)',
-                                                          style: kTextStyle.copyWith(
-                                                            color: kTitleColor,
-                                                            fontWeight: FontWeight.bold,
+                                                      if (result != null) {
+                                                        setState(() {
+                                                          fromAirport = result;
+                                                        });
+                                                      }
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                      child: Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons.flight_takeoff,
+                                                            color: kSubTitleColor,
+                                                            size: 24,
                                                           ),
-                                                        ),
-                                                        subtitle: Text(
-                                                          fromAirport != null ? fromAirport!.city : 'Algerie , Tunisie',
-                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                        ),
-                                                        trailing: const Icon(IconlyLight.arrowDown2, color: kSubTitleColor),
+                                                          const SizedBox(width: 12),
+                                                          Expanded(
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                Text(
+                                                                  fromAirport != null ? '(${fromAirport!.code})' : '(ALG)',
+                                                                  style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    fontSize: 14,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  fromAirport != null ? fromAirport!.city : 'Algerie , Tunisie',
+                                                                  style: kTextStyle.copyWith(
+                                                                    color: kSubTitleColor,
+                                                                    fontSize: 12,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-
-                                                const SizedBox(width: 10),
-
-                                                Expanded(
-                                                  child: SizedBox(
-                                                    height: 90,
-                                                    child: InputDecorator(
-                                                      decoration: kInputDecoration.copyWith(
-                                                        contentPadding: const EdgeInsets.only(left: 10.0),
-                                                        labelText: lang.S.of(context).toTitle,
-                                                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                        border: OutlineInputBorder(
-                                                          borderRadius: BorderRadius.circular(8.0),
+                                                const SizedBox(height: 12),
+                                                InputDecorator(
+                                                  decoration: kInputDecoration.copyWith(
+                                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                                    labelText: lang.S.of(context).toTitle,
+                                                    floatingLabelBehavior: FloatingLabelBehavior.always,
+                                                    border: OutlineInputBorder(
+                                                      borderRadius: BorderRadius.circular(8.0),
+                                                    ),
+                                                  ),
+                                                  child: InkWell(
+                                                    onTap: () async {
+                                                      final result = await showModalBottomSheet<Airport>(
+                                                        context: context,
+                                                        isScrollControlled: true,
+                                                        backgroundColor: Colors.transparent,
+                                                        shape: const RoundedRectangleBorder(
+                                                          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                                                         ),
-                                                      ),
-                                                      child: ListTile(
-                                                        contentPadding: EdgeInsets.zero,
-                                                        horizontalTitleGap: 0,
-                                                        onTap: () async {
-                                                          final result = await showModalBottomSheet<Airport>(
-                                                            context: context,
-                                                            isScrollControlled: true,
-                                                            backgroundColor: Colors.transparent,
-                                                            shape: const RoundedRectangleBorder(
-                                                              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                                                            ),
-                                                            builder: (_) => const SearchBottomSheet(),
-                                                          );
+                                                        builder: (_) => const SearchBottomSheet(),
+                                                      );
 
-                                                          if (result != null) {
-                                                            setState(() {
-                                                              toAirport = result;
-                                                            });
-                                                          }
-                                                        },
-                                                        title: Text(
-                                                          toAirport != null ? '(${toAirport!.code})' : '(TUN)',
-                                                          style: kTextStyle.copyWith(
-                                                            color: kTitleColor,
-                                                            fontWeight: FontWeight.bold,
+                                                      if (result != null) {
+                                                        setState(() {
+                                                          toAirport = result;
+                                                        });
+                                                      }
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                      child: Row(
+                                                        children: [
+                                                          const Icon(
+                                                            Icons.flight_land,
+                                                            color: kSubTitleColor,
+                                                            size: 24,
                                                           ),
-                                                        ),
-                                                        subtitle: Text(
-                                                          toAirport != null
-                                                              ? toAirport!.city
-                                                              : 'Tunisie, Tunisie',
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow.ellipsis,
-                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                        ),
-                                                        trailing: const Icon(IconlyLight.arrowDown2, color: kSubTitleColor),
+                                                          const SizedBox(width: 12),
+                                                          Expanded(
+                                                            child: Column(
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              mainAxisSize: MainAxisSize.min,
+                                                              children: [
+                                                                Text(
+                                                                  toAirport != null ? '(${toAirport!.code})' : '(TUN)',
+                                                                  style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold,
+                                                                    fontSize: 14,
+                                                                  ),
+                                                                ),
+                                                                Text(
+                                                                  toAirport != null
+                                                                      ? toAirport!.city
+                                                                      : 'Tunisie, Tunisie',
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                  style: kTextStyle.copyWith(
+                                                                    color: kSubTitleColor,
+                                                                    fontSize: 12,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
                                                   ),
                                                 ),
-
-
-
                                               ],
                                             ),
-                                            Padding(
-                                              padding: const EdgeInsets.only(bottom: 20.0),
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  shape: BoxShape.circle,
-                                                  color: kWhite,
-                                                  border: Border.all(
-                                                    color: kPrimaryColor.withOpacity(0.3),
+                                            // Positioned swap button
+                                            Positioned(
+                                              right: 12,
+                                              top: 0,
+                                              bottom: 0,
+                                              child: Center(
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      final temp = fromAirport;
+                                                      fromAirport = toAirport;
+                                                      toAirport = temp;
+                                                    });
+                                                  },
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    decoration: const BoxDecoration(
+                                                      shape: BoxShape.circle,
+                                                      color: kPrimaryColor,
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.swap_vert,
+                                                      color: kWhite,
+                                                      size: 18,
+                                                    ),
                                                   ),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.swap_horiz_outlined,
-                                                  color: kPrimaryColor,
                                                 ),
                                               ),
                                             ),
                                           ],
                                         ),
+                                        const SizedBox(height: 10.0),
                                         TextFormField(
                                           readOnly: true,
                                           keyboardType: TextInputType.name,
                                           cursorColor: kTitleColor,
                                           showCursor: false,
                                           textInputAction: TextInputAction.next,
+                                          onTap: () {
+                                            _showCustomDatePicker();
+                                          },
+                                          controller: TextEditingController(
+                                            text: _formatDate(departureDate),
+                                          ),
                                           decoration: kInputDecoration.copyWith(
                                             labelText: lang.S.of(context).dateTitle,
                                             labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                            hintText: departureDateTitle,
-                                            hintStyle: kTextStyle.copyWith(color: kTitleColor),
+                                            hintText: lang.S.of(context).departDateTitle,
+                                            hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
                                             focusColor: kTitleColor,
                                             border: const OutlineInputBorder(),
                                             floatingLabelBehavior: FloatingLabelBehavior.always,
-                                            suffixIcon: GestureDetector(
-                                              onTap: () {
-                                                setState(() {
-                                                  _showDepartureDate();
-                                                });
-                                              },
-                                              child: const Icon(
-                                                IconlyLight.calendar,
-                                                color: kSubTitleColor,
-                                              ),
+                                            prefixIcon: const Icon(
+                                              IconlyLight.calendar,
+                                              color: kSubTitleColor,
+                                              size: 24,
                                             ),
                                           ),
                                         ),
@@ -998,101 +1210,147 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           decoration: const BoxDecoration(color: Colors.transparent),
                                           child: Column(
                                             children: [
-                                              const SizedBox(height: 20.0),
+                                              const SizedBox(height: 10.0),
                                               Stack(
-                                                alignment: Alignment.center,
+                                                clipBehavior: Clip.none,
                                                 children: [
-                                                  Row(
+                                                  Column(
                                                     children: [
-                                                      Expanded(
-                                                        child: SizedBox(
-                                                          height: 90,
-                                                          child: InputDecorator(
-                                                            decoration: kInputDecoration.copyWith(
-                                                              contentPadding: const EdgeInsets.only(left: 10.0),
-                                                              labelText: lang.S.of(context).fromTitle,
-                                                              labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                                              floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                              border: OutlineInputBorder(
-                                                                borderRadius: BorderRadius.circular(8.0),
-                                                              ),
-                                                            ),
-                                                            child: ListTile(
-                                                              onTap: ()=>const Search().launch(context),
-                                                              title: Text(
-                                                                fromAirport != null ? '(${fromAirport!.code})' : '(ALG)',
-                                                                style: kTextStyle.copyWith(
-                                                                  color: kTitleColor,
-                                                                  fontWeight: FontWeight.bold,
+                                                      InputDecorator(
+                                                        decoration: kInputDecoration.copyWith(
+                                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                                          labelText: lang.S.of(context).fromTitle,
+                                                          labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                                                          border: OutlineInputBorder(
+                                                            borderRadius: BorderRadius.circular(8.0),
+                                                          ),
+                                                        ),
+                                                        child: InkWell(
+                                                          onTap: ()=>const Search().launch(context),
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                            child: Row(
+                                                              children: [
+                                                                const Icon(
+                                                                  Icons.flight_takeoff,
+                                                                  color: kSubTitleColor,
+                                                                  size: 24,
                                                                 ),
-                                                              ),
-                                                              subtitle: Text(
-                                                                fromAirport != null
-                                                                    ? fromAirport!.city
-                                                                    : 'Algerie , Algerie ',
-                                                                style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                              ),
-                                                              horizontalTitleGap: 0,
-                                                              contentPadding: const EdgeInsets.only(left: 5.0),
-                                                              minVerticalPadding: 0.0,
+                                                                const SizedBox(width: 12),
+                                                                Expanded(
+                                                                  child: Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      Text(
+                                                                        fromAirport != null ? '(${fromAirport!.code})' : '(ALG)',
+                                                                        style: kTextStyle.copyWith(
+                                                                          color: kTitleColor,
+                                                                          fontWeight: FontWeight.bold,
+                                                                          fontSize: 14,
+                                                                        ),
+                                                                      ),
+                                                                      Text(
+                                                                        fromAirport != null
+                                                                            ? fromAirport!.city
+                                                                            : 'Algerie , Algerie ',
+                                                                        style: kTextStyle.copyWith(
+                                                                          color: kSubTitleColor,
+                                                                          fontSize: 12,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ),
                                                           ),
                                                         ),
                                                       ),
-                                                      const SizedBox(width: 10),
-                                                      Expanded(
-                                                        child: SizedBox(
-                                                          height: 90,
-                                                          child: InputDecorator(
-                                                            decoration: kInputDecoration.copyWith(
-                                                              contentPadding: const EdgeInsets.only(left: 10.0),
-                                                              labelText: lang.S.of(context).toTitle,
-                                                              labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                                              floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                              border: OutlineInputBorder(
-                                                                borderRadius: BorderRadius.circular(8.0),
-                                                              ),
-                                                            ),
-                                                            child: ListTile(
-                                                              onTap: ()=>const Search().launch(context),
-                                                              title: Text(
-                                                                toAirport != null ? '(${toAirport!.code})' : '(TUN)',
-                                                                style: kTextStyle.copyWith(
-                                                                  color: kTitleColor,
-                                                                  fontWeight: FontWeight.bold,
+                                                      const SizedBox(height: 12),
+                                                      InputDecorator(
+                                                        decoration: kInputDecoration.copyWith(
+                                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                                          labelText: lang.S.of(context).toTitle,
+                                                          labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                                                          border: OutlineInputBorder(
+                                                            borderRadius: BorderRadius.circular(8.0),
+                                                          ),
+                                                        ),
+                                                        child: InkWell(
+                                                          onTap: ()=>const Search().launch(context),
+                                                          child: Padding(
+                                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                                            child: Row(
+                                                              children: [
+                                                                const Icon(
+                                                                  Icons.flight_land,
+                                                                  color: kSubTitleColor,
+                                                                  size: 24,
                                                                 ),
-                                                              ),
-                                                              subtitle: Text(
-                                                                toAirport != null
-                                                                    ? toAirport!.city
-                                                                    : 'Tunisie, Tunisie',
-                                                                maxLines: 1,
-                                                                overflow: TextOverflow.ellipsis,
-                                                                style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                              ),
-
-                                                              horizontalTitleGap: 0,
-                                                              contentPadding: const EdgeInsets.only(left: 5.0),
-                                                              minVerticalPadding: 0.0,
+                                                                const SizedBox(width: 12),
+                                                                Expanded(
+                                                                  child: Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    children: [
+                                                                      Text(
+                                                                        toAirport != null ? '(${toAirport!.code})' : '(TUN)',
+                                                                        style: kTextStyle.copyWith(
+                                                                          color: kTitleColor,
+                                                                          fontWeight: FontWeight.bold,
+                                                                          fontSize: 14,
+                                                                        ),
+                                                                      ),
+                                                                      Text(
+                                                                        toAirport != null
+                                                                            ? toAirport!.city
+                                                                            : 'Tunisie, Tunisie',
+                                                                        maxLines: 1,
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                        style: kTextStyle.copyWith(
+                                                                          color: kSubTitleColor,
+                                                                          fontSize: 12,
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ],
                                                             ),
                                                           ),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(bottom: 20.0),
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        color: kWhite,
-                                                        border: Border.all(
-                                                          color: kPrimaryColor.withOpacity(0.3),
+                                                  // Positioned swap button
+                                                  Positioned(
+                                                    right: 12,
+                                                    top: 0,
+                                                    bottom: 0,
+                                                    child: Center(
+                                                      child: GestureDetector(
+                                                        onTap: () {
+                                                          setState(() {
+                                                            final temp = fromAirport;
+                                                            fromAirport = toAirport;
+                                                            toAirport = temp;
+                                                          });
+                                                        },
+                                                        child: Container(
+                                                          padding: const EdgeInsets.all(8.0),
+                                                          decoration: const BoxDecoration(
+                                                            shape: BoxShape.circle,
+                                                            color: kPrimaryColor,
+                                                          ),
+                                                          child: const Icon(
+                                                            Icons.swap_vert,
+                                                            color: kWhite,
+                                                            size: 18,
+                                                          ),
                                                         ),
-                                                      ),
-                                                      child: const Icon(
-                                                        Icons.swap_horiz_outlined,
-                                                        color: kPrimaryColor,
                                                       ),
                                                     ),
                                                   ),
@@ -1104,24 +1362,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 cursorColor: kTitleColor,
                                                 showCursor: false,
                                                 textInputAction: TextInputAction.next,
+                                                onTap: () {
+                                                  _showCustomDatePicker();
+                                                },
+                                                controller: TextEditingController(
+                                                  text: _formatDate(departureDate),
+                                                ),
                                                 decoration: kInputDecoration.copyWith(
                                                   labelText: lang.S.of(context).dateTitle,
                                                   labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                                  hintText: departureDateTitle,
-                                                  hintStyle: kTextStyle.copyWith(color: kTitleColor),
+                                                  hintText: lang.S.of(context).departDateTitle,
+                                                  hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
                                                   focusColor: kTitleColor,
                                                   border: const OutlineInputBorder(),
                                                   floatingLabelBehavior: FloatingLabelBehavior.always,
-                                                  suffixIcon: GestureDetector(
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _showDepartureDate();
-                                                      });
-                                                    },
-                                                    child: const Icon(
-                                                      IconlyLight.calendar,
-                                                      color: kSubTitleColor,
-                                                    ),
+                                                  prefixIcon: const Icon(
+                                                    IconlyLight.calendar,
+                                                    color: kSubTitleColor,
+                                                    size: 24,
                                                   ),
                                                 ),
                                               ),
@@ -1438,27 +1696,145 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
 
                                   const SizedBox(height: 20.0),
-                                  FormField(
-                                    builder: (FormFieldState<dynamic> field) {
-                                      return InputDecorator(
-                                        decoration: kInputDecoration.copyWith(
-                                          enabledBorder: const OutlineInputBorder(
-                                            borderRadius: BorderRadius.all(
-                                              Radius.circular(8.0),
-                                            ),
-                                            borderSide: BorderSide(color: kBorderColorTextField, width: 2),
-                                          ),
-                                          contentPadding: const EdgeInsets.all(7.0),
-                                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                                          labelText: lang.S.of(context).classTitle,
-                                          labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                  TextFormField(
+                                    readOnly: true,
+                                    keyboardType: TextInputType.name,
+                                    cursorColor: kTitleColor,
+                                    showCursor: false,
+                                    textInputAction: TextInputAction.next,
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30.0),
                                         ),
-                                        child: DropdownButtonHideUnderline(
-                                          child: getClass(context),
-                                        ),
-
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return StatefulBuilder(
+                                            builder: (BuildContext context, setModalState) {
+                                              final t = lang.S.of(context);
+                                              return Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Padding(
+                                                    padding: const EdgeInsets.all(20.0),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              t.classTitle,
+                                                              style: kTextStyle.copyWith(
+                                                                color: kTitleColor,
+                                                                fontSize: 18.0,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
+                                                            ),
+                                                            const Spacer(),
+                                                            const Icon(
+                                                              FeatherIcons.x,
+                                                              size: 18.0,
+                                                              color: kTitleColor,
+                                                            ).onTap(() => finish(context)),
+                                                          ],
+                                                        ),
+                                                        Text(
+                                                          '${fromAirport?.city ?? 'Algerie'} a ${toAirport?.city ?? 'Tunisie'}, ${_formatDate(departureDate)}',
+                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Container(
+                                                    padding: const EdgeInsets.all(20.0),
+                                                    decoration: const BoxDecoration(
+                                                      borderRadius: BorderRadius.only(
+                                                        topRight: Radius.circular(30.0),
+                                                        topLeft: Radius.circular(30.0),
+                                                      ),
+                                                      color: kWhite,
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: kDarkWhite,
+                                                          spreadRadius: 5.0,
+                                                          blurRadius: 7.0,
+                                                          offset: Offset(0, -5),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: Column(
+                                                      children: [
+                                                        ListTile(
+                                                          contentPadding: EdgeInsets.zero,
+                                                          title: Text(
+                                                            t.classEconomy,
+                                                            style: kTextStyle.copyWith(
+                                                              color: kTitleColor,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                          trailing: selectedClass == 'economy'
+                                                              ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                              : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                          onTap: () {
+                                                            setState(() {
+                                                              selectedClass = 'economy';
+                                                            });
+                                                            Navigator.pop(context);
+                                                          },
+                                                        ),
+                                                        const Divider(
+                                                          thickness: 1.0,
+                                                          color: kBorderColorTextField,
+                                                        ),
+                                                        ListTile(
+                                                          contentPadding: EdgeInsets.zero,
+                                                          title: Text(
+                                                            t.classBusiness,
+                                                            style: kTextStyle.copyWith(
+                                                              color: kTitleColor,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                          trailing: selectedClass == 'business'
+                                                              ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                              : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                          onTap: () {
+                                                            setState(() {
+                                                              selectedClass = 'business';
+                                                            });
+                                                            Navigator.pop(context);
+                                                          },
+                                                        ),
+                                                        const Divider(
+                                                          thickness: 1.0,
+                                                          color: kBorderColorTextField,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        },
                                       );
                                     },
+                                    decoration: kInputDecoration.copyWith(
+                                      labelText: lang.S.of(context).classTitle,
+                                      labelStyle: kTextStyle.copyWith(color: kTitleColor),
+                                      hintText: selectedClass == 'economy'
+                                          ? lang.S.of(context).classEconomy
+                                          : lang.S.of(context).classBusiness,
+                                      hintStyle: kTextStyle.copyWith(color: kTitleColor),
+                                      border: const OutlineInputBorder(),
+                                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      suffixIcon: const Icon(
+                                        IconlyLight.arrowDown2,
+                                        color: kSubTitleColor,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(height: 10.0),
                                   ButtonGlobalWithoutIcon(
@@ -1486,7 +1862,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     buttonTextColor: kWhite,
                                   )
                                 ],
-                              ).visible(selectedIndex == 2)
+                              ).visible(selectedIndex == 2),
                             ],
                           ),
                         ),

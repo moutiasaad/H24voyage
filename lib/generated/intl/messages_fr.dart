@@ -69,6 +69,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "Position actuelle",
     ),
     "dateTitle": MessageLookupByLibrary.simpleMessage("Date"),
+    "departDate": MessageLookupByLibrary.simpleMessage("Date de départ"),
+    "departDateTitle": MessageLookupByLibrary.simpleMessage("Départ"),
     "departure": MessageLookupByLibrary.simpleMessage("Départ"),
     "done": MessageLookupByLibrary.simpleMessage("Terminé"),
     "editButton": MessageLookupByLibrary.simpleMessage("Modifier"),
@@ -224,6 +226,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Politique de remboursement en cas d’annulation",
     ),
     "returnDate": MessageLookupByLibrary.simpleMessage("Date de retour"),
+    "returnDateTitle": MessageLookupByLibrary.simpleMessage("Retour"),
     "returnTitle": MessageLookupByLibrary.simpleMessage("Retour"),
     "searchFlight": MessageLookupByLibrary.simpleMessage("Rechercher un vol"),
     "searchScreenTitle": MessageLookupByLibrary.simpleMessage(
@@ -247,7 +250,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "toTitle": MessageLookupByLibrary.simpleMessage("À"),
     "totalPrice": MessageLookupByLibrary.simpleMessage("Prix total"),
-    "travellerTitle": MessageLookupByLibrary.simpleMessage("Voyageurs"),
+    "travellerTitle": MessageLookupByLibrary.simpleMessage("Passagers"),
     "useCurrentLocation": MessageLookupByLibrary.simpleMessage(
       "Utiliser la position actuelle",
     ),

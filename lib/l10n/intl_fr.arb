@@ -64,7 +64,7 @@
   "tab3": "Multi-destinations",
 
   "dateTitle": "Date",
-  "travellerTitle": "Voyageurs",
+  "travellerTitle": "Passagers",
   "adults": "Adultes",
   "child": "Enfants",
   "infants": "Bébés",
@@ -77,7 +77,10 @@
   "recentSearch": "Recherches récentes",
   "flightOfferTitle": "Offres de vols",
 
+  "departDate": "Date de départ",
+  "departDateTitle": "Départ",
   "returnDate": "Date de retour",
+  "returnDateTitle": "Retour",
   "addFightButton": "Ajouter un vol",
 
   "searchScreenTitle": "D’où partez-vous ?",
