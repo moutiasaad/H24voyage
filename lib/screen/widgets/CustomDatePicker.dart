@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flight_booking/screen/widgets/constant.dart';
 
 class CustomDatePicker extends StatefulWidget {
   final DateTime? initialStartDate;
@@ -27,7 +28,8 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   void initState() {
     super.initState();
     departureDate = widget.initialStartDate;
-    returnDate = widget.initialEndDate;
+    // Only set return date if it's a round trip
+    returnDate = widget.isRoundTrip ? widget.initialEndDate : null;
   }
 
   String _getFormattedDate(DateTime date) {
@@ -47,17 +49,32 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
   void _onDaySelected(DateTime day) {
     setState(() {
-      if (departureDate == null || (departureDate != null && returnDate != null)) {
-        // First selection or restart selection
+      if (!widget.isRoundTrip) {
+        // For one-way trip (Aller simple), only select departure and close
         departureDate = day;
         returnDate = null;
-      } else if (day.isBefore(departureDate!)) {
-        // If selected date is before departure, make it new departure
-        departureDate = day;
-        returnDate = null;
+        // Automatically confirm and close after selecting departure date
+        Future.delayed(const Duration(milliseconds: 300), () {
+          Navigator.pop(context, {
+            'departure': departureDate,
+            'return': null,
+            'flexible': false,
+          });
+        });
       } else {
-        // Second selection (return date)
-        returnDate = day;
+        // For round-trip (Aller-retour), allow selecting both dates
+        if (departureDate == null || (departureDate != null && returnDate != null)) {
+          // First selection or restart selection
+          departureDate = day;
+          returnDate = null;
+        } else if (day.isBefore(departureDate!)) {
+          // If selected date is before departure, make it new departure
+          departureDate = day;
+          returnDate = null;
+        } else {
+          // Second selection (return date)
+          returnDate = day;
+        }
       }
     });
   }
@@ -90,10 +107,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
             ),
             child: Stack(
               children: [
-                const Center(
+                Center(
                   child: Text(
-                    'Dates de voyage',
-                    style: TextStyle(
+                    widget.isRoundTrip ? 'Dates de voyage' : 'Date de voyage',
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -103,7 +120,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   right: 0,
                   child: GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close, color: Colors.red),
+                    child: const Icon(Icons.close, color: kPrimaryColor),
                   ),
                 ),
               ],
@@ -149,46 +166,48 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                     ],
                   ),
                 ),
-                Container(
-                  width: 1,
-                  height: 60,
-                  color: Colors.grey.shade300,
-                ),
-                // Return Date
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        'RETOUR',
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        returnDate != null
-                            ? _getFormattedDate(returnDate!)
-                            : 'Sélectionner une date',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-
-                          color: returnDate != null ? Colors.red : Colors.grey,
-                        ),
-                      ),
-                      if (returnDate != null)
+                if (widget.isRoundTrip)
+                  Container(
+                    width: 1,
+                    height: 60,
+                    color: Colors.grey.shade300,
+                  ),
+                // Return Date (only for round-trip)
+                if (widget.isRoundTrip)
+                  Expanded(
+                    child: Column(
+                      children: [
                         Text(
-                          _getDayOfWeek(returnDate!),
+                          'RETOUR',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
+                            color: Colors.grey.shade500,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          returnDate != null
+                              ? _getFormattedDate(returnDate!)
+                              : 'Sélectionner une date',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+
+                            color: returnDate != null ? kPrimaryColor : Colors.grey,
+                          ),
+                        ),
+                        if (returnDate != null)
+                          Text(
+                            _getDayOfWeek(returnDate!),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -270,7 +289,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                         });
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: kPrimaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -393,7 +412,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                                   color: isDeparture
                                       ? Colors.grey.shade800
                                       : isReturn
-                                          ? Colors.red
+                                          ? kPrimaryColor
                                           : Colors.transparent,
                                   shape: BoxShape.circle,
                                   border: isToday && !isDeparture && !isReturn

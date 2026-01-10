@@ -97,7 +97,7 @@ InputDecoration kInputDecoration = InputDecoration(
     borderRadius: BorderRadius.all(
       Radius.circular(12.0),
     ),
-    borderSide: BorderSide(color: kPrimaryColor, width: 2.0), // Orange focus
+    borderSide: BorderSide(color: kBorderColorTextField, width: 1.5), // Same as enabled border
   ),
   errorBorder: const OutlineInputBorder(
     borderRadius: BorderRadius.all(
@@ -129,8 +129,8 @@ final otpInputDecoration = InputDecoration(
   focusedBorder: OutlineInputBorder(
     borderRadius: BorderRadius.circular(12.0),
     borderSide: const BorderSide(
-      color: kPrimaryColor,
-      width: 2.0,
+      color: kBorderColorTextField,
+      width: 1.5,
     ),
   ),
   enabledBorder: outlineInputBorder(),

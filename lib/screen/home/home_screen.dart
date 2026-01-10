@@ -93,8 +93,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (result != null) {
       setState(() {
         departureDate = result['departure'] as DateTime?;
-        returnDate = result['return'] as DateTime?;
-        isFlexibleDates = result['flexible'] as bool? ?? false;
+        // Only set return date for round-trip (Aller-retour)
+        if (selectedIndex == 1) {
+          returnDate = result['return'] as DateTime?;
+          isFlexibleDates = result['flexible'] as bool? ?? false;
+        } else {
+          // For one-way (Aller simple), always clear return date
+          returnDate = null;
+          isFlexibleDates = false;
+        }
 
         // Update the DateTimeRange for compatibility with SearchResult
         if (departureDate != null && returnDate != null) {
@@ -278,6 +285,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   onTap: (index) {
                                     setState(() {
                                       selectedIndex = index;
+                                      // Clear return date when switching to "Aller simple" (one-way)
+                                      if (index == 0) {
+                                        returnDate = null;
+                                        _selectedDateRange = null;
+                                      }
                                     });
                                   },
                                   tabs: [
@@ -580,7 +592,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 ],
                                               ),
                                               Text(
-                                                'Algerie  a Tunisie, Jeu. 6 janv. 2023',
+                                                'Algerie a Tunisie, Jeu. 8 janv. 2026',
                                                 style: kTextStyle.copyWith(color: kSubTitleColor),
                                               ),
                                             ],
@@ -811,7 +823,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                           ],
                                                         ),
                                                         Text(
-                                                          '${fromAirport?.city ?? 'Algerie'} a ${toAirport?.city ?? 'Tunisie'}, ${_formatDate(departureDate)}',
+                                                          'Algerie a Tunisie, Jeu. 8 janv. 2026',
                                                           style: kTextStyle.copyWith(color: kSubTitleColor),
                                                         ),
                                                       ],
