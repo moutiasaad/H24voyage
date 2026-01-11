@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.maantheme.flight_booking">
    <application
-        android:label="flight_booking"
+        android:label="H24 Voyages"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
