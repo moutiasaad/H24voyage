@@ -1,76 +1,9 @@
 [
-  { "name": "Houari Boumediene", "city": "Algiers, Algeria", "code": "ALG" },
-  { "name": "Mohamed Boudiaf", "city": "Constantine, Algeria", "code": "CZL" },
-  { "name": "Oran Es Senia", "city": "Oran, Algeria", "code": "ORN" },
-  { "name": "Rabah Bitat", "city": "Annaba, Algeria", "code": "AAE" },
-  { "name": "Tlemcen Zenata", "city": "Tlemcen, Algeria", "code": "TLM" },
-  { "name": "Bejaia Soummam", "city": "Bejaia, Algeria", "code": "BJA" },
-
-  { "name": "Charles de Gaulle", "city": "Paris, France", "code": "CDG" },
-  { "name": "Orly", "city": "Paris, France", "code": "ORY" },
-  { "name": "Nice Côte d’Azur", "city": "Nice, France", "code": "NCE" },
-  { "name": "Lyon Saint-Exupéry", "city": "Lyon, France", "code": "LYS" },
-  { "name": "Marseille Provence", "city": "Marseille, France", "code": "MRS" },
-
-  { "name": "Istanbul Airport", "city": "Istanbul, Turkey", "code": "IST" },
-  { "name": "Sabiha Gökçen", "city": "Istanbul, Turkey", "code": "SAW" },
-  { "name": "Antalya Airport", "city": "Antalya, Turkey", "code": "AYT" },
-  { "name": "Ankara Esenboğa", "city": "Ankara, Turkey", "code": "ESB" },
-
-  { "name": "Cairo International", "city": "Cairo, Egypt", "code": "CAI" },
-  { "name": "Sharm El Sheikh", "city": "Sharm El Sheikh, Egypt", "code": "SSH" },
-  { "name": "Hurghada International", "city": "Hurghada, Egypt", "code": "HRG" },
-
-  { "name": "Dubai International", "city": "Dubai, UAE", "code": "DXB" },
-  { "name": "Al Maktoum", "city": "Dubai, UAE", "code": "DWC" },
-  { "name": "Abu Dhabi International", "city": "Abu Dhabi, UAE", "code": "AUH" },
-
-  { "name": "Barcelona El Prat", "city": "Barcelona, Spain", "code": "BCN" },
-  { "name": "Madrid Barajas", "city": "Madrid, Spain", "code": "MAD" },
-  { "name": "Valencia Airport", "city": "Valencia, Spain", "code": "VLC" },
-  { "name": "Seville Airport", "city": "Seville, Spain", "code": "SVQ" },
-
-  { "name": "Tunis-Carthage", "city": "Tunis, Tunisia", "code": "TUN" },
-  { "name": "Monastir Habib Bourguiba", "city": "Monastir, Tunisia", "code": "MIR" },
-  { "name": "Enfidha Hammamet", "city": "Enfidha, Tunisia", "code": "NBE" },
-  { "name": "Djerba Zarzis", "city": "Djerba, Tunisia", "code": "DJE" },
-
-  { "name": "Heathrow", "city": "London, United Kingdom", "code": "LHR" },
-  { "name": "Gatwick", "city": "London, United Kingdom", "code": "LGW" },
-  { "name": "Stansted", "city": "London, United Kingdom", "code": "STN" },
-
-  { "name": "John F. Kennedy", "city": "New York, USA", "code": "JFK" },
-  { "name": "LaGuardia", "city": "New York, USA", "code": "LGA" },
-  { "name": "Newark Liberty", "city": "Newark, USA", "code": "EWR" },
-
-  { "name": "Los Angeles International", "city": "Los Angeles, USA", "code": "LAX" },
-  { "name": "Chicago O'Hare", "city": "Chicago, USA", "code": "ORD" },
-  { "name": "Hartsfield–Jackson", "city": "Atlanta, USA", "code": "ATL" },
-
-  { "name": "Toronto Pearson", "city": "Toronto, Canada", "code": "YYZ" },
-  { "name": "Vancouver International", "city": "Vancouver, Canada", "code": "YVR" },
-
-  { "name": "Frankfurt am Main", "city": "Frankfurt, Germany", "code": "FRA" },
-  { "name": "Munich International", "city": "Munich, Germany", "code": "MUC" },
-  { "name": "Berlin Brandenburg", "city": "Berlin, Germany", "code": "BER" },
-
-  { "name": "Rome Fiumicino", "city": "Rome, Italy", "code": "FCO" },
-  { "name": "Milan Malpensa", "city": "Milan, Italy", "code": "MXP" },
-  { "name": "Venice Marco Polo", "city": "Venice, Italy", "code": "VCE" },
-
-  { "name": "King Abdulaziz", "city": "Jeddah, Saudi Arabia", "code": "JED" },
-  { "name": "King Khalid", "city": "Riyadh, Saudi Arabia", "code": "RUH" },
-  { "name": "Prince Mohammad bin Abdulaziz", "city": "Medina, Saudi Arabia", "code": "MED" },
-
-  { "name": "Indira Gandhi", "city": "New Delhi, India", "code": "DEL" },
-  { "name": "Chhatrapati Shivaji", "city": "Mumbai, India", "code": "BOM" },
-  { "name": "Kempegowda", "city": "Bangalore, India", "code": "BLR" },
-
-  { "name": "Haneda", "city": "Tokyo, Japan", "code": "HND" },
-  { "name": "Narita", "city": "Tokyo, Japan", "code": "NRT" },
-  { "name": "Incheon International", "city": "Seoul, South Korea", "code": "ICN" },
-
-  { "name": "Beijing Capital", "city": "Beijing, China", "code": "PEK" },
-  { "name": "Shanghai Pudong", "city": "Shanghai, China", "code": "PVG" },
-  { "name": "Guangzhou Baiyun", "city": "Guangzhou, China", "code": "CAN" }
+  {
+    "airport_name": "Aéroport d'Alger - Houari Boumediene",
+    "city_name": "Alger",
+    "iata_code": "ALG",
+    "country": "Algérie",
+    "country_code": "DZ"
+  }
 ]

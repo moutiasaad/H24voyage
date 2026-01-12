@@ -1,16 +1,48 @@
 import 'package:flight_booking/Model/Airport.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
+import 'package:flight_booking/controllers/airport_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import '../../generated/l10n.dart' as lang;
 
-class SearchBottomSheet extends StatelessWidget {
+class SearchBottomSheet extends StatefulWidget {
   const SearchBottomSheet({Key? key}) : super(key: key);
 
   @override
+  State<SearchBottomSheet> createState() => _SearchBottomSheetState();
+}
+
+class _SearchBottomSheetState extends State<SearchBottomSheet> {
+  final AirportController _controller = AirportController();
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onControllerUpdate);
+  }
+
+  void _onControllerUpdate() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onControllerUpdate);
+    _controller.dispose();
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Show API suggestions when searching, otherwise show default airports
+    final displayAirports = _controller.hasSearchQuery
+        ? _controller.suggestions
+        : airports;
+
     return Container(
       height: context.height() * 0.85,
       padding: const EdgeInsets.all(20.0),
@@ -26,11 +58,15 @@ class SearchBottomSheet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 🔍 Search input
+            // Search input
             TextFormField(
-              showCursor: false,
+              controller: _textController,
+              showCursor: true,
               keyboardType: TextInputType.name,
               cursorColor: kTitleColor,
+              onChanged: (value) {
+                _controller.searchAirports(value);
+              },
               decoration: kInputDecoration.copyWith(
                 contentPadding: const EdgeInsets.only(left: 10, right: 10),
                 hintText: 'Country, city or airport',
@@ -40,11 +76,20 @@ class SearchBottomSheet extends StatelessWidget {
                   FeatherIcons.search,
                   color: kSubTitleColor,
                 ),
+                suffixIcon: _controller.hasSearchQuery
+                    ? IconButton(
+                        icon: Icon(Icons.clear, color: kSubTitleColor),
+                        onPressed: () {
+                          _textController.clear();
+                          _controller.clear();
+                        },
+                      )
+                    : null,
               ),
             ),
             const SizedBox(height: 20.0),
 
-            // 📍 Current location
+            // Current location
             ListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
@@ -63,27 +108,26 @@ class SearchBottomSheet extends StatelessWidget {
 
             const SizedBox(height: 10.0),
             Text(
-              lang.S.of(context).recentPlaceTitle,
+              _controller.hasSearchQuery
+                  ? lang.S.of(context).recentPlaceTitle
+                  : lang.S.of(context).recentPlaceTitle,
               style: kTextStyle.copyWith(
                   color: kSubTitleColor, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10.0),
 
-            // 🗺 Recent places
-            // 🗺 Airports list
+            // Airports list
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: airports.length,
+              itemCount: displayAirports.length,
               itemBuilder: (_, i) {
-                final airport = airports[i];
+                final airport = displayAirports[i];
                 return Column(
                   children: [
                     ListTile(
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-
-                      // 🔹 Leading icon NOT in a circle anymore
                       leading: SizedBox(
                         width: 40,
                         height: 40,
@@ -93,7 +137,6 @@ class SearchBottomSheet extends StatelessWidget {
                           size: 28,
                         ),
                       ),
-
                       title: Text(
                         airport.name,
                         style: kTextStyle.copyWith(
@@ -102,12 +145,11 @@ class SearchBottomSheet extends StatelessWidget {
                         ),
                       ),
                       subtitle: Text(
-                        airport.city,
+                        '${airport.city}, ${airport.country}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: kTextStyle.copyWith(color: kSubTitleColor),
                       ),
-
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
@@ -122,9 +164,8 @@ class SearchBottomSheet extends StatelessWidget {
                           ),
                         ),
                       ),
-
                       onTap: () {
-                        Navigator.pop(context, airport); // ✅ return selected airport
+                        Navigator.pop(context, airport);
                       },
                     ),
                     const Divider(thickness: 1.0, color: kBorderColorTextField),
@@ -132,7 +173,6 @@ class SearchBottomSheet extends StatelessWidget {
                 );
               },
             ),
-
           ],
         ),
       ),

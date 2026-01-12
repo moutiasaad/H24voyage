@@ -59,6 +59,7 @@ dependencies:
   flag: ^7.0.0
   intl_utils: ^2.8.7
   shared_preferences: ^2.2.2
+  http: ^1.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
