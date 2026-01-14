@@ -28,11 +28,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     tabController = TabController(length: 3, vsync: this, initialIndex: 1);
 
-    // ✅ Default airports (Dzyar 🇩🇿 -> Tunisia/France 🇹🇳🇫🇷)
-    fromAirport = airports.isNotEmpty
-        ? airports.firstWhere((a) => a.code == "ALG", orElse: () => airports.first)
-        : null;
-    toAirport = null; // User will select destination
+    // Default airports (Algeria -> Tunisia)
+    fromAirport = airports.firstWhere((a) => a.code == "ALG", orElse: () => airports.first);
+    toAirport = airports.firstWhere((a) => a.code == "TUN", orElse: () => airports.first);
   }
 
   List<Widget> flights = [];

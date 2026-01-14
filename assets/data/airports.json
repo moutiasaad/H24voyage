@@ -1,9 +1,282 @@
 [
   {
-    "airport_name": "Aéroport d'Alger - Houari Boumediene",
+    "airport_name": "Aeroport d'Alger - Houari Boumediene",
     "city_name": "Alger",
     "iata_code": "ALG",
-    "country": "Algérie",
+    "country": "Algerie",
     "country_code": "DZ"
+  },
+  {
+    "airport_name": "Aeroport d'Oran - Ahmed Ben Bella",
+    "city_name": "Oran",
+    "iata_code": "ORN",
+    "country": "Algerie",
+    "country_code": "DZ"
+  },
+  {
+    "airport_name": "Aeroport de Constantine - Mohamed Boudiaf",
+    "city_name": "Constantine",
+    "iata_code": "CZL",
+    "country": "Algerie",
+    "country_code": "DZ"
+  },
+  {
+    "airport_name": "Aeroport d'Annaba - Rabah Bitat",
+    "city_name": "Annaba",
+    "iata_code": "AAE",
+    "country": "Algerie",
+    "country_code": "DZ"
+  },
+  {
+    "airport_name": "Aeroport de Setif - 8 Mai 1945",
+    "city_name": "Setif",
+    "iata_code": "QSF",
+    "country": "Algerie",
+    "country_code": "DZ"
+  },
+  {
+    "airport_name": "Aeroport de Bejaia - Soummam",
+    "city_name": "Bejaia",
+    "iata_code": "BJA",
+    "country": "Algerie",
+    "country_code": "DZ"
+  },
+  {
+    "airport_name": "Aeroport de Tlemcen - Zenata",
+    "city_name": "Tlemcen",
+    "iata_code": "TLM",
+    "country": "Algerie",
+    "country_code": "DZ"
+  },
+  {
+    "airport_name": "Aeroport de Tunis-Carthage",
+    "city_name": "Tunis",
+    "iata_code": "TUN",
+    "country": "Tunisie",
+    "country_code": "TN"
+  },
+  {
+    "airport_name": "Aeroport de Djerba-Zarzis",
+    "city_name": "Djerba",
+    "iata_code": "DJE",
+    "country": "Tunisie",
+    "country_code": "TN"
+  },
+  {
+    "airport_name": "Aeroport de Monastir Habib Bourguiba",
+    "city_name": "Monastir",
+    "iata_code": "MIR",
+    "country": "Tunisie",
+    "country_code": "TN"
+  },
+  {
+    "airport_name": "Aeroport de Sfax-Thyna",
+    "city_name": "Sfax",
+    "iata_code": "SFA",
+    "country": "Tunisie",
+    "country_code": "TN"
+  },
+  {
+    "airport_name": "Aeroport Paris-Charles de Gaulle",
+    "city_name": "Paris",
+    "iata_code": "CDG",
+    "country": "France",
+    "country_code": "FR"
+  },
+  {
+    "airport_name": "Aeroport Paris-Orly",
+    "city_name": "Paris",
+    "iata_code": "ORY",
+    "country": "France",
+    "country_code": "FR"
+  },
+  {
+    "airport_name": "Aeroport de Marseille-Provence",
+    "city_name": "Marseille",
+    "iata_code": "MRS",
+    "country": "France",
+    "country_code": "FR"
+  },
+  {
+    "airport_name": "Aeroport de Lyon-Saint Exupery",
+    "city_name": "Lyon",
+    "iata_code": "LYS",
+    "country": "France",
+    "country_code": "FR"
+  },
+  {
+    "airport_name": "Aeroport de Nice-Cote d'Azur",
+    "city_name": "Nice",
+    "iata_code": "NCE",
+    "country": "France",
+    "country_code": "FR"
+  },
+  {
+    "airport_name": "Aeroport de Toulouse-Blagnac",
+    "city_name": "Toulouse",
+    "iata_code": "TLS",
+    "country": "France",
+    "country_code": "FR"
+  },
+  {
+    "airport_name": "Aeroport de Bordeaux-Merignac",
+    "city_name": "Bordeaux",
+    "iata_code": "BOD",
+    "country": "France",
+    "country_code": "FR"
+  },
+  {
+    "airport_name": "Aeroport Mohammed V",
+    "city_name": "Casablanca",
+    "iata_code": "CMN",
+    "country": "Maroc",
+    "country_code": "MA"
+  },
+  {
+    "airport_name": "Aeroport de Marrakech-Menara",
+    "city_name": "Marrakech",
+    "iata_code": "RAK",
+    "country": "Maroc",
+    "country_code": "MA"
+  },
+  {
+    "airport_name": "Aeroport de Rabat-Sale",
+    "city_name": "Rabat",
+    "iata_code": "RBA",
+    "country": "Maroc",
+    "country_code": "MA"
+  },
+  {
+    "airport_name": "Aeroport de Tanger Ibn Battouta",
+    "city_name": "Tanger",
+    "iata_code": "TNG",
+    "country": "Maroc",
+    "country_code": "MA"
+  },
+  {
+    "airport_name": "Istanbul Airport",
+    "city_name": "Istanbul",
+    "iata_code": "IST",
+    "country": "Turquie",
+    "country_code": "TR"
+  },
+  {
+    "airport_name": "Aeroport d'Antalya",
+    "city_name": "Antalya",
+    "iata_code": "AYT",
+    "country": "Turquie",
+    "country_code": "TR"
+  },
+  {
+    "airport_name": "Dubai International Airport",
+    "city_name": "Dubai",
+    "iata_code": "DXB",
+    "country": "Emirats Arabes Unis",
+    "country_code": "AE"
+  },
+  {
+    "airport_name": "Cairo International Airport",
+    "city_name": "Le Caire",
+    "iata_code": "CAI",
+    "country": "Egypte",
+    "country_code": "EG"
+  },
+  {
+    "airport_name": "Aeroport de Madrid-Barajas",
+    "city_name": "Madrid",
+    "iata_code": "MAD",
+    "country": "Espagne",
+    "country_code": "ES"
+  },
+  {
+    "airport_name": "Aeroport de Barcelone-El Prat",
+    "city_name": "Barcelone",
+    "iata_code": "BCN",
+    "country": "Espagne",
+    "country_code": "ES"
+  },
+  {
+    "airport_name": "Aeroport de Rome-Fiumicino",
+    "city_name": "Rome",
+    "iata_code": "FCO",
+    "country": "Italie",
+    "country_code": "IT"
+  },
+  {
+    "airport_name": "Aeroport de Milan-Malpensa",
+    "city_name": "Milan",
+    "iata_code": "MXP",
+    "country": "Italie",
+    "country_code": "IT"
+  },
+  {
+    "airport_name": "London Heathrow Airport",
+    "city_name": "Londres",
+    "iata_code": "LHR",
+    "country": "Royaume-Uni",
+    "country_code": "GB"
+  },
+  {
+    "airport_name": "London Gatwick Airport",
+    "city_name": "Londres",
+    "iata_code": "LGW",
+    "country": "Royaume-Uni",
+    "country_code": "GB"
+  },
+  {
+    "airport_name": "Frankfurt Airport",
+    "city_name": "Francfort",
+    "iata_code": "FRA",
+    "country": "Allemagne",
+    "country_code": "DE"
+  },
+  {
+    "airport_name": "Amsterdam Schiphol Airport",
+    "city_name": "Amsterdam",
+    "iata_code": "AMS",
+    "country": "Pays-Bas",
+    "country_code": "NL"
+  },
+  {
+    "airport_name": "Brussels Airport",
+    "city_name": "Bruxelles",
+    "iata_code": "BRU",
+    "country": "Belgique",
+    "country_code": "BE"
+  },
+  {
+    "airport_name": "Aeroport de Geneve",
+    "city_name": "Geneve",
+    "iata_code": "GVA",
+    "country": "Suisse",
+    "country_code": "CH"
+  },
+  {
+    "airport_name": "Montreal-Trudeau Airport",
+    "city_name": "Montreal",
+    "iata_code": "YUL",
+    "country": "Canada",
+    "country_code": "CA"
+  },
+  {
+    "airport_name": "John F. Kennedy International Airport",
+    "city_name": "New York",
+    "iata_code": "JFK",
+    "country": "Etats-Unis",
+    "country_code": "US"
+  },
+  {
+    "airport_name": "Jeddah King Abdulaziz Airport",
+    "city_name": "Jeddah",
+    "iata_code": "JED",
+    "country": "Arabie Saoudite",
+    "country_code": "SA"
+  },
+  {
+    "airport_name": "Doha Hamad International Airport",
+    "city_name": "Doha",
+    "iata_code": "DOH",
+    "country": "Qatar",
+    "country_code": "QA"
   }
 ]
