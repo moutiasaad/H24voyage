@@ -60,6 +60,7 @@ dependencies:
   intl_utils: ^2.8.7
   shared_preferences: ^2.2.2
   http: ^1.1.0
+  flutter_svg: ^2.0.9
 dev_dependencies:
   flutter_test:
     sdk: flutter

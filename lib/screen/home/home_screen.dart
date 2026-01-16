@@ -2,8 +2,10 @@ import 'package:flight_booking/Model/Airport.dart';
 import 'package:flight_booking/screen/widgets/SearchBottomSheet.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:intl/intl.dart';
@@ -26,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+    tabController = TabController(length: 3, vsync: this, initialIndex: 0);
 
     // Default airports (Algeria -> Tunisia)
     fromAirport = airports.firstWhere((a) => a.code == "ALG", orElse: () => airports.first);
@@ -42,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int infantCount = 0;
   int flightNumber = 0;
   bool showCounter = false;
-  int selectedIndex = 1; // Default to Aller-retour (Round-trip) at index 1
+  int selectedIndex = 0; // Default to Aller-retour (Round-trip) at index 0
 
   List<String> classKeys = ['economy', 'business'];
   String selectedClass = 'economy';
@@ -54,6 +56,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   DateTimeRange? _selectedDateRange;
 
   DateTime selectedDate = DateTime.now();
+
+  // Toggle switches for direct flights and baggage
+  bool isDirectFlight = false;
+  bool withBaggage = false;
 
   // Future<void> _selectDate(BuildContext context) async {
   //   final DateTime? picked = await showDatePicker(
@@ -84,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (context) => CustomDatePicker(
         initialStartDate: departureDate,
         initialEndDate: returnDate,
-        isRoundTrip: selectedIndex == 1,
+        isRoundTrip: selectedIndex == 0,
       ),
     );
 
@@ -92,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() {
         departureDate = result['departure'] as DateTime?;
         // Only set return date for round-trip (Aller-retour)
-        if (selectedIndex == 1) {
+        if (selectedIndex == 0) {
           returnDate = result['return'] as DateTime?;
           isFlexibleDates = result['flexible'] as bool? ?? false;
         } else {
@@ -132,113 +138,138 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
       child: DefaultTabController(
-        initialIndex: 1,
+        initialIndex: 0,
         length: 3,
         child: Scaffold(
-          backgroundColor: kDarkWhite,
+          backgroundColor: Colors.white,
           body: Stack(
             alignment: Alignment.bottomCenter,
             children: [
-              Column(
-                children: [
-          Stack(
-          alignment: Alignment.topLeft,
-            children: [
-              Container(
-                height: 260,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF3F4F6), // website-like grey background
-                  borderRadius: BorderRadius.only(
-                    bottomRight: Radius.circular(30.0),
-                    bottomLeft: Radius.circular(30.0),
+              // Background image with opacity
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.2,
+                  child: Image.asset(
+                    'images/background-home.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
-
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 🖼 Logo
-                    SizedBox(
-                      height: 44,
-                      child: Image.asset(
-                        'assets/logo.png',
-                        fit: BoxFit.contain,
+              Column(
+                children: [
+          Container(
+            height: 290,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                bottomRight: Radius.circular(30.0),
+                bottomLeft: Radius.circular(30.0),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomRight: Radius.circular(30.0),
+                bottomLeft: Radius.circular(30.0),
+              ),
+              child: Stack(
+                children: [
+                  // Solid orange background
+                  Positioned.fill(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFFFF5100),
+                            Color(0xFFFF5100),
+                          ],
+                        ),
                       ),
                     ),
-
-                    const SizedBox(height: 30),
-
-                    // 📝 Styled title with underline + orange dot
-                    Builder(
-                      builder: (context) {
-                        final locale = Localizations.localeOf(context).languageCode;
-
-                        if (locale == 'fr') {
-                          return RichText(
-                            text: TextSpan(
-                              style: kTextStyle.copyWith(
-                                color: kDarkBackground,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 28.0,
-                              ),
-                              children: const [
-                                TextSpan(text: 'Réservez votre vol  '),
-                                TextSpan(
-                                  text: '\nen toute',
-                                  style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    decorationThickness: 3,
-                                  ),
-                                ),
-                                TextSpan(text: ' confiance'),
-                                TextSpan(
-                                  text: '.',
-                                  style: TextStyle(
-                                    color: Colors.deepOrange,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        } else {
-                          return RichText(
-                            text: TextSpan(
-                              style: kTextStyle.copyWith(
-                                color: kDarkBackground,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 28.0,
-                              ),
-                              children: const [
-                                TextSpan(text: 'Book your flight '),
-                                TextSpan(
-                                  text: 'with',
-                                  style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    decorationThickness: 3,
-                                  ),
-                                ),
-                                TextSpan(text: ' confidence'),
-                                TextSpan(
-                                  text: '.',
-                                  style: TextStyle(color: Colors.deepOrange),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
+                  ),
+                  // Background image on top
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: 0.8,
+                      child: Image.asset(
+                        'images/background-home.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                  // Content
+                  Padding(
+              padding: const EdgeInsets.only(top: 50.0, left: 15.0, right: 15.0, bottom: 15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with logo and notification
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 15.0),
+                        child: Image.asset(
+                          'images/logo-h24-v2.png',
+                          height: 40,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE14900),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.notifications,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // Flight icon with text
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10.0),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE14900),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Image.asset(
+                          'images/avion.png',
+                          width: 24,
+                          height: 24,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Réserver votre vol',
+                        style: kTextStyle.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18.0,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
+                ],
+              ),
+            ),
           )
 
           ],
@@ -249,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(top: 200, left: 15.0, right: 15),
+                      padding: const EdgeInsets.only(top: 178, left: 15.0, right: 15),
                       child: Material(
                         borderRadius: BorderRadius.circular(30.0),
                         elevation: 2,
@@ -263,45 +294,62 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                  color: const Color(0xFFEDF0FF),
+                              TabBar(
+                                controller: tabController,
+                                labelPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                labelStyle: kTextStyle.copyWith(
+                                  color: kTitleColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.8,
                                 ),
-                                child: TabBar(
-                                  controller: tabController,
-                                  labelStyle: kTextStyle.copyWith(color: Colors.white),
-                                  unselectedLabelColor: kSubTitleColor,
-                                  indicatorColor: kPrimaryColor,
-                                  labelColor: Colors.white,
-                                  indicatorSize: TabBarIndicatorSize.tab, // or .label
-                                  indicatorPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                                  indicator: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                    color: kPrimaryColor,
+                                unselectedLabelStyle: kTextStyle.copyWith(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.normal,
+                                  height: 0.8,
+                                ),
+                                unselectedLabelColor: kTitleColor,
+                                labelColor: kTitleColor,
+                                indicatorColor: kPrimaryColor,
+                                indicatorWeight: 4.0,
+                                indicatorSize: TabBarIndicatorSize.label,
+                                dividerColor: Colors.transparent,
+                                indicator: BoxDecoration(
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(3.0),
+                                    topRight: Radius.circular(3.0),
                                   ),
-                                  onTap: (index) {
-                                    setState(() {
-                                      selectedIndex = index;
-                                      // Clear return date when switching to "Aller simple" (one-way)
-                                      if (index == 0) {
-                                        returnDate = null;
-                                        _selectedDateRange = null;
-                                      }
-                                    });
-                                  },
-                                  tabs: [
-                                    Tab(
-                                      text: lang.S.of(context).tab1,
+                                  border: const Border(
+                                    bottom: BorderSide(
+                                      color: kPrimaryColor,
+                                      width: 4.0,
                                     ),
-                                    Tab(
-                                      text: lang.S.of(context).tab2,
-                                    ),
-                                    Tab(
-                                      text: lang.S.of(context).tab3,
-                                    ),
-                                  ],
+                                  ),
                                 ),
+                                onTap: (index) {
+                                  setState(() {
+                                    selectedIndex = index;
+                                    // Clear return date when switching to "Aller simple" (one-way)
+                                    if (index == 1) {
+                                      returnDate = null;
+                                      _selectedDateRange = null;
+                                    }
+                                  });
+                                },
+                                tabs: [
+                                  Tab(
+                                    height: 32,
+                                    text: lang.S.of(context).tab2,
+                                  ),
+                                  Tab(
+                                    height: 32,
+                                    text: lang.S.of(context).tab1,
+                                  ),
+                                  Tab(
+                                    height: 32,
+                                    text: lang.S.of(context).tab3,
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 20.0),
                               Column(
@@ -311,11 +359,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     children: [
                                   Column(
                                     children: [
-                                      InputDecorator(
-                                        decoration: kInputDecoration.copyWith(
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                                          labelText: lang.S.of(context).fromTitle,
-                                          floatingLabelBehavior: FloatingLabelBehavior.always,
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF5F5F5),
+                                          borderRadius: BorderRadius.circular(8.0),
                                         ),
                                         child: InkWell(
                                           onTap: () async {
@@ -336,13 +383,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             }
                                           },
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
                                             child: Row(
                                               children: [
                                                 const Icon(
                                                   Icons.flight_takeoff,
-                                                  color: kSubTitleColor,
-                                                  size: 24,
+                                                  color: kPrimaryColor,
+                                                  size: 26,
                                                 ),
                                                 const SizedBox(width: 12),
                                                 Expanded(
@@ -351,20 +398,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     mainAxisSize: MainAxisSize.min,
                                                     children: [
                                                       Text(
-                                                        fromAirport != null ? '(${fromAirport!.code})' : '(ALG)',
+                                                        'Lieu de départ',
                                                         style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 14,
+                                                          color: Colors.grey.shade600,
+                                                          fontSize: 13,
                                                         ),
                                                       ),
+                                                      const SizedBox(height: 2),
                                                       Text(
                                                         fromAirport != null
-                                                            ? fromAirport!.city
-                                                            : 'Algerie , Algerie ',
+                                                            ? '${fromAirport!.city} (${fromAirport!.code}- tous les aéroports)'
+                                                            : 'Paris (PAR- tous les aéroports)',
                                                         style: kTextStyle.copyWith(
-                                                          color: kSubTitleColor,
-                                                          fontSize: 12,
+                                                          color: kTitleColor,
+                                                          fontSize: 13,
+                                                          fontWeight: FontWeight.w500,
                                                         ),
                                                       ),
                                                     ],
@@ -376,14 +424,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         ),
                                       ),
                                       const SizedBox(height: 12), // Space between the two inputs
-                                      InputDecorator(
-                                        decoration: kInputDecoration.copyWith(
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-                                          labelText: lang.S.of(context).toTitle,
-                                          floatingLabelBehavior: FloatingLabelBehavior.always,
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(8.0),
-                                          ),
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF5F5F5),
+                                          borderRadius: BorderRadius.circular(8.0),
                                         ),
                                         child: InkWell(
                                           onTap: () async {
@@ -404,13 +448,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             }
                                           },
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
                                             child: Row(
                                               children: [
                                                 const Icon(
                                                   Icons.flight_land,
-                                                  color: kSubTitleColor,
-                                                  size: 24,
+                                                  color: kPrimaryColor,
+                                                  size: 26,
                                                 ),
                                                 const SizedBox(width: 12),
                                                 Expanded(
@@ -419,22 +463,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     mainAxisSize: MainAxisSize.min,
                                                     children: [
                                                       Text(
-                                                        toAirport != null ? '(${toAirport!.code})' : '(NYC)',
+                                                        'Destination',
                                                         style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontWeight: FontWeight.bold,
-                                                          fontSize: 14,
+                                                          color: Colors.grey.shade600,
+                                                          fontSize: 13,
                                                         ),
                                                       ),
+                                                      const SizedBox(height: 2),
                                                       Text(
                                                         toAirport != null
-                                                            ? toAirport!.city
-                                                            : 'New York, United States',
+                                                            ? '${toAirport!.city} (${toAirport!.code}-aéroport ..)'
+                                                            : 'Tunis (TUN-aéroport ..)',
                                                         maxLines: 1,
                                                         overflow: TextOverflow.ellipsis,
                                                         style: kTextStyle.copyWith(
-                                                          color: kSubTitleColor,
-                                                          fontSize: 12,
+                                                          color: kTitleColor,
+                                                          fontSize: 13,
+                                                          fontWeight: FontWeight.w500,
                                                         ),
                                                       ),
                                                     ],
@@ -463,15 +508,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           });
                                         },
                                         child: Container(
-                                          padding: const EdgeInsets.all(8.0),
+                                          padding: const EdgeInsets.all(10.0),
                                           decoration: const BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: kPrimaryColor,
                                           ),
-                                          child: const Icon(
-                                            Icons.swap_vert,
+                                          child: Image.asset(
+                                            'images/double-fleche.png',
+                                            width: 22,
+                                            height: 22,
                                             color: kWhite,
-                                            size: 18,
                                           ),
                                         ),
                                       ),
@@ -484,84 +530,128 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: TextFormField(
-                                      readOnly: true,
-                                      keyboardType: TextInputType.name,
-                                      cursorColor: kTitleColor,
-                                      showCursor: false,
-                                      textInputAction: TextInputAction.next,
-                                      onTap: () {
-                                        _showCustomDatePicker();
-                                      },
-                                      controller: TextEditingController(
-                                        text: _formatDate(departureDate),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF5F5F5),
+                                        borderRadius: BorderRadius.circular(8.0),
                                       ),
-                                      decoration: kInputDecoration.copyWith(
-                                        labelText: lang.S.of(context).departDate,
-                                        labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                        hintText: lang.S.of(context).departDateTitle,
-                                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                                        focusColor: kTitleColor,
-                                        border: const OutlineInputBorder(),
-                                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                                        prefixIcon: const Icon(
-                                          IconlyLight.calendar,
-                                          color: kSubTitleColor,
-                                          size: 24,
+                                      child: InkWell(
+                                        onTap: () {
+                                          _showCustomDatePicker();
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                IconlyLight.calendar,
+                                                color: kPrimaryColor,
+                                                size: 26,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      'Départ',
+                                                      style: kTextStyle.copyWith(
+                                                        color: Colors.grey.shade600,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      departureDate != null
+                                                          ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
+                                                          : '14 jan. 2026',
+                                                      style: kTextStyle.copyWith(
+                                                        color: kTitleColor,
+                                                        fontSize: 13,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10.0).visible(selectedIndex == 1),
+                                  const SizedBox(width: 10.0).visible(selectedIndex == 0),
                                   Expanded(
-                                    child: TextFormField(
-                                      readOnly: true,
-                                      keyboardType: TextInputType.name,
-                                      cursorColor: kTitleColor,
-                                      showCursor: false,
-                                      textInputAction: TextInputAction.next,
-                                      onTap: () {
-                                        _showCustomDatePicker();
-                                      },
-                                      controller: TextEditingController(
-                                        text: _formatDate(returnDate),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF5F5F5),
+                                        borderRadius: BorderRadius.circular(8.0),
                                       ),
-                                      decoration: kInputDecoration.copyWith(
-                                        labelText: lang.S.of(context).returnDate,
-                                        labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                        hintText: lang.S.of(context).returnDateTitle,
-                                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                                        focusColor: kTitleColor,
-                                        border: const OutlineInputBorder(),
-                                        floatingLabelBehavior: FloatingLabelBehavior.always,
-                                        prefixIcon: const Icon(
-                                          IconlyLight.calendar,
-                                          color: kSubTitleColor,
-                                          size: 24,
+                                      child: InkWell(
+                                        onTap: () {
+                                          _showCustomDatePicker();
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                IconlyLight.calendar,
+                                                color: kPrimaryColor,
+                                                size: 26,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      'Retour',
+                                                      style: kTextStyle.copyWith(
+                                                        color: Colors.grey.shade600,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      returnDate != null
+                                                          ? DateFormat('dd MMM yyyy', 'fr').format(returnDate!)
+                                                          : '14 jan. 2026',
+                                                      style: kTextStyle.copyWith(
+                                                        color: kTitleColor,
+                                                        fontSize: 13,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ).visible(selectedIndex == 1),
+                                  ).visible(selectedIndex == 0),
                                 ],
                               ),
                               const SizedBox(height: 10.0),
-                        TextFormField(
-                          readOnly: true,
-                          keyboardType: TextInputType.name,
-                          cursorColor: kTitleColor,
-                          showCursor: false,
-                          textInputAction: TextInputAction.next,
-
-                          // ✅ Open bottom sheet when tapping anywhere
-                          onTap: () {
-                            showModalBottomSheet(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              context: context,
-                              builder: (BuildContext context) {
-                                return StatefulBuilder(
-                                  builder: (BuildContext context, setStated) {
+                        Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F5F5),
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              showModalBottomSheet(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30.0),
+                                ),
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return StatefulBuilder(
+                                    builder: (BuildContext context, setStated) {
                                     return Column(
                                       mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -760,39 +850,63 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               },
                             );
                           },
-
-                          decoration: kInputDecoration.copyWith(
-                            labelText: lang.S.of(context).travellerTitle,
-                            labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                            hintText:
-                            '$adultCount Adulte, $childCount enfant, $infantCount nourrissons',
-                            hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                            border: const OutlineInputBorder(),
-                            floatingLabelBehavior: FloatingLabelBehavior.always,
-                            suffixIcon: const Icon(
-                              IconlyLight.arrowDown2,
-                              color: kSubTitleColor,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.person_outline,
+                                  color: kPrimaryColor,
+                                  size: 26,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'Passager',
+                                        style: kTextStyle.copyWith(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '$adultCount Adulte, $childCount enfant, $infantCount nourrisson${infantCount > 1 ? 's' : ''}',
+                                        style: kTextStyle.copyWith(
+                                          color: kTitleColor,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
+                      ),
 
-                                  const SizedBox(height: 20.0),
-                                  TextFormField(
-                                    readOnly: true,
-                                    keyboardType: TextInputType.name,
-                                    cursorColor: kTitleColor,
-                                    showCursor: false,
-                                    textInputAction: TextInputAction.next,
-                                    onTap: () {
-                                      showModalBottomSheet(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(30.0),
-                                        ),
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return StatefulBuilder(
-                                            builder: (BuildContext context, setModalState) {
-                                              final t = lang.S.of(context);
+                                  const SizedBox(height: 10.0),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF5F5F5),
+                                      borderRadius: BorderRadius.circular(8.0),
+                                    ),
+                                    child: InkWell(
+                                      onTap: () {
+                                        showModalBottomSheet(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(30.0),
+                                          ),
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context, setModalState) {
+                                                final t = lang.S.of(context);
                                               return Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -902,27 +1016,124 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         },
                                       );
                                     },
-                                    decoration: kInputDecoration.copyWith(
-                                      labelText: lang.S.of(context).classTitle,
-                                      labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                                      hintText: selectedClass == 'economy'
-                                          ? lang.S.of(context).classEconomy
-                                          : lang.S.of(context).classBusiness,
-                                      hintStyle: kTextStyle.copyWith(color: kTitleColor),
-                                      border: const OutlineInputBorder(),
-                                      floatingLabelBehavior: FloatingLabelBehavior.always,
-                                      suffixIcon: const Icon(
-                                        IconlyLight.arrowDown2,
-                                        color: kSubTitleColor,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.airline_seat_recline_extra,
+                                            color: kPrimaryColor,
+                                            size: 26,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  'Classe',
+                                                  style: kTextStyle.copyWith(
+                                                    color: Colors.grey.shade600,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  selectedClass == 'economy' ? 'Economique' : 'Affaires',
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 10.0),
+                                ),
+                                  const SizedBox(height: 15.0),
+                                  // Toggle switches for direct flights and baggage
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Transform.scale(
+                                              scale: 0.8,
+                                              child: Switch(
+                                                value: isDirectFlight,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    isDirectFlight = value;
+                                                  });
+                                                },
+                                                activeTrackColor: kPrimaryColor,
+                                                activeThumbColor: Colors.white,
+                                                inactiveTrackColor: Colors.grey.shade300,
+                                                inactiveThumbColor: Colors.white,
+                                                trackOutlineColor: MaterialStateProperty.all(Colors.grey.shade400),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Text(
+                                                'Vols directs',
+                                                style: kTextStyle.copyWith(
+                                                  color: kTitleColor,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            Transform.scale(
+                                              scale: 0.8,
+                                              child: Switch(
+                                                value: withBaggage,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    withBaggage = value;
+                                                  });
+                                                },
+                                                activeTrackColor: kPrimaryColor,
+                                                activeThumbColor: Colors.white,
+                                                inactiveTrackColor: Colors.grey.shade300,
+                                                inactiveThumbColor: Colors.white,
+                                                trackOutlineColor: MaterialStateProperty.all(Colors.grey.shade400),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Flexible(
+                                              child: Text(
+                                                'Avec bagages',
+                                                style: kTextStyle.copyWith(
+                                                  color: kTitleColor,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 15.0),
                                   ButtonGlobalWithoutIcon(
-                                    buttontext: lang.S.of(context).searchFlight,
+                                    buttontext: 'Rechercher vols',
                                     buttonDecoration: kButtonDecoration.copyWith(
                                       color: kPrimaryColor,
-                                      borderRadius: BorderRadius.circular(30.0),
+                                      borderRadius: BorderRadius.circular(100.0),
                                     ),
                                     onPressed: () {
                                       if (fromAirport == null || toAirport == null) {
@@ -1879,160 +2090,160 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 20.0),
-                    Container(
-                      width: context.width(),
-                      decoration: const BoxDecoration(color: kDarkWhite),
+                    // Nos avantages section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                            child: Text(
-                              lang.S.of(context).recentSearch,
-                              style: kTextStyle.copyWith(color: kTitleColor, fontWeight: FontWeight.bold),
+                          Text(
+                            'Nos avantages',
+                            style: kTextStyle.copyWith(
+                              color: kTitleColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.0,
                             ),
                           ),
-                          HorizontalList(
-                            padding: const EdgeInsets.only(left: 10.0, top: 15.0, bottom: 10.0),
-                            itemCount: 10,
-                            itemBuilder: (_, i) {
-                              return Container(
-                                padding: const EdgeInsets.all(10.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(6.0),
-                                  color: const Color(0xFFEDF0FF),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Algerie  to Tunisie',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: kTextStyle.copyWith(color: kTitleColor, fontWeight: FontWeight.bold),
-                                    ),
-                                    const SizedBox(
-                                      height: 5.0,
-                                    ),
-                                    Text(
-                                      '17 janvier - 18 janvier',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: kTextStyle.copyWith(color: kSubTitleColor),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(height: 10.0),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 15.0, right: 15.0),
-                            child: Text(
-                              lang.S.of(context).flightOfferTitle,
-                              style: kTextStyle.copyWith(color: kTitleColor, fontWeight: FontWeight.bold),
+                          const SizedBox(height: 15.0),
+                          Container(
+                            padding: const EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE3F2FD),
+                              borderRadius: BorderRadius.circular(12.0),
                             ),
-                          ),
-                          HorizontalList(
-                            padding: const EdgeInsets.only(
-                              left: 10.0,
-                              top: 15.0,
-                              bottom: 15.0,
-                              right: 10.0,
-                            ),
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: 10,
-                            itemBuilder: (_, i) {
-                              return Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  color: const Color(0xFFEDF0FF),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade400,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.check,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                      height: 120,
-                                      width: context.width() / 1.2,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        color: kWhite,
+                                const SizedBox(width: 16.0),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Obtenez le meilleur prix à chaque fois',
+                                        style: kTextStyle.copyWith(
+                                          color: kTitleColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15.0,
+                                        ),
                                       ),
-                                      child: Row(
-                                        children: [
-                                          Container(
-                                            height: 120,
-                                            width: 100,
-                                            decoration: const BoxDecoration(
-                                              borderRadius: BorderRadius.only(
-                                                topLeft: Radius.circular(8.0),
-                                                bottomLeft: Radius.circular(8.0),
-                                              ),
-                                              image: DecorationImage(
-                                                image: AssetImage('images/offer1.png'),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      'Algerie ',
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: kTextStyle.copyWith(color: kTitleColor, fontWeight: FontWeight.bold),
-                                                    ),
-                                                    const SizedBox(width: 10.0),
-                                                    const Icon(
-                                                      Icons.flight_land,
-                                                      color: kSubTitleColor,
-                                                    ),
-                                                    const SizedBox(width: 10.0),
-                                                    Text(
-                                                      'Tunisie',
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: kTextStyle.copyWith(color: kTitleColor, fontWeight: FontWeight.bold),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 5.0),
-                                                Container(
-                                                  height: 1.0,
-                                                  width: 120,
-                                                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.0), color: kBorderColorTextField),
-                                                ),
-                                                const SizedBox(height: 5.0),
-                                                SizedBox(
-                                                  width: 180,
-                                                  child: Text(
-                                                    'Ceci est un texte de remplissage utilisé pour illustrer la mise en page.',
-                                                    maxLines: 3,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          )
-                                        ],
+                                      const SizedBox(height: 4.0),
+                                      Text(
+                                        'Découvrez quand acheter avec les prévisions des prix',
+                                        style: kTextStyle.copyWith(
+                                          color: kSubTitleColor,
+                                          fontSize: 13.0,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              );
-                            },
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 25.0),
+                    // Nos offres pour vous section
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Nos offres pour vous',
+                            style: kTextStyle.copyWith(
+                              color: kTitleColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18.0,
+                            ),
+                          ),
+                          const SizedBox(height: 15.0),
+                          Container(
+                            height: 150,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12.0),
+                              gradient: LinearGradient(
+                                colors: [
+                                  kPrimaryColor.withOpacity(0.8),
+                                  kPrimaryColor,
+                                ],
+                              ),
+                            ),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Icon(
+                                    Icons.flight,
+                                    size: 120,
+                                    color: Colors.white.withOpacity(0.2),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Explore Your World',
+                                        style: kTextStyle.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 24.0,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8.0),
+                                      Text(
+                                        'Des tarifs exceptionnels',
+                                        style: kTextStyle.copyWith(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 14.0,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12.0),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0,
+                                          vertical: 8.0,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(20.0),
+                                        ),
+                                        child: Text(
+                                          'Jusqu\'à 25%',
+                                          style: kTextStyle.copyWith(
+                                            color: kPrimaryColor,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30.0),
                   ],
                 ),
               )
