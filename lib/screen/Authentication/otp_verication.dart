@@ -1,9 +1,7 @@
 import 'package:flight_booking/screen/home/home.dart';
 import 'package:flutter/material.dart';
-import 'package:flight_booking/generated/l10n.dart' as lang;
-import 'package:nb_utils/nb_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
-import '../widgets/button_global.dart';
 import '../widgets/constant.dart';
 
 class OtpVerification extends StatefulWidget {
@@ -14,113 +12,220 @@ class OtpVerification extends StatefulWidget {
 }
 
 class _OtpVerificationState extends State<OtpVerification> {
+  final TextEditingController _otpController = TextEditingController();
+
+  @override
+  void dispose() {
+    _otpController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kWebsiteGreyBg,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: kWebsiteGreyBg,
-        centerTitle: true,
-        title: Text(lang.S.of(context).otpTitle),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: kTitleColor,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(30.0),
-            topLeft: Radius.circular(30.0),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(15.0),
+      backgroundColor: kWhite,
+      body: SafeArea(
+        child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 10.0),
-              Text(
-                lang.S.of(context).verification,
-                style: kTextStyle.copyWith(
-                  color: kTitleColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
-                ),
-              ),
-              const SizedBox(height: 20.0),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  text: lang.S.of(context).otpDesc1,
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                  children: [
-                    TextSpan(
-                      text: lang.S.of(context).otpDesc2,
-                      style: kTextStyle.copyWith(
-                        color: kTitleColor,
-                        fontWeight: FontWeight.bold,
+              const SizedBox(height: 40),
+
+              // Main image
+              Center(
+                child: Image.asset(
+                  'assets/onBorder0.png',
+                  height: 280,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 220,
+                      color: kSecondaryColor,
+                      child: const Center(
+                        child: Icon(Icons.image, size: 80, color: kSubTitleColor),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
-              const SizedBox(height: 40.0),
-              Pinput(
-                focusedPinTheme: PinTheme(
-                  height: 55,
-                  width: 55,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: kPrimaryColor),
-                  ),
-                ),
-                length: 6,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                defaultPinTheme: PinTheme(
-                  height: 55,
-                  width: 55,
-                  textStyle: kTextStyle.copyWith(color: kTitleColor, fontSize: 18.0, fontWeight: FontWeight.bold),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: kBorderColorTextField,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
+
+              const SizedBox(height: 30),
+
+              // Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'Vérifiez votre adresse e-mail pour vous connecter',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.poppins(
+                    color: kTitleColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              const SizedBox(height: 20.0),
-              Text(
-                '00:55',
-                style: kTextStyle.copyWith(color: kTitleColor, fontWeight: FontWeight.bold),
+
+              const SizedBox(height: 16),
+
+              // Subtitle
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: GoogleFonts.poppins(
+                      color: kSubTitleColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
+                    ),
+                    children: [
+                      const TextSpan(
+                        text: 'Nous avons envoyé un code de vérification à cette adresse :\n',
+                      ),
+                      TextSpan(
+                        text: 'jihen@boosterbc.com',
+                        style: GoogleFonts.poppins(
+                          color: kTitleColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const TextSpan(
+                        text: '.\nVeuillez le saisir pour continuer.',
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 10.0),
-              RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  text: lang.S.of(context).otpResendTitle1,
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                  children: [
-                    TextSpan(
-                      text: lang.S.of(context).otpResendTitle2,
-                      style: kTextStyle.copyWith(
+
+              const SizedBox(height: 30),
+
+              // OTP Input boxes
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Pinput(
+                  controller: _otpController,
+                  length: 6,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  defaultPinTheme: PinTheme(
+                    height: 50,
+                    width: 50,
+                    textStyle: GoogleFonts.poppins(
+                      color: kTitleColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: BoxDecoration(
+                      color: kWhite,
+                      border: Border.all(
+                        color: kBorderColorTextField,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  focusedPinTheme: PinTheme(
+                    height: 50,
+                    width: 50,
+                    textStyle: GoogleFonts.poppins(
+                      color: kTitleColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: BoxDecoration(
+                      color: kWhite,
+                      border: Border.all(
                         color: kPrimaryColor,
-                        fontWeight: FontWeight.bold,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  submittedPinTheme: PinTheme(
+                    height: 50,
+                    width: 50,
+                    textStyle: GoogleFonts.poppins(
+                      color: kTitleColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    decoration: BoxDecoration(
+                      color: kWhite,
+                      border: Border.all(
+                        color: kBorderColorTextField,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // Verify button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Home()),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0F0F0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Vérifier l\'adresse e-mail',
+                        style: GoogleFonts.poppins(
+                          color: kTitleColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 20.0),
-              ButtonGlobalWithoutIcon(
-                buttontext: lang.S.of(context).verifyButton,
-                buttonDecoration: kButtonDecoration.copyWith(
-                  color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(30.0),
+
+              const SizedBox(height: 16),
+
+              // Resend code button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: GestureDetector(
+                  onTap: () {
+                    // Resend code logic
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0F0F0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Recevoir un nouveau code',
+                        style: GoogleFonts.poppins(
+                          color: kTitleColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                onPressed: () {
-                  const Home().launch(context);
-                },
-                buttonTextColor: kWhite,
               ),
+
+              const SizedBox(height: 20),
             ],
           ),
         ),

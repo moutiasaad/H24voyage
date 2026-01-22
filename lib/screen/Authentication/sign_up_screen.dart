@@ -1,13 +1,8 @@
-import 'package:country_code_picker/country_code_picker.dart';
-import 'package:flight_booking/screen/Authentication/login_screen.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flight_booking/generated/l10n.dart' as lang;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:nb_utils/nb_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../widgets/button_global.dart';
-import '../widgets/icon.dart';
 import 'otp_verication.dart';
 
 class SignUp extends StatefulWidget {
@@ -18,222 +13,232 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-  bool hidePassword = true;
+  final TextEditingController _emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kWebsiteGreyBg,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: kWebsiteGreyBg,
-        centerTitle: true,
-        title: Text(lang.S.of(context).signUpButton),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: kWebsiteGreyBg,
-        ),
+      backgroundColor: kWhite,
+      body: SafeArea(
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 10.0),
+              const SizedBox(height: 40),
+
+              // Main image
               Center(
-                child: Container(
-                  height: 70,
-                  width: 150,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/logo.png'),
-                      fit: BoxFit.fill,
+                child: Image.asset(
+                  'assets/login.png',
+                  height: 280,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
+                      color: kSecondaryColor,
+                      child: const Center(
+                        child: Icon(Icons.image, size: 80, color: kSubTitleColor),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'Se connecter ou créer un compte',
+                  style: GoogleFonts.poppins(
+                    color: kTitleColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Subtitle
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'Connectez-vous à l\'aide de votre compte h24voyages et accédez à nos services.',
+                  style: GoogleFonts.poppins(
+                    color: kSubTitleColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // Email label
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'Adresse e-mail',
+                  style: GoogleFonts.poppins(
+                    color: kTitleColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Email input field
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  cursorColor: kTitleColor,
+                  style: GoogleFonts.poppins(
+                    color: kTitleColor,
+                    fontSize: 14,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'jihen@boosterbc.com',
+                    hintStyle: GoogleFonts.poppins(
+                      color: kSubTitleColor,
+                      fontSize: 14,
+                    ),
+                    filled: true,
+                    fillColor: kWhite,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: kBorderColorTextField,
+                        width: 1,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(
+                        color: kPrimaryColor,
+                        width: 1,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20.0),
-              Container(
-                padding: const EdgeInsets.all(10.0),
-                width: context.width(),
-                height: context.height() / 1.1,
-                decoration: const BoxDecoration(
-                  color: kWhite,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(30.0),
-                    topRight: Radius.circular(30.0),
+
+              const SizedBox(height: 24),
+
+              // Continue button
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const OtpVerification()),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Continuer',
+                        style: GoogleFonts.poppins(
+                          color: kWhite,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // Footer
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 10.0),
-                    Text(
-                      lang.S.of(context).loginTitle,
-                      style: kTextStyle.copyWith(
-                        color: kTitleColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                      ),
-                    ),
-                    const SizedBox(height: 40.0),
-                    TextFormField(
-                      keyboardType: TextInputType.name,
-                      cursorColor: kTitleColor,
-                      textInputAction: TextInputAction.next,
-                      decoration: kInputDecoration.copyWith(
-                        labelText: lang.S.of(context).nameLabel,
-                        labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                        hintText: lang.S.of(context).nameHint,
-                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                        focusColor: kTitleColor,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      cursorColor: kTitleColor,
-                      textInputAction: TextInputAction.next,
-                      decoration: kInputDecoration.copyWith(
-                        labelText: lang.S.of(context).emailLabel,
-                        labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                        hintText: lang.S.of(context).emailHint,
-                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                        focusColor: kTitleColor,
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      keyboardType: TextInputType.phone,
-                      cursorColor: kTitleColor,
-                      textInputAction: TextInputAction.next,
-                      decoration: kInputDecoration.copyWith(
-                        hintText: lang.S.of(context).phoneHint,
-                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                        focusColor: kTitleColor,
-                        border: const OutlineInputBorder(),
-                        prefixIcon: CountryCodePicker(
-                          padding: EdgeInsets.zero,
-                          onChanged: print,
-                          initialSelection: 'BD',
-                          showFlag: true,
-                          showDropDownButton: true,
-                          alignLeft: false,
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: GoogleFonts.poppins(
+                          color: kSubTitleColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 20.0),
-                    TextFormField(
-                      cursorColor: kTitleColor,
-                      keyboardType: TextInputType.emailAddress,
-                      obscureText: hidePassword,
-                      textInputAction: TextInputAction.done,
-                      decoration: kInputDecoration.copyWith(
-                        border: const OutlineInputBorder(),
-                        labelText: lang.S.of(context).passwordLabel,
-                        labelStyle: kTextStyle.copyWith(color: kTitleColor),
-                        hintText: lang.S.of(context).passwordHint,
-                        hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              hidePassword = !hidePassword;
-                            });
-                          },
-                          icon: Icon(
-                            hidePassword ? Icons.visibility_off : Icons.visibility,
-                            color: kSubTitleColor,
+                        children: [
+                          const TextSpan(
+                            text: 'En créant ou en vous connectant à un compte, vous acceptez\nnos ',
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20.0),
-                    ButtonGlobalWithoutIcon(
-                      buttontext: lang.S.of(context).signUpButton,
-                      buttonDecoration: kButtonDecoration.copyWith(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      onPressed: () {
-                        const OtpVerification().launch(context);
-                      },
-                      buttonTextColor: kWhite,
-                    ),
-                    const SizedBox(height: 20.0),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Divider(
-                            thickness: 1.0,
-                            color: kBorderColorTextField,
+                          TextSpan(
+                            text: 'conditions générales',
+                            style: GoogleFonts.poppins(
+                              color: kPrimaryColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                // Open terms and conditions
+                              },
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                          child: Text(
-                            lang.S.of(context).orSignUpTitle,
-                            style: kTextStyle.copyWith(color: kSubTitleColor),
+                          const TextSpan(text: ' et notre '),
+                          TextSpan(
+                            text: 'charte de confidentialité',
+                            style: GoogleFonts.poppins(
+                              color: kPrimaryColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w400,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                // Open privacy policy
+                              },
                           ),
-                        ),
-                        const Expanded(
-                          child: Divider(
-                            thickness: 1.0,
-                            color: kBorderColorTextField,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20.0),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          SocialIcon(
-                            bgColor: kTitleColor,
-                            iconColor: kWhite,
-                            icon: FontAwesomeIcons.facebookF,
-                            borderColor: Colors.transparent,
-                          ),
-                          SizedBox(width: 20.0),
-                          SocialIcon(
-                            bgColor: kWhite,
-                            iconColor: kTitleColor,
-                            icon: FontAwesomeIcons.google,
-                            borderColor: kBorderColorTextField,
-                          ),
+                          const TextSpan(text: '.'),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: SizedBox(
-        height: 50,
-        child: Container(
-          decoration: const BoxDecoration(color: kWhite),
-          child: GestureDetector(
-            onTap: () => const LogIn().launch(context),
-            child: Center(
-              child: RichText(
-                text: TextSpan(
-                  text: lang.S.of(context).alreadyHaveAcc,
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                  children: [
-                    TextSpan(
-                      text: lang.S.of(context).loginButton,
-                      style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Tous droits réservés. Copyright- h24voyages',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: kSubTitleColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
+
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),

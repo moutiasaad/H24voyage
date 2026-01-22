@@ -1,9 +1,9 @@
 import 'package:flight_booking/screen/Authentication/sign_up_screen.dart';
-import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
-import 'package:flight_booking/generated/l10n.dart' as lang;
 
 import '../home/home.dart';
 import 'login_screen.dart';
@@ -18,113 +18,233 @@ class WelcomeScreen extends StatefulWidget {
 class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: kWebsiteGreyBg,
-        body: SingleChildScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        const Home().launch(context);
-                      },
-                      child: Text(
-                        lang.S.of(context).skipButton,
-                        style: kTextStyle.copyWith(color: kSubTitleColor),
+    return Scaffold(
+      backgroundColor: kWhite,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 40),
+
+                    // Main image
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Image.asset(
+                        'assets/auth.png',
+                        height: 230,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 280,
+                            color: kSecondaryColor,
+                            child: const Center(
+                              child: Icon(Icons.image, size: 100, color: kSubTitleColor),
+                            ),
+                          );
+                        },
                       ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Title
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Text(
+                        'Connectez-vous pour économiser',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: kTitleColor,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Subtitle
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        'Connectez-vous pour économiser au moins\n10 % grâce à une\nadhésion gratuite à h24voyages',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          color: kSubTitleColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Email button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: GestureDetector(
+                        onTap: () {
+                          const SignUp().launch(context);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/e-mail 2.png',
+                                width: 24,
+                                height: 24,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.email_outlined,
+                                    color: kWhite,
+                                    size: 24,
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Continuer via l\'adresse e-mail',
+                                style: GoogleFonts.poppins(
+                                  color: kWhite,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Google button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: GestureDetector(
+                        onTap: () {
+                          // Google sign in
+                          const Home().launch(context);
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: kWhite,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: kBorderColorTextField, width: 1),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/gmail 2.png',
+                                width: 24,
+                                height: 24,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Text(
+                                    'G',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Continuer avec google',
+                                style: GoogleFonts.poppins(
+                                  color: kTitleColor,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Footer
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
+                children: [
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: GoogleFonts.poppins(
+                        color: kSubTitleColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        height: 1.5,
+                      ),
+                      children: [
+                        const TextSpan(
+                          text: 'En créant ou en vous connectant à un compte, vous acceptez\nnos ',
+                        ),
+                        TextSpan(
+                          text: 'conditions générales',
+                          style: GoogleFonts.poppins(
+                            color: kPrimaryColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              // Open terms and conditions
+                            },
+                        ),
+                        const TextSpan(text: ' et notre '),
+                        TextSpan(
+                          text: 'charte de confidentialité',
+                          style: GoogleFonts.poppins(
+                            color: kPrimaryColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              // Open privacy policy
+                            },
+                        ),
+                        const TextSpan(text: '.'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Tous droits réservés. Copyright- h24voyages',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      color: kSubTitleColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 10.0),
-              Center(
-                child: Container(
-                  height: 142,
-                  width: 160,
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/logo.png'),
-                      fit: BoxFit.contain, // ✅ show full image
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 40.0),
-              Container(
-                width: context.width(),
-                height: context.height(),
-                decoration: const BoxDecoration(
-                  color: kWhite,
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(30.0),
-                    topLeft: Radius.circular(30.0),
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 15.0, right: 15.0, top: 10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 5.0,
-                        width: 60.0,
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(30.0), color: kBorderColorTextField),
-                      ),
-                      const SizedBox(height: 20.0),
-                      Text(
-                        lang.S.of(context).wcTitle,
-                        style: kTextStyle.copyWith(color: kTitleColor, fontWeight: FontWeight.bold, fontSize: 18.0),
-                      ),
-                      const SizedBox(height: 5.0),
-                      Text(
-                        lang.S.of(context).wcSubTitle,
-                        style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold, fontSize: 18.0),
-                      ),
-                      const SizedBox(height: 20.0),
-                      Text(
-                        lang.S.of(context).wcDescription,
-                        textAlign: TextAlign.center,
-                        style: kTextStyle.copyWith(color: kSubTitleColor),
-                      ),
-                      const SizedBox(height: 50.0),
-                      ButtonGlobalWithoutIcon(
-                        buttontext: lang.S.of(context).createAccButton,
-                        buttonDecoration: kButtonDecoration.copyWith(
-                          color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        onPressed: () {
-                          const SignUp().launch(context);
-                        },
-                        buttonTextColor: kWhite,
-                      ),
-                      SizedBox(height: 15.0),
-                      ButtonGlobalWithoutIcon(
-                        buttontext: lang.S.of(context).loginButton,
-                        buttonDecoration: kButtonDecoration.copyWith(
-                          color: kWhite,
-                          border: Border.all(color: kPrimaryColor),
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        onPressed: () {
-                          const LogIn().launch(context);
-                        },
-                        buttonTextColor: kPrimaryColor,
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
