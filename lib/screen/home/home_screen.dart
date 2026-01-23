@@ -22,8 +22,65 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
+/// Model for advantage slider items - dynamic for future API
+class AdvantageSliderItem {
+  final String id;
+  final String backgroundImage;
+  final String? iconImage;
+  final String title;
+  final String subtitle;
+
+  AdvantageSliderItem({
+    required this.id,
+    required this.backgroundImage,
+    this.iconImage,
+    required this.title,
+    required this.subtitle,
+  });
+
+  factory AdvantageSliderItem.fromJson(Map<String, dynamic> json) {
+    return AdvantageSliderItem(
+      id: json['id'] ?? '',
+      backgroundImage: json['background_image'] ?? '',
+      iconImage: json['icon_image'],
+      title: json['title'] ?? '',
+      subtitle: json['subtitle'] ?? '',
+    );
+  }
+}
+
+/// Model for offer slider items - dynamic for future API
+class OfferSliderItem {
+  final String id;
+  final String backgroundImage;
+  final VoidCallback? onTap;
+
+  OfferSliderItem({
+    required this.id,
+    required this.backgroundImage,
+    this.onTap,
+  });
+
+  factory OfferSliderItem.fromJson(Map<String, dynamic> json) {
+    return OfferSliderItem(
+      id: json['id'] ?? '',
+      backgroundImage: json['background_image'] ?? '',
+    );
+  }
+}
+
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   TabController? tabController;
+
+  // Slider controllers and indices
+  final PageController _advantagesPageController = PageController();
+  final PageController _offersPageController = PageController();
+  int _currentAdvantageIndex = 0;
+  int _currentOfferIndex = 0;
+
+  // Dynamic slider data - can be replaced with API call
+  late List<AdvantageSliderItem> _advantageSliders;
+  late List<OfferSliderItem> _offerSliders;
 
   @override
   void initState() {
@@ -33,6 +90,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Default airports (Algeria -> Tunisia)
     fromAirport = airports.firstWhere((a) => a.code == "ALG", orElse: () => airports.first);
     toAirport = airports.firstWhere((a) => a.code == "TUN", orElse: () => airports.first);
+
+    // Initialize slider data - replace with API call in future
+    _loadSliderData();
+  }
+
+  /// Load slider data - replace with API call in future
+  void _loadSliderData() {
+    _advantageSliders = [
+      AdvantageSliderItem(
+        id: '1',
+        backgroundImage: 'assets/home1.png',
+        iconImage: 'assets/garantie.png',
+        title: 'Obtenez le meilleur prix',
+        subtitle: 'à chaque fois',
+      ),
+      AdvantageSliderItem(
+        id: '2',
+        backgroundImage: 'assets/home1.png',
+        iconImage: 'assets/garantie.png',
+        title: 'Service client 24/7',
+        subtitle: 'à votre écoute',
+      ),
+    ];
+
+    _offerSliders = [
+      OfferSliderItem(
+        id: '1',
+        backgroundImage: 'assets/home2.png',
+      ),
+      OfferSliderItem(
+        id: '2',
+        backgroundImage: 'assets/home2.png',
+      ),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _advantagesPageController.dispose();
+    _offersPageController.dispose();
+    super.dispose();
   }
 
   List<Widget> flights = [];
@@ -2090,7 +2188,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 20.0),
-                    // Nos avantages section
+                    // Nos avantages section - Dynamic Slider
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Column(
@@ -2105,48 +2203,91 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                           ),
                           const SizedBox(height: 15.0),
-                          Container(
-                            padding: const EdgeInsets.all(16.0),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE3F2FD),
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            child: Row(
+                          SizedBox(
+                            height: 100,
+                            child: Stack(
                               children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.green.shade400,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.check,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
+                                PageView.builder(
+                                  controller: _advantagesPageController,
+                                  itemCount: _advantageSliders.length,
+                                  onPageChanged: (index) {
+                                    setState(() {
+                                      _currentAdvantageIndex = index;
+                                    });
+                                  },
+                                  itemBuilder: (context, index) {
+                                    final item = _advantageSliders[index];
+                                    return Container(
+                                      margin: const EdgeInsets.only(right: 4),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16.0),
+                                        image: DecorationImage(
+                                          image: AssetImage(item.backgroundImage),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                                        child: Row(
+                                          children: [
+                                            if (item.iconImage != null)
+                                              Image.asset(
+                                                item.iconImage!,
+                                                width: 50,
+                                                height: 50,
+                                              ),
+                                            const SizedBox(width: 16.0),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    item.title,
+                                                    style: kTextStyle.copyWith(
+                                                      color: kTitleColor,
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 17.0,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4.0),
+                                                  Text(
+                                                    item.subtitle,
+                                                    style: kTextStyle.copyWith(
+                                                      color: kTitleColor.withOpacity(0.8),
+                                                      fontSize: 15.0,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                                const SizedBox(width: 16.0),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Obtenez le meilleur prix à chaque fois',
-                                        style: kTextStyle.copyWith(
-                                          color: kTitleColor,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15.0,
+                                // Dots indicator inside image - bottom right
+                                Positioned(
+                                  bottom: 12,
+                                  right: 16,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: List.generate(
+                                      _advantageSliders.length,
+                                      (index) => AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
+                                        margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: _currentAdvantageIndex == index
+                                              ? kPrimaryColor
+                                              : Colors.grey.shade400,
                                         ),
                                       ),
-                                      const SizedBox(height: 4.0),
-                                      Text(
-                                        'Découvrez quand acheter avec les prévisions des prix',
-                                        style: kTextStyle.copyWith(
-                                          color: kSubTitleColor,
-                                          fontSize: 13.0,
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ],
@@ -2156,7 +2297,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ),
                     const SizedBox(height: 25.0),
-                    // Nos offres pour vous section
+                    // Nos offres pour vous section - Dynamic Slider
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Column(
@@ -2171,70 +2312,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                           ),
                           const SizedBox(height: 15.0),
-                          Container(
-                            height: 150,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12.0),
-                              gradient: LinearGradient(
-                                colors: [
-                                  kPrimaryColor.withOpacity(0.8),
-                                  kPrimaryColor,
-                                ],
-                              ),
-                            ),
+                          SizedBox(
+                            height: 160,
                             child: Stack(
                               children: [
-                                Positioned(
-                                  right: 0,
-                                  bottom: 0,
-                                  child: Icon(
-                                    Icons.flight,
-                                    size: 120,
-                                    color: Colors.white.withOpacity(0.2),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Explore Your World',
-                                        style: kTextStyle.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 24.0,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8.0),
-                                      Text(
-                                        'Des tarifs exceptionnels',
-                                        style: kTextStyle.copyWith(
-                                          color: Colors.white.withOpacity(0.9),
-                                          fontSize: 14.0,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12.0),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0,
-                                          vertical: 8.0,
-                                        ),
+                                PageView.builder(
+                                  controller: _offersPageController,
+                                  itemCount: _offerSliders.length,
+                                  onPageChanged: (index) {
+                                    setState(() {
+                                      _currentOfferIndex = index;
+                                    });
+                                  },
+                                  itemBuilder: (context, index) {
+                                    final item = _offerSliders[index];
+                                    return GestureDetector(
+                                      onTap: item.onTap,
+                                      child: Container(
+                                        margin: const EdgeInsets.only(right: 4),
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(20.0),
-                                        ),
-                                        child: Text(
-                                          'Jusqu\'à 25%',
-                                          style: kTextStyle.copyWith(
-                                            color: kPrimaryColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14.0,
+                                          borderRadius: BorderRadius.circular(16.0),
+                                          image: DecorationImage(
+                                            image: AssetImage(item.backgroundImage),
+                                            fit: BoxFit.cover,
                                           ),
                                         ),
                                       ),
-                                    ],
+                                    );
+                                  },
+                                ),
+                                // Dots indicator inside image - bottom right
+                                Positioned(
+                                  bottom: 12,
+                                  right: 16,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: List.generate(
+                                      _offerSliders.length,
+                                      (index) => AnimatedContainer(
+                                        duration: const Duration(milliseconds: 300),
+                                        margin: const EdgeInsets.symmetric(horizontal: 3.0),
+                                        width: 8,
+                                        height: 8,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: _currentOfferIndex == index
+                                              ? kPrimaryColor
+                                              : Colors.grey.shade400,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],

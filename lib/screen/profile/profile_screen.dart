@@ -1,17 +1,101 @@
-import 'package:community_material_icon/community_material_icon.dart';
-import 'package:flight_booking/screen/profile/Privacy_Policy/privicy_policy.dart';
-import 'package:flight_booking/screen/profile/my_profile/my_profile.dart';
-import 'package:flight_booking/screen/profile/payments/paymetns.dart';
-import 'package:flight_booking/screen/profile/setting/setting.dart';
 import 'package:flutter/material.dart';
-// import 'package:flight_booking/generated/l10n.dart' as lang;
+import 'package:flutter/cupertino.dart';
 import 'package:nb_utils/nb_utils.dart';
 
-import '../../generated/l10n.dart' as lang;
-import '../Authentication/welcome_screen.dart';
 import '../widgets/constant.dart';
+import '../Authentication/welcome_screen.dart';
+import 'my_profile/my_profile.dart';
+import 'my_profile/edit_profile.dart';
+import 'setting/setting.dart';
+import 'setting/currency.dart';
+import 'setting/languase.dart';
+import 'setting/notification.dart';
+import 'Privacy_Policy/privicy_policy.dart';
 
+/// Model for menu items - dynamic structure for future API integration
+class ProfileMenuItem {
+  final String id;
+  final String title;
+  final IconData? icon;
+  final String? iconAsset; // Asset image path
+  final Widget? destination;
+  final VoidCallback? onTap;
+  final String? badge;
 
+  ProfileMenuItem({
+    required this.id,
+    required this.title,
+    this.icon,
+    this.iconAsset,
+    this.destination,
+    this.onTap,
+    this.badge,
+  }) : assert(icon != null || iconAsset != null, 'Either icon or iconAsset must be provided');
+
+  /// Factory constructor for API response mapping
+  factory ProfileMenuItem.fromJson(Map<String, dynamic> json) {
+    return ProfileMenuItem(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      icon: _getIconFromString(json['icon'] ?? 'person'),
+      badge: json['badge'],
+    );
+  }
+
+  static IconData _getIconFromString(String iconName) {
+    switch (iconName) {
+      case 'person':
+        return CupertinoIcons.person_fill;
+      case 'group':
+        return CupertinoIcons.person_2_fill;
+      case 'gift':
+        return CupertinoIcons.gift_fill;
+      case 'lock':
+        return CupertinoIcons.lock_fill;
+      case 'wallet':
+        return CupertinoIcons.creditcard_fill;
+      case 'globe':
+        return CupertinoIcons.globe;
+      case 'bell':
+        return CupertinoIcons.bell_fill;
+      case 'doc':
+        return CupertinoIcons.doc_text_fill;
+      case 'logout':
+        return CupertinoIcons.square_arrow_right;
+      default:
+        return CupertinoIcons.circle_fill;
+    }
+  }
+}
+
+/// Model for user profile - dynamic structure for future API integration
+class UserProfile {
+  final String id;
+  final String firstName;
+  final String lastName;
+  final String email;
+  final String? avatarUrl;
+
+  UserProfile({
+    required this.id,
+    required this.firstName,
+    required this.lastName,
+    required this.email,
+    this.avatarUrl,
+  });
+
+  String get fullName => '$firstName $lastName';
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] ?? '',
+      firstName: json['first_name'] ?? '',
+      lastName: json['last_name'] ?? '',
+      email: json['email'] ?? '',
+      avatarUrl: json['avatar_url'],
+    );
+  }
+}
 
 class Profile extends StatefulWidget {
   const Profile({Key? key}) : super(key: key);
@@ -21,167 +105,463 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  @override
-  Widget build(BuildContext context) {
-    // final t = lang.S.of(context);
+  // Dynamic user data - can be replaced with API call
+  late UserProfile _currentUser;
+  late List<ProfileMenuItem> _accountMenuItems;
+  late List<ProfileMenuItem> _settingsMenuItems;
+  late List<ProfileMenuItem> _aideMenuItems;
+  bool _isLoading = false;
 
-    return Scaffold(
-      backgroundColor: kWebsiteGreyBg,
-      appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: kWhite),
-        title: Text(
-          lang.S.of(context).profileTitle,
-          style: kTextStyle.copyWith(color: kTitleColor ),
-        ),
-        centerTitle: true,
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  /// Load user data - replace with API call in the future
+  Future<void> _loadUserData() async {
+    setState(() => _isLoading = true);
+
+    // Simulate API delay - remove when using real API
+    // await Future.delayed(const Duration(milliseconds: 500));
+
+    // Mock data - replace with API response
+    _currentUser = UserProfile(
+      id: '1',
+      firstName: 'Jihen',
+      lastName: 'Belhadj',
+      email: 'jihen.belhadj@email.com',
+      avatarUrl: null,
+    );
+
+    _accountMenuItems = [
+      ProfileMenuItem(
+        id: 'personal_info',
+        title: 'Coordonnées personnelles',
+        iconAsset: 'assets/profileIcon.png',
+        destination: const MyProfile(),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Container(
-          padding: const EdgeInsets.all(10.0),
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            color: kWhite,
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(30),
-              topLeft: Radius.circular(30),
+      ProfileMenuItem(
+        id: 'travelers',
+        title: 'Voyageurs enregistrés',
+        iconAsset: 'assets/voyageIcon.png',
+        destination: const EditProfile(),
+      ),
+      ProfileMenuItem(
+        id: 'referral',
+        title: 'Parrainez un(e) ami(e)',
+        iconAsset: 'assets/usersIcon.png',
+        onTap: () => _handleReferral(),
+      ),
+      ProfileMenuItem(
+        id: 'security',
+        title: 'Paramètre de sécurité',
+        iconAsset: 'assets/paramIcon.png',
+        destination: const Setting(),
+      ),
+    ];
+
+    _settingsMenuItems = [
+      ProfileMenuItem(
+        id: 'currency',
+        title: 'Devises',
+        iconAsset: 'assets/walletIcon.png',
+        destination: const Currency(),
+      ),
+      ProfileMenuItem(
+        id: 'language',
+        title: 'Langues',
+        iconAsset: 'assets/langIcon.png',
+        destination: const Language(),
+      ),
+      ProfileMenuItem(
+        id: 'terms',
+        title: 'Conditions générales',
+        iconAsset: 'assets/cadeauIcon.png',
+        destination: const PrivacyPolicy(),
+      ),
+    ];
+
+    _aideMenuItems = [
+      ProfileMenuItem(
+        id: 'contact',
+        title: 'Contacter le service client',
+        iconAsset: 'assets/assistIcon.png',
+        onTap: () {
+          // TODO: Implement contact service
+        },
+      ),
+      ProfileMenuItem(
+        id: 'faq',
+        title: 'FAQ',
+        iconAsset: 'assets/fqaIcon.png',
+        onTap: () {
+          // TODO: Implement FAQ page
+        },
+      ),
+    ];
+
+    setState(() => _isLoading = false);
+  }
+
+  void _handleReferral() {
+    // TODO: Implement referral logic
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Parrainage'),
+        content: const Text('Partagez votre code de parrainage avec vos amis !'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleLogout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Déconnexion'),
+        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              const WelcomeScreen().launch(context, isNewTask: true);
+            },
+            child: const Text(
+              'Déconnecter',
+              style: TextStyle(color: Colors.red),
             ),
           ),
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
 
-              // 👤 Avatar
-              Center(
-                child: Container(
-                  height: 80.0,
-                  width: 80.0,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: AssetImage('images/profile1.png'),
-                      fit: BoxFit.fill,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: kPrimaryColor))
+          : CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // Orange Gradient App Bar
+                _buildAppBar(),
+
+                // Content
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+
+                        // Section: Gérer mon compte
+                        _buildSectionTitle('Gérer mon compte'),
+                        const SizedBox(height: 12),
+                        _buildMenuCard(_accountMenuItems),
+
+                        const SizedBox(height: 24),
+
+                        // Section: Paramètre
+                        _buildSectionTitle('Paramètre'),
+                        const SizedBox(height: 12),
+                        _buildMenuCard(_settingsMenuItems),
+
+                        const SizedBox(height: 24),
+
+                        // Section: Aide
+                        _buildSectionTitle('Aide'),
+                        const SizedBox(height: 12),
+                        _buildMenuCard(_aideMenuItems),
+
+                        const SizedBox(height: 24),
+
+                        // Logout Button
+                        _buildLogoutButton(),
+
+                        const SizedBox(height: 40),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
+              ],
+            ),
+    );
+  }
 
-              const Center(
-                child: Text(
-                  'Johen Doe',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                ),
-              ),
-              const SizedBox(height: 5),
-              Center(
-                child: Text(
-                  'johendoe@gmail.com',
-                  style: kTextStyle.copyWith(fontSize: 14, color: kSubTitleColor),
-                ),
-              ),
-              const SizedBox(height: 30),
-
-              // 👤 My Profile
-              _profileTile(
-                context,
-                icon: Icons.person,
-                color: kPrimaryColor,
-                bg: kPrimaryColor.withOpacity(0.2),
-                title: lang.S.of(context).profileMyProfile,
-                onTap: () => const MyProfile().launch(context),
-              ),
-
-              // ⚙ Setting
-              _profileTile(
-                context,
-                icon: Icons.settings,
-                color: const Color(0xff00CD46),
-                bg: const Color(0xff009F5E).withOpacity(0.2),
-                title: lang.S.of(context).profileSetting,
-                onTap: () => const Setting().launch(context),
-              ),
-
-              // 💳 Payments
-              _profileTile(
-                context,
-                icon: Icons.payment_rounded,
-                color: kPrimaryColor,
-                bg: kPrimaryColor.withOpacity(0.2),
-                title: lang.S.of(context).profilePayments,
-                onTap: () => const ProfilePayments().launch(context),
-              ),
-
-              // 🔐 Privacy Policy
-              _profileTile(
-                context,
-                icon: CommunityMaterialIcons.alert_circle,
-                color: const Color(0xff00CD46),
-                bg: const Color(0xff009F5E).withOpacity(0.1),
-                title: lang.S.of(context).profilePrivacy,
-                onTap: () => const PrivacyPolicy().launch(context),
-              ),
-
-              // 📤 Share App
-              _profileTile(
-                context,
-                icon: Icons.share,
-                color: const Color(0xffFF3B30),
-                bg: const Color(0xffFF3B30).withOpacity(0.1),
-                title: lang.S.of(context).profileShare,
-                onTap: () {},
-              ),
-
-              // 🚪 Log Out
-              _profileTile(
-                context,
-                icon: Icons.logout,
-                color: kPrimaryColor,
-                bg: kPrimaryColor.withOpacity(0.2),
-                title: lang.S.of(context).profileLogout,
-                onTap: () {
-                  const WelcomeScreen().launch(context, isNewTask: true);
-                },
-              ),
-            ],
+  /// Builds the orange gradient app bar with bottom border radius
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      expandedHeight: 60,
+      floating: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      leadingWidth: 40,
+      leading: IconButton(
+        icon: const Icon(
+          CupertinoIcons.back,
+          color: Colors.white,
+          size: 24,
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        _currentUser.fullName,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+      centerTitle: false,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFF8C42),
+                Color(0xFFFF6B35),
+                kPrimaryColor,
+              ],
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
           ),
+        ),
+      ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
     );
   }
 
-  Widget _profileTile(
-      BuildContext context, {
-        required IconData icon,
-        required Color color,
-        required Color bg,
-        required String title,
-        required VoidCallback onTap,
-      }) {
+  /// Builds a section title
+  Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Card(
-        elevation: 1.3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: kBorderColorTextField, width: 0.5),
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF3C3C43),
+          letterSpacing: -0.3,
         ),
-        child: ListTile(
-          onTap: onTap,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-          leading: Container(
-            height: 34,
-            width: 34,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
-            child: Icon(icon, color: color),
+      ),
+    );
+  }
+
+  /// Builds a menu card with items
+  Widget _buildMenuCard(List<ProfileMenuItem> items) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          title: Text(title, style: kTextStyle.copyWith(color: kTitleColor)),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: kSubTitleColor),
+        ],
+      ),
+      child: Column(
+        children: items.asMap().entries.map((entry) {
+          final index = entry.key;
+          final item = entry.value;
+          final isLast = index == items.length - 1;
+
+          return _buildMenuItem(item, showDivider: !isLast);
+        }).toList(),
+      ),
+    );
+  }
+
+  /// Builds a single menu item row
+  Widget _buildMenuItem(ProfileMenuItem item, {bool showDivider = true}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          if (item.destination != null) {
+            item.destination!.launch(context);
+          } else if (item.onTap != null) {
+            item.onTap!();
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  // Icon or Asset Image
+                  item.iconAsset != null
+                      ? Image.asset(
+                          item.iconAsset!,
+                          width: 28,
+                          height: 28,
+                        )
+                      : Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            item.icon,
+                            size: 18,
+                            color: kPrimaryColor,
+                          ),
+                        ),
+                  const SizedBox(width: 14),
+
+                  // Title
+                  Expanded(
+                    child: Text(
+                      item.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        color: Color(0xFF1C1C1E),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                  ),
+
+                  // Badge (if any)
+                  if (item.badge != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        item.badge!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+
+                  // Chevron
+                  const Icon(
+                    CupertinoIcons.chevron_right,
+                    size: 16,
+                    color: Color(0xFFC7C7CC),
+                  ),
+                ],
+              ),
+            ),
+
+            // Divider
+            if (showDivider)
+              Padding(
+                padding: const EdgeInsets.only(left: 62),
+                child: Container(
+                  height: 0.5,
+                  color: const Color(0xFFE5E5EA),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the logout button - Premium iOS style
+  Widget _buildLogoutButton() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFCDD2).withOpacity(0.5),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _handleLogout,
+          borderRadius: BorderRadius.circular(16),
+          splashColor: const Color(0xFFFFCDD2),
+          highlightColor: const Color(0xFFFCE4EC),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFFFFF0F0),
+                  Color(0xFFFFE8E8),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFCDD2).withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: const Center(
+              child: Text(
+                'Se déconnecter',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFE53935),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
 }
-

@@ -203,19 +203,23 @@ class _OnBoardState extends State<OnBoard> {
             Padding(
               padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 50),
               child: GestureDetector(
-                onTap: () {
-                  if (currentIndexPage < onboardingData.length - 1) {
-                    pageController.nextPage(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  } else {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-                    );
-                  }
-                },
+                onTap: () => Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                ),
+                // onTap: () {
+                //   // if (currentIndexPage < onboardingData.length - 1) {
+                //   //   pageController.nextPage(
+                //   //     duration: const Duration(milliseconds: 300),
+                //   //     curve: Curves.easeInOut,
+                //   //   );
+                //   // } else {
+                //   //   Navigator.pushReplacement(
+                //   //     context,
+                //   //     MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                //   //   );
+                //   // }
+                // },
                 child: Container(
                   width: double.infinity,
                   height: 52,
