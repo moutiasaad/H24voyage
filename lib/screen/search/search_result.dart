@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flight_booking/Model/Airport.dart';
 import 'package:flight_booking/Model/FakeFlight.dart';
+import 'package:flight_booking/models/flight_offer.dart';
 import 'package:flight_booking/screen/search/flight_details.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,9 @@ class SearchResult extends StatefulWidget {
   final int childCount;
   final int infantCount;
   final DateTimeRange? dateRange;
+  final List<FlightOffer>? flightOffers;
+  final bool isOneWay;
+  final bool isMultiDestination;
 
   const SearchResult({
     Key? key,
@@ -29,6 +33,9 @@ class SearchResult extends StatefulWidget {
     required this.childCount,
     required this.infantCount,
     this.dateRange,
+    this.flightOffers,
+    this.isOneWay = false,
+    this.isMultiDestination = false,
   }) : super(key: key);
 
   @override
@@ -38,8 +45,11 @@ class SearchResult extends StatefulWidget {
 class _SearchResultState extends State<SearchResult> {
   bool isDirectOnly = false;
   List<FakeFlight> flights = [];
+  List<FlightOffer> apiFlights = [];
   Set<int> expandedOutbound = {};
   Set<int> expandedReturn = {};
+  // For multi-destination: Map of offerIndex -> Set of expanded journey indices
+  Map<int, Set<int>> expandedJourneys = {};
   String selectedSortOption = 'Le moins cher';
 
   // Filter options
@@ -51,9 +61,19 @@ class _SearchResultState extends State<SearchResult> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadFakeFlightsFromAirports();
+      if (widget.flightOffers != null && widget.flightOffers!.isNotEmpty) {
+        // Use API flight offers
+        setState(() {
+          apiFlights = widget.flightOffers!;
+        });
+      } else {
+        // Fall back to fake data
+        _loadFakeFlightsFromAirports();
+      }
     });
   }
+
+  bool get hasApiFlights => apiFlights.isNotEmpty;
 
   Future<void> _loadFakeFlightsFromAirports() async {
     final data = await DefaultAssetBundle.of(context)
@@ -126,21 +146,61 @@ class _SearchResultState extends State<SearchResult> {
                   const SizedBox(height: 12),
 
                   // Promotional banner
-                  _buildPromoBanner(),
+                  // _buildPromoBanner(),
 
                   const SizedBox(height: 16),
 
                   // Flight cards
-                  ListView.builder(
-                    itemCount: flights.length,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemBuilder: (_, i) {
-                      final f = flights[i];
-                      return _buildFlightCard(f, i, fromCode, toCode);
-                    },
-                  ),
+                  hasApiFlights
+                      ? ListView.builder(
+                          itemCount: apiFlights.length,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemBuilder: (_, i) {
+                            final offer = apiFlights[i];
+                            return _buildApiFlightCard(offer, i, fromCode, toCode);
+                          },
+                        )
+                      : (widget.flightOffers != null && widget.flightOffers!.isEmpty)
+                          ? Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    Icon(Icons.flight_outlined, size: 64, color: kSubTitleColor),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Aucun vol trouvé',
+                                      style: GoogleFonts.poppins(
+                                        color: kTitleColor,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Essayez de modifier vos critères de recherche',
+                                      style: GoogleFonts.poppins(
+                                        color: kSubTitleColor,
+                                        fontSize: 14,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: flights.length,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemBuilder: (_, i) {
+                                final f = flights[i];
+                                return _buildFlightCard(f, i, fromCode, toCode);
+                              },
+                            ),
 
                   const SizedBox(height: 20),
                 ],
@@ -1305,40 +1365,40 @@ class _SearchResultState extends State<SearchResult> {
     );
   }
 
-  Widget _buildPromoBanner() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.local_offer, color: kPrimaryColor, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Trouvez les offres aux meilleurs prix!',
-              style: kTextStyle.copyWith(
-                color: kTitleColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Text(
-            'Cliquez ici',
-            style: kTextStyle.copyWith(
-              color: kPrimaryColor,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildPromoBanner() {
+  //   return Container(
+  //     margin: const EdgeInsets.symmetric(horizontal: 16),
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  //     decoration: BoxDecoration(
+  //       color: const Color(0xFFFFF3E0),
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         const Icon(Icons.local_offer, color: kPrimaryColor, size: 20),
+  //         const SizedBox(width: 8),
+  //         Expanded(
+  //           child: Text(
+  //             'Trouvez les offres aux meilleurs prix!',
+  //             style: kTextStyle.copyWith(
+  //               color: kTitleColor,
+  //               fontSize: 13,
+  //               fontWeight: FontWeight.w500,
+  //             ),
+  //           ),
+  //         ),
+  //         Text(
+  //           'Cliquez ici',
+  //           style: kTextStyle.copyWith(
+  //             color: kPrimaryColor,
+  //             fontSize: 13,
+  //             fontWeight: FontWeight.w600,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildFlightCard(
       FakeFlight f, int index, String fromCode, String toCode) {
@@ -1349,15 +1409,15 @@ class _SearchResultState extends State<SearchResult> {
     final isReturnExpanded = expandedReturn.contains(index);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: kWhite,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: kBorderColorTextField),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -1367,18 +1427,18 @@ class _SearchResultState extends State<SearchResult> {
         children: [
           // Recommandé badge
           Padding(
-            padding: const EdgeInsets.only(left: 16, top: 16),
+            padding: const EdgeInsets.only(left: 12, top: 10),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(221, 225, 255, 1),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
                 'Recommandé',
                 style: kTextStyle.copyWith(
                   color: const Color.fromRGBO(147, 133, 245, 1),
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -1386,7 +1446,7 @@ class _SearchResultState extends State<SearchResult> {
           ),
 
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               children: [
                 // Outbound Flight
@@ -1413,9 +1473,9 @@ class _SearchResultState extends State<SearchResult> {
                   },
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 const Divider(height: 1, color: kBorderColorTextField),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
                 // Return Flight
                 _buildFlightSegment(
@@ -1441,7 +1501,7 @@ class _SearchResultState extends State<SearchResult> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
 
                 // Price and Reserve button
                 Row(
@@ -1455,34 +1515,34 @@ class _SearchResultState extends State<SearchResult> {
                           style: GoogleFonts.poppins(
                             color: kTitleColor,
                             fontWeight: FontWeight.w800,
-                            fontSize: 18,
-                            height: 30 / 18,
+                            fontSize: 16,
+                            height: 24 / 16,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 2),
                         Icon(Icons.keyboard_arrow_down,
-                            color: kTitleColor, size: 22),
+                            color: kTitleColor, size: 18),
                       ],
                     ),
 
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
 
                     // Reserve button
                     GestureDetector(
                       onTap: () => const FlightDetails().launch(context),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 12),
+                            horizontal: 20, vertical: 8),
                         decoration: BoxDecoration(
                           color: kPrimaryColor,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           'Réservez',
                           style: kTextStyle.copyWith(
                             color: kWhite,
                             fontWeight: FontWeight.w600,
-                            fontSize: 15,
+                            fontSize: 13,
                           ),
                         ),
                       ),
@@ -1494,6 +1554,1121 @@ class _SearchResultState extends State<SearchResult> {
           ),
         ],
       ),
+    );
+  }
+
+  // Build flight card from API FlightOffer
+  Widget _buildApiFlightCard(FlightOffer offer, int index, String fromCode, String toCode) {
+    final isOutboundExpanded = expandedOutbound.contains(index);
+    final isReturnExpanded = expandedReturn.contains(index);
+
+    // Use convenience getters from FlightOffer
+    final price = offer.totalPrice;
+    final currency = offer.currency;
+    final isRefundable = offer.isRefundable;
+    final airlineName = offer.airlineName;
+    final airlineCode = offer.airlineCode;
+
+    // Get journey data safely
+    final journeyList = offer.journey;
+    final hasJourney = journeyList.isNotEmpty;
+    final isMultiDestination = widget.isMultiDestination && journeyList.length > 2;
+
+    // Baggage info
+    final hasBaggage = offer.detail?.checkedBaggageIncluded ?? false;
+
+    // For multi-destination, we'll build segments dynamically
+    if (isMultiDestination) {
+      return _buildMultiDestinationCard(
+        offer: offer,
+        index: index,
+        hasBaggage: hasBaggage,
+        isRefundable: isRefundable,
+        price: price,
+        currency: currency,
+      );
+    }
+
+    // Original logic for one-way and round-trip
+    // Outbound flight details
+    String outboundAirline = airlineName;
+    String outboundAirlineCode = airlineCode;
+    String outboundFlightNumber = '';
+    String outboundDepartureTime = '--:--';
+    String outboundArrivalTime = '--:--';
+    String outboundDuration = '--';
+    int outboundStops = 0;
+    String outboundFromCode = fromCode;
+    String outboundToCode = toCode;
+    List<FlightSegmentDetail> outboundSegments = [];
+
+    if (hasJourney) {
+      final outboundJourney = journeyList.first;
+      final outboundFlight = outboundJourney.flight;
+      outboundSegments = outboundJourney.flightSegments;
+
+      if (outboundSegments.isNotEmpty) {
+        final firstSegment = outboundSegments.first;
+        final lastSegment = outboundSegments.last;
+
+        outboundAirline = firstSegment.marketingAirlineName ?? airlineName;
+        outboundAirlineCode = firstSegment.marketingAirline ?? airlineCode;
+        outboundFlightNumber = firstSegment.flightNumber?.toString() ?? '';
+        outboundDepartureTime = firstSegment.departureDateTime ?? '--:--';
+        outboundArrivalTime = lastSegment.arrivalDateTime ?? '--:--';
+        outboundFromCode = firstSegment.departureAirportCode ?? fromCode;
+        outboundToCode = lastSegment.arrivalAirportCode ?? toCode;
+      }
+
+      outboundDuration = outboundFlight?.flightInfo?.duration ?? '--';
+      outboundStops = outboundFlight?.stopQuantity ?? 0;
+    }
+
+    // Check for return journey (for round-trip)
+    final hasReturnJourney = journeyList.length > 1 && !widget.isOneWay;
+
+    String returnAirline = outboundAirline;
+    String returnAirlineCode = outboundAirlineCode;
+    String returnFlightNumber = '';
+    String returnDepartureTime = '--:--';
+    String returnArrivalTime = '--:--';
+    String returnDuration = '--';
+    int returnStops = 0;
+    String returnFromCode = toCode;
+    String returnToCode = fromCode;
+    List<FlightSegmentDetail> returnSegments = [];
+
+    if (hasReturnJourney) {
+      final returnJourney = journeyList[1];
+      final returnFlight = returnJourney.flight;
+      returnSegments = returnJourney.flightSegments;
+
+      if (returnSegments.isNotEmpty) {
+        final returnFirstSegment = returnSegments.first;
+        final returnLastSegment = returnSegments.last;
+
+        returnAirline = returnFirstSegment.marketingAirlineName ?? outboundAirline;
+        returnAirlineCode = returnFirstSegment.marketingAirline ?? outboundAirlineCode;
+        returnFlightNumber = returnFirstSegment.flightNumber?.toString() ?? '';
+        returnDepartureTime = returnFirstSegment.departureDateTime ?? '--:--';
+        returnArrivalTime = returnLastSegment.arrivalDateTime ?? '--:--';
+        returnFromCode = returnFirstSegment.departureAirportCode ?? toCode;
+        returnToCode = returnLastSegment.arrivalAirportCode ?? fromCode;
+      }
+
+      returnDuration = returnFlight?.flightInfo?.duration ?? '--';
+      returnStops = returnFlight?.stopQuantity ?? 0;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorderColorTextField),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Recommandé badge
+          if (index == 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 12, top: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(221, 225, 255, 1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  'Recommandé',
+                  style: kTextStyle.copyWith(
+                    color: const Color.fromRGBO(147, 133, 245, 1),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                // Baggage and refund badges
+                Row(
+                  children: [
+                    if (hasBaggage == true)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.luggage, size: 14, color: Colors.green[700]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Bagages inclus',
+                              style: kTextStyle.copyWith(
+                                color: Colors.green[700],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (isRefundable == true)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_outline, size: 14, color: Colors.blue[700]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Remboursable',
+                              style: kTextStyle.copyWith(
+                                color: Colors.blue[700],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                if (hasBaggage == true || isRefundable == true) const SizedBox(height: 10),
+
+                // Outbound Flight Segment
+                _buildFlightSegment(
+                  airlineLogo: _getAirlineLogo(outboundAirlineCode),
+                  airlineName: '$outboundAirline ${outboundAirlineCode}$outboundFlightNumber',
+                  departureDate: _formatDateTimeString(outboundDepartureTime),
+                  arrivalDate: _formatDateTimeString(outboundArrivalTime),
+                  departureTime: _formatTimeFromDateTime(outboundDepartureTime),
+                  arrivalTime: _formatTimeFromDateTime(outboundArrivalTime),
+                  fromCode: outboundFromCode,
+                  toCode: outboundToCode,
+                  duration: outboundDuration,
+                  isDirect: outboundStops == 0,
+                  isExpanded: isOutboundExpanded,
+                  onToggleExpand: () {
+                    setState(() {
+                      if (isOutboundExpanded) {
+                        expandedOutbound.remove(index);
+                      } else {
+                        expandedOutbound.add(index);
+                      }
+                    });
+                  },
+                  stops: outboundStops,
+                  segments: outboundSegments,
+                ),
+
+                // Return Flight Segment (for round-trip)
+                if (hasReturnJourney) ...[
+                  const SizedBox(height: 8),
+                  const Divider(height: 1, color: kBorderColorTextField),
+                  const SizedBox(height: 8),
+                  _buildFlightSegment(
+                    airlineLogo: _getAirlineLogo(returnAirlineCode),
+                    airlineName: '$returnAirline ${returnAirlineCode}$returnFlightNumber',
+                    departureDate: _formatDateTimeString(returnDepartureTime),
+                    arrivalDate: _formatDateTimeString(returnArrivalTime),
+                    departureTime: _formatTimeFromDateTime(returnDepartureTime),
+                    arrivalTime: _formatTimeFromDateTime(returnArrivalTime),
+                    fromCode: returnFromCode,
+                    toCode: returnToCode,
+                    duration: returnDuration,
+                    isDirect: returnStops == 0,
+                    isExpanded: isReturnExpanded,
+                    onToggleExpand: () {
+                      setState(() {
+                        if (isReturnExpanded) {
+                          expandedReturn.remove(index);
+                        } else {
+                          expandedReturn.add(index);
+                        }
+                      });
+                    },
+                    stops: returnStops,
+                    segments: returnSegments,
+                  ),
+                ],
+
+                const SizedBox(height: 12),
+
+                // Price and Reserve button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Stops info
+                    if (outboundStops > 0)
+                      Text(
+                        '$outboundStops escale${outboundStops > 1 ? 's' : ''}',
+                        style: kTextStyle.copyWith(
+                          color: kPrimaryColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Vol direct',
+                        style: kTextStyle.copyWith(
+                          color: Colors.green[700],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    Row(
+                      children: [
+                        // Price - clickable to show details
+                        GestureDetector(
+                          onTap: () => _showPriceDetailsBottomSheet(context, offer),
+                          child: Row(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '${price.toStringAsFixed(0)} $currency',
+                                    style: GoogleFonts.poppins(
+                                      color: kTitleColor,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                      height: 24 / 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    'par personne',
+                                    style: kTextStyle.copyWith(
+                                      color: kSubTitleColor,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(Icons.keyboard_arrow_down, color: kTitleColor, size: 18),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // Reserve button
+                        GestureDetector(
+                          onTap: () => const FlightDetails().launch(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'Réservez',
+                              style: kTextStyle.copyWith(
+                                color: kWhite,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build multi-destination flight card with all journeys
+  Widget _buildMultiDestinationCard({
+    required FlightOffer offer,
+    required int index,
+    required bool hasBaggage,
+    required bool isRefundable,
+    required double price,
+    required String currency,
+  }) {
+    final journeyList = offer.journey;
+    final airlineName = offer.airlineName;
+    final airlineCode = offer.airlineCode;
+
+    // Initialize expanded journeys set for this offer if not exists
+    if (!expandedJourneys.containsKey(index)) {
+      expandedJourneys[index] = {};
+    }
+
+    // Calculate total stops across all journeys
+    int totalStops = 0;
+    for (final journey in journeyList) {
+      totalStops += journey.flight?.stopQuantity ?? 0;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: kBorderColorTextField),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Recommandé badge
+          if (index == 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 12, top: 10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(221, 225, 255, 1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  'Recommandé',
+                  style: kTextStyle.copyWith(
+                    color: const Color.fromRGBO(147, 133, 245, 1),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+
+          // Multi-destination badge
+          Padding(
+            padding: EdgeInsets.only(left: 12, top: index == 0 ? 6 : 10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.purple.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                'Multi-destination (${journeyList.length} trajets)',
+                style: kTextStyle.copyWith(
+                  color: Colors.purple[700],
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                // Baggage and refund badges
+                Row(
+                  children: [
+                    if (hasBaggage == true)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.luggage, size: 14, color: Colors.green[700]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Bagages inclus',
+                              style: kTextStyle.copyWith(
+                                color: Colors.green[700],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (isRefundable == true)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_outline, size: 14, color: Colors.blue[700]),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Remboursable',
+                              style: kTextStyle.copyWith(
+                                color: Colors.blue[700],
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                if (hasBaggage == true || isRefundable == true) const SizedBox(height: 10),
+
+                // Build all journey segments dynamically
+                ...journeyList.asMap().entries.map((entry) {
+                  final journeyIndex = entry.key;
+                  final journey = entry.value;
+                  final flight = journey.flight;
+                  final segments = journey.flightSegments;
+
+                  // Get journey details
+                  String journeyAirline = airlineName;
+                  String journeyAirlineCode = airlineCode;
+                  String journeyFlightNumber = '';
+                  String journeyDepartureTime = '--:--';
+                  String journeyArrivalTime = '--:--';
+                  String journeyFromCode = '--';
+                  String journeyToCode = '--';
+
+                  if (segments.isNotEmpty) {
+                    final firstSegment = segments.first;
+                    final lastSegment = segments.last;
+
+                    journeyAirline = firstSegment.marketingAirlineName ?? airlineName;
+                    journeyAirlineCode = firstSegment.marketingAirline ?? airlineCode;
+                    journeyFlightNumber = firstSegment.flightNumber?.toString() ?? '';
+                    journeyDepartureTime = firstSegment.departureDateTime ?? '--:--';
+                    journeyArrivalTime = lastSegment.arrivalDateTime ?? '--:--';
+                    journeyFromCode = firstSegment.departureAirportCode ?? '--';
+                    journeyToCode = lastSegment.arrivalAirportCode ?? '--';
+                  }
+
+                  final journeyDuration = flight?.flightInfo?.duration ?? '--';
+                  final journeyStops = flight?.stopQuantity ?? 0;
+                  final isExpanded = expandedJourneys[index]?.contains(journeyIndex) ?? false;
+
+                  return Column(
+                    children: [
+                      if (journeyIndex > 0) ...[
+                        const SizedBox(height: 8),
+                        const Divider(height: 1, color: kBorderColorTextField),
+                        const SizedBox(height: 8),
+                      ],
+                      // Journey label
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Trajet ${journeyIndex + 1}',
+                          style: kTextStyle.copyWith(
+                            color: kPrimaryColor,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      _buildFlightSegment(
+                        airlineLogo: _getAirlineLogo(journeyAirlineCode),
+                        airlineName: '$journeyAirline ${journeyAirlineCode}$journeyFlightNumber',
+                        departureDate: _formatDateTimeString(journeyDepartureTime),
+                        arrivalDate: _formatDateTimeString(journeyArrivalTime),
+                        departureTime: _formatTimeFromDateTime(journeyDepartureTime),
+                        arrivalTime: _formatTimeFromDateTime(journeyArrivalTime),
+                        fromCode: journeyFromCode,
+                        toCode: journeyToCode,
+                        duration: journeyDuration,
+                        isDirect: journeyStops == 0,
+                        isExpanded: isExpanded,
+                        onToggleExpand: () {
+                          setState(() {
+                            if (isExpanded) {
+                              expandedJourneys[index]?.remove(journeyIndex);
+                            } else {
+                              expandedJourneys[index]?.add(journeyIndex);
+                            }
+                          });
+                        },
+                        stops: journeyStops,
+                        segments: segments,
+                      ),
+                    ],
+                  );
+                }).toList(),
+
+                const SizedBox(height: 12),
+
+                // Price and Reserve button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Stops info
+                    if (totalStops > 0)
+                      Text(
+                        '$totalStops escale${totalStops > 1 ? 's' : ''} au total',
+                        style: kTextStyle.copyWith(
+                          color: kPrimaryColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      )
+                    else
+                      Text(
+                        'Vols directs',
+                        style: kTextStyle.copyWith(
+                          color: Colors.green[700],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    Row(
+                      children: [
+                        // Price - clickable to show details
+                        GestureDetector(
+                          onTap: () => _showPriceDetailsBottomSheet(context, offer),
+                          child: Row(
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '${price.toStringAsFixed(0)} $currency',
+                                    style: GoogleFonts.poppins(
+                                      color: kTitleColor,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                      height: 24 / 16,
+                                    ),
+                                  ),
+                                  Text(
+                                    'par personne',
+                                    style: kTextStyle.copyWith(
+                                      color: kSubTitleColor,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 2),
+                              Icon(Icons.keyboard_arrow_down, color: kTitleColor, size: 18),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // Reserve button
+                        GestureDetector(
+                          onTap: () => const FlightDetails().launch(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'Réservez',
+                              style: kTextStyle.copyWith(
+                                color: kWhite,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Format time string from API (handles various formats)
+  String _formatTime(String? time) {
+    if (time == null || time.isEmpty) return '--:--';
+    // If already in HH:mm format, return as is
+    if (time.contains(':') && time.length <= 5) return time;
+    // Try to parse ISO datetime
+    try {
+      final dt = DateTime.parse(time);
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return time.length >= 5 ? time.substring(0, 5) : time;
+    }
+  }
+
+  // Format time from ISO datetime string (e.g., "2026-03-10T07:00:00" -> "07:00")
+  String _formatTimeFromDateTime(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty) return '--:--';
+    try {
+      final dt = DateTime.parse(dateTime);
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      // Try to extract time from string like "07:00:00"
+      if (dateTime.contains(':')) {
+        final parts = dateTime.split(':');
+        if (parts.length >= 2) {
+          return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+        }
+      }
+      return '--:--';
+    }
+  }
+
+  // Format date from ISO datetime string (e.g., "2026-03-10T07:00:00" -> "10 Mar")
+  String _formatDateTimeString(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(dateTime);
+      final locale = Localizations.localeOf(context).languageCode;
+      return DateFormat('dd MMM', locale).format(dt);
+    } catch (_) {
+      return '';
+    }
+  }
+
+  // Get airline logo based on airline code
+  String _getAirlineLogo(String airlineCode) {
+    // Map common airline codes to their logos
+    switch (airlineCode.toUpperCase()) {
+      case 'AH':
+        return 'assets/air_algerie.png';
+      case 'TK':
+        return 'assets/turkish_airlines.png';
+      case 'AF':
+        return 'assets/air_france.png';
+      default:
+        return 'assets/turkish_airlines.png'; // Default logo
+    }
+  }
+
+  // Show baggage details bottom sheet
+  void _showBaggageDetailsBottomSheet(BuildContext context, BaggageAllowance? baggage) {
+    // Get baggage info
+    String cabinBaggageText = 'Non inclus';
+    String checkedBaggageText = 'Non inclus';
+
+    if (baggage != null) {
+      // Cabin baggage
+      if (baggage.cabinBaggage.isNotEmpty) {
+        final cabin = baggage.cabinBaggage.first;
+        final paxType = _getPaxTypeDisplayName(cabin.paxType);
+        final value = cabin.value ?? 0;
+        final unit = cabin.unit ?? 'KG';
+        cabinBaggageText = '$paxType: $value$unit';
+      }
+
+      // Checked baggage
+      if (baggage.checkedInBaggage.isNotEmpty) {
+        final checked = baggage.checkedInBaggage.first;
+        final paxType = _getPaxTypeDisplayName(checked.paxType);
+        final value = checked.value ?? 0;
+        final unit = checked.unit ?? 'pièces';
+        if (unit.toUpperCase() == 'PC' || unit.toUpperCase() == 'PIECE' || unit.toUpperCase() == 'PIECES') {
+          checkedBaggageText = '$paxType: $value pièce${value > 1 ? 's' : ''}';
+        } else {
+          checkedBaggageText = '$paxType: $value$unit';
+        }
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Détails bagages',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF333333),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey.shade200,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Divider(height: 1, color: Color(0xFFE0E0E0)),
+              const SizedBox(height: 16),
+
+              // Checked baggage
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Bagages en soute:',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF666666),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  Text(
+                    checkedBaggageText,
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF333333),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Cabin baggage
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Bagages à main:',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF666666),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  Text(
+                    cabinBaggageText,
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF333333),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Get passenger type display name
+  String _getPaxTypeDisplayName(String? paxType) {
+    switch (paxType?.toUpperCase()) {
+      case 'ADT':
+        return 'Adulte';
+      case 'CHD':
+        return 'Enfant';
+      case 'INF':
+        return 'Bébé';
+      default:
+        return 'Adulte';
+    }
+  }
+
+  // Show price details bottom sheet
+  void _showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
+    final fare = offer.fare;
+    final isRefundable = offer.isRefundable;
+    final currency = offer.currency;
+    final totalFare = fare?.totalFare ?? 0;
+
+    // Format number with spaces as thousand separator
+    String formatPrice(double price) {
+      final formatted = price.toStringAsFixed(0);
+      final buffer = StringBuffer();
+      int count = 0;
+      for (int i = formatted.length - 1; i >= 0; i--) {
+        buffer.write(formatted[i]);
+        count++;
+        if (count == 3 && i > 0) {
+          buffer.write(' ');
+          count = 0;
+        }
+      }
+      return buffer.toString().split('').reversed.join();
+    }
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Détails prix',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF333333),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey.shade200,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 18,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Refundable badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isRefundable
+                      ? const Color(0xFFE8F5E9)
+                      : const Color(0xFFFFEBEE),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  isRefundable ? 'Remboursable' : 'Non remboursable',
+                  style: GoogleFonts.poppins(
+                    color: isRefundable
+                        ? const Color(0xFF4CAF50)
+                        : const Color(0xFFE53935),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Fare breakdown by passenger type
+              if (fare != null && fare.fareBreakdown.isNotEmpty) ...[
+                ...fare.fareBreakdown.map((breakdown) {
+                  final paxType = _getPaxTypeDisplayName(breakdown.paxType);
+                  final quantity = breakdown.effectiveQuantity > 0 ? breakdown.effectiveQuantity : 1;
+                  final baseFare = breakdown.effectiveBaseFare;
+                  final tax = breakdown.effectiveTotalTax;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Passenger count
+                      Text(
+                        '${quantity}x $paxType',
+                        style: GoogleFonts.poppins(
+                          color: const Color(0xFF333333),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Base fare
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Frais de base',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF666666),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          Text(
+                            '${formatPrice(baseFare)} $currency',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF333333),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // Taxes
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Taxes par ${paxType.toLowerCase()}',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF666666),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          Text(
+                            '${formatPrice(tax)} $currency',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFF333333),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                  );
+                }).toList(),
+              ] else ...[
+                // Fallback if no fare breakdown
+                Text(
+                  '1x Adulte',
+                  style: GoogleFonts.poppins(
+                    color: const Color(0xFF333333),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Frais de base',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF666666),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    Text(
+                      '${formatPrice(fare?.baseFare ?? totalFare)} $currency',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF333333),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Taxes par adulte',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF666666),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    Text(
+                      '${formatPrice(fare?.totalTax ?? 0)} $currency',
+                      style: GoogleFonts.poppins(
+                        color: const Color(0xFF333333),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              const Divider(height: 1, color: Color(0xFFE0E0E0)),
+              const SizedBox(height: 12),
+
+              // Total
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total TTC',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF333333),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '${formatPrice(totalFare)} $currency',
+                    style: GoogleFonts.poppins(
+                      color: kPrimaryColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -1510,6 +2685,9 @@ class _SearchResultState extends State<SearchResult> {
     required bool isDirect,
     required bool isExpanded,
     required VoidCallback onToggleExpand,
+    int? stops,
+    List<dynamic>? segments,
+    BaggageAllowance? baggageAllowance,
   }) {
     // Colors from design
     const Color textGray = Color.fromRGBO(130, 130, 130, 1);
@@ -1517,6 +2695,35 @@ class _SearchResultState extends State<SearchResult> {
     const Color textOrange = Color.fromRGBO(255, 87, 34, 1);
     const Color directGreen = Color.fromRGBO(76, 175, 80, 1);
     const Color detailsBlue = Color.fromRGBO(0, 118, 209, 1);
+
+    // Get baggage info from baggageAllowance or segments
+    BaggageAllowance? baggage = baggageAllowance;
+    String cabinWeight = '7Kg';
+    String checkedWeight = '24Kg';
+
+    if (baggage == null && segments != null && segments.isNotEmpty) {
+      // Try to get baggage from first segment
+      final firstSeg = segments.first;
+      if (firstSeg is FlightSegmentDetail) {
+        baggage = firstSeg.baggageAllowance;
+      }
+    }
+
+    if (baggage != null) {
+      if (baggage.cabinBaggage.isNotEmpty) {
+        final cabin = baggage.cabinBaggage.first;
+        cabinWeight = '${cabin.value ?? 7}${cabin.unit ?? 'Kg'}';
+      }
+      if (baggage.checkedInBaggage.isNotEmpty) {
+        final checked = baggage.checkedInBaggage.first;
+        final unit = checked.unit ?? 'Kg';
+        if (unit.toUpperCase() == 'PC' || unit.toUpperCase() == 'PIECE' || unit.toUpperCase() == 'PIECES') {
+          checkedWeight = '${checked.value ?? 1}PC';
+        } else {
+          checkedWeight = '${checked.value ?? 24}$unit';
+        }
+      }
+    }
     const Color lineGray = Color.fromRGBO(200, 200, 200, 1);
 
     return Column(
@@ -1526,8 +2733,8 @@ class _SearchResultState extends State<SearchResult> {
         Row(
           children: [
             Container(
-              height: 24,
-              width: 24,
+              height: 20,
+              width: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
@@ -1536,19 +2743,19 @@ class _SearchResultState extends State<SearchResult> {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Text(
               airlineName,
               style: GoogleFonts.poppins(
                 color: textBlack,
                 fontWeight: FontWeight.w500,
-                fontSize: 14,
+                fontSize: 12,
               ),
             ),
           ],
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
 
         // Flight times row with connecting lines
         Row(
@@ -1562,9 +2769,9 @@ class _SearchResultState extends State<SearchResult> {
                   departureDate,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 13,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    height: 30 / 13,
+                    height: 1.4,
                   ),
                 ),
                 Text(
@@ -1572,17 +2779,17 @@ class _SearchResultState extends State<SearchResult> {
                   style: GoogleFonts.poppins(
                     color: textBlack,
                     fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                    height: 30 / 16,
+                    fontSize: 14,
+                    height: 1.4,
                   ),
                 ),
                 Text(
                   fromCode,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 13,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    height: 30 / 13,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -1593,22 +2800,22 @@ class _SearchResultState extends State<SearchResult> {
               child: Container(
                 height: 1,
                 color: lineGray,
-                margin: const EdgeInsets.only(left: 8, right: 0),
+                margin: const EdgeInsets.only(left: 6, right: 0),
               ),
             ),
 
             // Duration and Direct badge - centered
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(241, 241, 241, 1),
-                borderRadius: BorderRadius.circular(25),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: RichText(
                 text: TextSpan(
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 12,
+                    fontSize: 10,
                     fontWeight: FontWeight.w400,
                   ),
                   children: [
@@ -1617,7 +2824,7 @@ class _SearchResultState extends State<SearchResult> {
                       text: isDirect ? 'Direct' : '${1} escale',
                       style: GoogleFonts.poppins(
                         color: isDirect ? directGreen : textOrange,
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -1631,7 +2838,7 @@ class _SearchResultState extends State<SearchResult> {
               child: Container(
                 height: 1,
                 color: lineGray,
-                margin: const EdgeInsets.only(left: 0, right: 8),
+                margin: const EdgeInsets.only(left: 0, right: 6),
               ),
             ),
 
@@ -1643,9 +2850,9 @@ class _SearchResultState extends State<SearchResult> {
                   arrivalDate,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 13,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    height: 30 / 13,
+                    height: 1.4,
                   ),
                 ),
                 Text(
@@ -1653,17 +2860,17 @@ class _SearchResultState extends State<SearchResult> {
                   style: GoogleFonts.poppins(
                     color: textBlack,
                     fontWeight: FontWeight.w500,
-                    fontSize: 16,
-                    height: 30 / 16,
+                    fontSize: 14,
+                    height: 1.4,
                   ),
                 ),
                 Text(
                   toCode,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 13,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    height: 30 / 13,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -1671,52 +2878,55 @@ class _SearchResultState extends State<SearchResult> {
           ],
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
 
         // Baggage info and Details row
         Row(
           children: [
-            // Baggage icons
-            Row(
-              children: [
-                Image.asset(
-                  'assets/cabin_bag.png',
-                  width: 20,
-                  height: 20,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.work_outline, color: textGray, size: 18);
-                  },
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '7Kg',
-                  style: GoogleFonts.poppins(
-                    color: textGray,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
+            // Baggage icons - clickable to show details
+            GestureDetector(
+              onTap: () => _showBaggageDetailsBottomSheet(context, baggage),
+              child: Row(
+                children: [
+                  Image.asset(
+                    'assets/cabin_bag.png',
+                    width: 16,
+                    height: 16,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.work_outline, color: textGray, size: 14);
+                    },
                   ),
-                ),
-                const SizedBox(width: 10),
-                Image.asset(
-                  'assets/luggage.png',
-                  width: 20,
-                  height: 20,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(Icons.luggage_outlined, color: textGray, size: 18);
-                  },
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '24Kg',
-                  style: GoogleFonts.poppins(
-                    color: textGray,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
+                  const SizedBox(width: 3),
+                  Text(
+                    cabinWeight,
+                    style: GoogleFonts.poppins(
+                      color: textGray,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 4),
-                Icon(Icons.keyboard_arrow_down, color: textGray, size: 18),
-              ],
+                  const SizedBox(width: 8),
+                  Image.asset(
+                    'assets/luggage.png',
+                    width: 16,
+                    height: 16,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.luggage_outlined, color: textGray, size: 14);
+                    },
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    checkedWeight,
+                    style: GoogleFonts.poppins(
+                      color: textGray,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(Icons.keyboard_arrow_down, color: textGray, size: 14),
+                ],
+              ),
             ),
 
             const Spacer(),
@@ -1730,7 +2940,7 @@ class _SearchResultState extends State<SearchResult> {
                     'Détails vol',
                     style: GoogleFonts.poppins(
                       color: detailsBlue,
-                      fontSize: 12,
+                      fontSize: 10,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1739,7 +2949,7 @@ class _SearchResultState extends State<SearchResult> {
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
                     color: detailsBlue,
-                    size: 18,
+                    size: 14,
                   ),
                 ],
               ),
@@ -1749,12 +2959,12 @@ class _SearchResultState extends State<SearchResult> {
 
         // Expanded details
         if (isExpanded) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: kWebsiteGreyBg,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1764,10 +2974,10 @@ class _SearchResultState extends State<SearchResult> {
                   style: GoogleFonts.poppins(
                     color: textBlack,
                     fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                    fontSize: 11,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 _buildDetailRow('Compagnie', airlineName.split(' ').first),
                 _buildDetailRow('Numéro de vol', airlineName.split(' ').last),
                 _buildDetailRow('Classe', 'Économique'),
@@ -1783,7 +2993,7 @@ class _SearchResultState extends State<SearchResult> {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1791,14 +3001,14 @@ class _SearchResultState extends State<SearchResult> {
             label,
             style: kTextStyle.copyWith(
               color: kSubTitleColor,
-              fontSize: 12,
+              fontSize: 10,
             ),
           ),
           Text(
             value,
             style: kTextStyle.copyWith(
               color: kTitleColor,
-              fontSize: 12,
+              fontSize: 10,
               fontWeight: FontWeight.w500,
             ),
           ),

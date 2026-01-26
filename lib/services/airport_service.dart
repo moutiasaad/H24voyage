@@ -30,7 +30,7 @@ class AirportService {
   static Future<AirportSuggestResponse> suggestAirports(String keyword) async {
     try {
       final uri = Uri.parse(
-        '${ApiConfig.baseUrl}${ApiConfig.suggestAirports}?keyWord=$keyword',
+        '${ApiConfig.airportBaseUrl}${ApiConfig.suggestAirports}?keyWord=$keyword',
       );
 
       final response = await http.get(

@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(flutter pub get:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(flutter clean:*)",
+      "Bash(findstr:*)",
+      "Bash(Select-String -Pattern \"error\" -NotMatch)",
+      "Bash(Select-String -Pattern \"issues found\")",
+      "Bash(flutter build:*)",
+      "Bash(dart analyze:*)"
     ]
   }
 }
