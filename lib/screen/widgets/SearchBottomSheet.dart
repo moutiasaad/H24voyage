@@ -15,15 +15,14 @@ class SearchBottomSheet extends StatefulWidget {
 }
 
 class _SearchBottomSheetState extends State<SearchBottomSheet> {
-  final AirportController _controller = AirportController();
+  // Use singleton controller - airports are preloaded from home page
+  final AirportController _controller = AirportController.instance;
   final TextEditingController _textController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onControllerUpdate);
-    // Fetch Algerian airports when the bottom sheet loads
-    _controller.fetchInitialAirports();
   }
 
   void _onControllerUpdate() {
@@ -33,7 +32,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   @override
   void dispose() {
     _controller.removeListener(_onControllerUpdate);
-    _controller.dispose();
+    // Don't dispose singleton controller
     _textController.dispose();
     super.dispose();
   }
@@ -118,15 +117,8 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
             ),
             const SizedBox(height: 10.0),
 
-            // Airports list
-            if ((_controller.isLoading || !_controller.initialLoaded) && displayAirports.isEmpty && !_controller.hasSearchQuery)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 40.0),
-                child: Center(
-                  child: CircularProgressIndicator(color: kPrimaryColor),
-                ),
-              )
-            else if (displayAirports.isEmpty)
+            // Airports list - no loading indicator, data is preloaded
+            if (displayAirports.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 40.0),
                 child: Center(

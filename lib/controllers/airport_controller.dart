@@ -4,6 +4,16 @@ import '../Model/Airport.dart';
 import '../services/airport_service.dart';
 
 class AirportController extends ChangeNotifier {
+  // Singleton instance for preloading
+  static final AirportController _instance = AirportController._internal();
+  static AirportController get instance => _instance;
+
+  // Factory constructor returns singleton
+  factory AirportController() => _instance;
+
+  // Private constructor
+  AirportController._internal();
+
   List<Airport> _suggestions = [];
   List<Airport> _initialAirports = [];
   String _searchQuery = '';
@@ -18,12 +28,17 @@ class AirportController extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get initialLoaded => _initialLoaded;
 
-  /// Fetch initial airports (Algerian airports) when the bottom sheet loads
+  /// Preload Algerian airports - call this when home page loads
+  static Future<void> preloadAirports() async {
+    await _instance.fetchInitialAirports();
+  }
+
+  /// Fetch initial airports (Algerian airports)
   Future<void> fetchInitialAirports() async {
     if (_initialLoaded) return; // Already loaded
 
     _isLoading = true;
-    notifyListeners();
+    // Don't notify - we want silent loading
 
     try {
       // Search for Algerian airports

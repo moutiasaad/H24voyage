@@ -10,6 +10,7 @@ import 'package:nb_utils/nb_utils.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:intl/intl.dart';
 
+import '../../controllers/airport_controller.dart';
 import '../../controllers/flight_controller.dart';
 import '../../models/models.dart';
 import '../search/search.dart';
@@ -113,6 +114,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     // Initialize slider data - replace with API call in future
     _loadSliderData();
+
+    // Preload Algerian airports in background for SearchBottomSheet
+    AirportController.preloadAirports();
   }
 
   /// Load slider data - replace with API call in future
