@@ -5,12 +5,46 @@ import '../services/airport_service.dart';
 
 class AirportController extends ChangeNotifier {
   List<Airport> _suggestions = [];
+  List<Airport> _initialAirports = [];
   String _searchQuery = '';
   Timer? _debounceTimer;
+  bool _isLoading = false;
+  bool _initialLoaded = false;
 
   List<Airport> get suggestions => _suggestions;
+  List<Airport> get initialAirports => _initialAirports;
   String get searchQuery => _searchQuery;
   bool get hasSearchQuery => _searchQuery.isNotEmpty;
+  bool get isLoading => _isLoading;
+  bool get initialLoaded => _initialLoaded;
+
+  /// Fetch initial airports (Algerian airports) when the bottom sheet loads
+  Future<void> fetchInitialAirports() async {
+    if (_initialLoaded) return; // Already loaded
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // Search for Algerian airports
+      final response = await AirportService.suggestAirports('algerie');
+      if (response.success && response.suggestions.isNotEmpty) {
+        _initialAirports = response.suggestions;
+      } else {
+        // Fallback: try with 'alger'
+        final fallbackResponse = await AirportService.suggestAirports('alger');
+        if (fallbackResponse.success) {
+          _initialAirports = fallbackResponse.suggestions;
+        }
+      }
+      _initialLoaded = true;
+    } catch (e) {
+      debugPrint('Error fetching initial airports: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   void searchAirports(String keyword) {
     _searchQuery = keyword;

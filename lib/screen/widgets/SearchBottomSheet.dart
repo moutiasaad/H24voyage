@@ -22,6 +22,8 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   void initState() {
     super.initState();
     _controller.addListener(_onControllerUpdate);
+    // Fetch Algerian airports when the bottom sheet loads
+    _controller.fetchInitialAirports();
   }
 
   void _onControllerUpdate() {
@@ -38,10 +40,10 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // Show API suggestions when searching, otherwise show default airports
+    // Show API suggestions when searching, otherwise show initial airports from API
     final displayAirports = _controller.hasSearchQuery
         ? _controller.suggestions
-        : airports;
+        : _controller.initialAirports;
 
     return Container(
       height: context.height() * 0.85,
@@ -69,7 +71,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
               },
               decoration: kInputDecoration.copyWith(
                 contentPadding: const EdgeInsets.only(left: 10, right: 10),
-                hintText: 'Country, city or airport',
+                hintText: 'Pays, ville ou aéroport',
                 hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
                 border: const OutlineInputBorder(),
                 prefixIcon: Icon(
@@ -117,62 +119,82 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
             const SizedBox(height: 10.0),
 
             // Airports list
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: displayAirports.length,
-              itemBuilder: (_, i) {
-                final airport = displayAirports[i];
-                return Column(
-                  children: [
-                    ListTile(
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      leading: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: Icon(
-                          Icons.flight_takeoff,
-                          color: kPrimaryColor,
-                          size: 28,
-                        ),
-                      ),
-                      title: Text(
-                        airport.name,
-                        style: kTextStyle.copyWith(
-                          color: kTitleColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Text(
-                        '${airport.city}, ${airport.country}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: kTextStyle.copyWith(color: kSubTitleColor),
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          airport.code,
-                          style: kTextStyle.copyWith(
+            if ((_controller.isLoading || !_controller.initialLoaded) && displayAirports.isEmpty && !_controller.hasSearchQuery)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 40.0),
+                child: Center(
+                  child: CircularProgressIndicator(color: kPrimaryColor),
+                ),
+              )
+            else if (displayAirports.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40.0),
+                child: Center(
+                  child: Text(
+                    _controller.hasSearchQuery
+                        ? 'Aucun aéroport trouvé'
+                        : 'Aucun aéroport disponible',
+                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                  ),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: displayAirports.length,
+                itemBuilder: (_, i) {
+                  final airport = displayAirports[i];
+                  return Column(
+                    children: [
+                      ListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        leading: SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Icon(
+                            Icons.flight_takeoff,
                             color: kPrimaryColor,
+                            size: 28,
+                          ),
+                        ),
+                        title: Text(
+                          airport.name,
+                          style: kTextStyle.copyWith(
+                            color: kTitleColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+                        subtitle: Text(
+                          '${airport.city}, ${airport.country}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                        ),
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: kPrimaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            airport.code,
+                            style: kTextStyle.copyWith(
+                              color: kPrimaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context, airport);
+                        },
                       ),
-                      onTap: () {
-                        Navigator.pop(context, airport);
-                      },
-                    ),
-                    const Divider(thickness: 1.0, color: kBorderColorTextField),
-                  ],
-                );
-              },
-            ),
+                      const Divider(thickness: 1.0, color: kBorderColorTextField),
+                    ],
+                  );
+                },
+              ),
           ],
         ),
       ),

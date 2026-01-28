@@ -8,7 +8,8 @@
       "Bash(Select-String -Pattern \"error\" -NotMatch)",
       "Bash(Select-String -Pattern \"issues found\")",
       "Bash(flutter build:*)",
-      "Bash(dart analyze:*)"
+      "Bash(dart analyze:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

@@ -57,6 +57,9 @@ class _SearchResultState extends State<SearchResult> {
   int selectedFilterTab = 0; // 0: Aller, 1: Retour
   String selectedEscaleOption = 'Tous';
 
+  // Airline filter - null means show all
+  String? selectedAirlineCode;
+
   @override
   void initState() {
     super.initState();
@@ -152,14 +155,67 @@ class _SearchResultState extends State<SearchResult> {
 
                   // Flight cards
                   hasApiFlights
-                      ? ListView.builder(
-                          itemCount: apiFlights.length,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemBuilder: (_, i) {
-                            final offer = apiFlights[i];
-                            return _buildApiFlightCard(offer, i, fromCode, toCode);
+                      ? Builder(
+                          builder: (context) {
+                            final flights = filteredApiFlights;
+                            // Show empty state if filters return no results
+                            if (flights.isEmpty && (selectedAirlineCode != null || isDirectOnly)) {
+                              return Padding(
+                                padding: const EdgeInsets.all(32),
+                                child: Center(
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        isDirectOnly ? Icons.flight : Icons.filter_alt_off,
+                                        size: 64,
+                                        color: kSubTitleColor,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        isDirectOnly && selectedAirlineCode == null
+                                            ? 'Aucun vol direct disponible'
+                                            : isDirectOnly
+                                                ? 'Aucun vol direct pour cette compagnie'
+                                                : 'Aucun vol pour cette compagnie',
+                                        style: GoogleFonts.poppins(
+                                          color: kTitleColor,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (isDirectOnly) isDirectOnly = false;
+                                            if (selectedAirlineCode != null) selectedAirlineCode = null;
+                                          });
+                                        },
+                                        child: Text(
+                                          'Afficher tous les vols',
+                                          style: GoogleFonts.poppins(
+                                            color: kPrimaryColor,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            return ListView.builder(
+                              itemCount: flights.length,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemBuilder: (_, i) {
+                                final offer = flights[i];
+                                return _buildApiFlightCard(offer, i, fromCode, toCode);
+                              },
+                            );
                           },
                         )
                       : (widget.flightOffers != null && widget.flightOffers!.isEmpty)
@@ -360,18 +416,29 @@ class _SearchResultState extends State<SearchResult> {
 
                   // const SizedBox(width: 8),
 
-                  // Edit button
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    // decoration: BoxDecoration(
-                    //   color: kWhite,
-                    //   borderRadius: BorderRadius.circular(8),
-                    //   border: Border.all(color: kPrimaryColor, width: 1.5),
-                    // ),
-                    child: Image.asset(
-                      'assets/editer 1.png',
-                      width: 20,
-                      height: 20,
+                  // Edit button - returns to home page to modify search
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: kWhite.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Image.asset(
+                        'assets/editer 1.png',
+                        width: 20,
+                        height: 20,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.edit,
+                            color: kWhite,
+                            size: 20,
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -389,7 +456,7 @@ class _SearchResultState extends State<SearchResult> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          // Vol direct toggle
+          // Vol direct toggle with count
           Text(
             'Vol direct',
             style: kTextStyle.copyWith(
@@ -397,15 +464,35 @@ class _SearchResultState extends State<SearchResult> {
               fontSize: 14,
             ),
           ),
+          if (hasApiFlights && directFlightsCount > 0) ...[
+            const SizedBox(width: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: kPrimaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                '$directFlightsCount',
+                style: kTextStyle.copyWith(
+                  color: kPrimaryColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
           const SizedBox(width: 4),
           SizedBox(
             height: 24,
             child: Switch(
               value: isDirectOnly,
-              onChanged: (val) => setState(() => isDirectOnly = val),
+              onChanged: directFlightsCount > 0
+                  ? (val) => setState(() => isDirectOnly = val)
+                  : null, // Disable if no direct flights
               activeColor: kPrimaryColor,
               activeTrackColor: kPrimaryColor.withOpacity(0.3),
-              inactiveThumbColor: kWhite,
+              inactiveThumbColor: directFlightsCount > 0 ? kWhite : kSubTitleColor,
               inactiveTrackColor: const Color(0xFFE0E0E0),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
@@ -449,7 +536,7 @@ class _SearchResultState extends State<SearchResult> {
           ),
           const SizedBox(width: 10),
 
-          // Trier button
+          // Trier button - shows current sort option
           GestureDetector(
             onTap: () => _showSortBottomSheet(),
             child: Container(
@@ -460,6 +547,7 @@ class _SearchResultState extends State<SearchResult> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset(
                     'assets/trie.png',
@@ -471,12 +559,18 @@ class _SearchResultState extends State<SearchResult> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Trier',
+                    _getSortDisplayText(selectedSortOption),
                     style: kTextStyle.copyWith(
                       color: kPrimaryColor,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    color: kPrimaryColor,
+                    size: 18,
                   ),
                 ],
               ),
@@ -557,6 +651,13 @@ class _SearchResultState extends State<SearchResult> {
                     },
                   ),
                   _buildSortOption(
+                    'Heure de départ',
+                    tempSelectedOption,
+                    (value) {
+                      setModalState(() => tempSelectedOption = value);
+                    },
+                  ),
+                  _buildSortOption(
                     'Heure d\'arrivée',
                     tempSelectedOption,
                     (value) {
@@ -578,6 +679,7 @@ class _SearchResultState extends State<SearchResult> {
                     onTap: () {
                       setState(() {
                         selectedSortOption = tempSelectedOption;
+                        _sortFlights(tempSelectedOption);
                       });
                       Navigator.pop(context);
                     },
@@ -608,6 +710,137 @@ class _SearchResultState extends State<SearchResult> {
         );
       },
     );
+  }
+
+  // Sort flights based on selected option
+  void _sortFlights(String sortOption) {
+    if (!hasApiFlights) return;
+
+    apiFlights.sort((a, b) {
+      switch (sortOption) {
+        case 'Le moins cher':
+          return a.totalPrice.compareTo(b.totalPrice);
+
+        case 'Le plus cher':
+          return b.totalPrice.compareTo(a.totalPrice);
+
+        case 'Heure de départ':
+          final aDeparture = _getFlightDepartureDateTime(a);
+          final bDeparture = _getFlightDepartureDateTime(b);
+          if (aDeparture == null && bDeparture == null) return 0;
+          if (aDeparture == null) return 1;
+          if (bDeparture == null) return -1;
+          return aDeparture.compareTo(bDeparture);
+
+        case 'Heure d\'arrivée':
+          final aArrival = _getFlightArrivalDateTime(a);
+          final bArrival = _getFlightArrivalDateTime(b);
+          if (aArrival == null && bArrival == null) return 0;
+          if (aArrival == null) return 1;
+          if (bArrival == null) return -1;
+          return aArrival.compareTo(bArrival);
+
+        case 'Durée du vol':
+          final aDuration = _getFlightTotalDuration(a);
+          final bDuration = _getFlightTotalDuration(b);
+          return aDuration.compareTo(bDuration);
+
+        default:
+          return 0;
+      }
+    });
+  }
+
+  // Get departure datetime from first journey's first segment
+  DateTime? _getFlightDepartureDateTime(FlightOffer offer) {
+    if (offer.journey.isEmpty) return null;
+    final firstJourney = offer.journey.first;
+    if (firstJourney.flightSegments.isEmpty) return null;
+    final firstSegment = firstJourney.flightSegments.first;
+    final dateTimeStr = firstSegment.departureDateTime;
+    if (dateTimeStr == null) return null;
+    return DateTime.tryParse(dateTimeStr);
+  }
+
+  // Get arrival datetime from first journey's last segment
+  DateTime? _getFlightArrivalDateTime(FlightOffer offer) {
+    if (offer.journey.isEmpty) return null;
+    final firstJourney = offer.journey.first;
+    if (firstJourney.flightSegments.isEmpty) return null;
+    final lastSegment = firstJourney.flightSegments.last;
+    final dateTimeStr = lastSegment.arrivalDateTime;
+    if (dateTimeStr == null) return null;
+    return DateTime.tryParse(dateTimeStr);
+  }
+
+  // Get total flight duration in minutes
+  int _getFlightTotalDuration(FlightOffer offer) {
+    // Try to get from detail first
+    if (offer.detail?.elapsedDurationTime != null) {
+      return offer.detail!.elapsedDurationTime!;
+    }
+
+    // Calculate from journeys
+    int totalMinutes = 0;
+    for (final journey in offer.journey) {
+      // Try flight info duration
+      if (journey.flight?.flightInfo?.durationTime != null) {
+        totalMinutes += journey.flight!.flightInfo!.durationTime!;
+      } else {
+        // Calculate from segments
+        for (final segment in journey.flightSegments) {
+          final durationStr = segment.duration;
+          if (durationStr != null) {
+            totalMinutes += _parseDurationToMinutes(durationStr);
+          }
+        }
+      }
+    }
+    return totalMinutes;
+  }
+
+  // Parse duration string (e.g., "2h 30m" or "PT2H30M") to minutes
+  int _parseDurationToMinutes(String duration) {
+    // Handle ISO 8601 format (PT2H30M)
+    if (duration.startsWith('PT')) {
+      int minutes = 0;
+      final hourMatch = RegExp(r'(\d+)H').firstMatch(duration);
+      final minMatch = RegExp(r'(\d+)M').firstMatch(duration);
+      if (hourMatch != null) {
+        minutes += int.parse(hourMatch.group(1)!) * 60;
+      }
+      if (minMatch != null) {
+        minutes += int.parse(minMatch.group(1)!);
+      }
+      return minutes;
+    }
+
+    // Handle simple format (2h 30m or 2:30)
+    final parts = duration.replaceAll(RegExp(r'[^\d:]'), ' ').trim().split(RegExp(r'[\s:]+'));
+    if (parts.length >= 2) {
+      final hours = int.tryParse(parts[0]) ?? 0;
+      final mins = int.tryParse(parts[1]) ?? 0;
+      return hours * 60 + mins;
+    }
+    return 0;
+  }
+
+  // Get short display text for sort button
+  String _getSortDisplayText(String sortOption) {
+    switch (sortOption) {
+      case 'Le moins cher':
+        return 'Prix ↑';
+      case 'Le plus cher':
+        return 'Prix ↓';
+      case 'Heure de départ':
+        return 'Départ';
+      case 'Heure d\'arrivée':
+        return 'Arrivée';
+      case 'Durée du vol':
+        return 'Durée';
+      default:
+        return 'Trier';
+    }
   }
 
   Widget _buildSortOption(String title, String selectedValue, Function(String) onChanged) {
@@ -657,39 +890,109 @@ class _SearchResultState extends State<SearchResult> {
   }
 
   // Dynamic filter data - can be loaded from API/JSON
-  Map<String, dynamic> get filterData => {
-    'categories': ['Compagnies', 'Prix', 'Escale', 'Aéroport'],
-    'compagnies': [
-      {'name': 'Turkish airline', 'code': 'TK', 'logo': 'assets/turkish_airlines.png', 'selected': false},
-      {'name': 'Tunisair', 'code': 'TU', 'logo': 'assets/TU.png', 'selected': false},
-      {'name': 'Air algerie', 'code': 'AH', 'logo': 'assets/air_algerie.png', 'selected': false},
-      {'name': 'Qatar-airways', 'code': 'QR', 'logo': 'assets/qatar_airways.png', 'selected': false},
-      {'name': 'Nouvelair', 'code': 'BJ', 'logo': 'assets/nouvelair.png', 'selected': false},
-      {'name': 'Tassili airlines', 'code': 'SF', 'logo': 'assets/tassili_airlines.png', 'selected': false},
-      {'name': 'Lufthansa', 'code': 'LH', 'logo': 'assets/lufthansa.png', 'selected': false},
-    ],
-    'prix': {
-      'min': 0,
-      'max': 50000,
-      'currency': 'DZD',
-    },
-    'escale': ['Tous', 'Direct', 'Jusqu\'à 1 escale', 'Jusqu\'à 2 escale'],
-    'aeroports': {
-      'depart': {
-        'city': 'Paris',
-        'airports': [
-          {'name': 'Paris Charles de Gaulle Apt.', 'code': 'CDG', 'selected': false},
-          {'name': 'Paris Orly Apt.', 'code': 'ORY', 'selected': false},
-        ],
+  // Dynamic filter data extracted from API flights
+  Map<String, dynamic> get filterData {
+    // Extract unique airlines from API flights
+    final Map<String, Map<String, dynamic>> airlinesMap = {};
+    double minPrice = double.infinity;
+    double maxPrice = 0;
+    final Map<String, Map<String, dynamic>> departureAirportsMap = {};
+    final Map<String, Map<String, dynamic>> arrivalAirportsMap = {};
+    int maxStops = 0;
+
+    if (hasApiFlights) {
+      for (final offer in apiFlights) {
+        // Get price range
+        final price = offer.totalPrice;
+        if (price < minPrice) minPrice = price;
+        if (price > maxPrice) maxPrice = price;
+
+        for (final journey in offer.journey) {
+          // Track max stops
+          final stops = journey.flight?.stopQuantity ?? (journey.flightSegments.length - 1);
+          if (stops > maxStops) maxStops = stops;
+
+          for (int i = 0; i < journey.flightSegments.length; i++) {
+            final segment = journey.flightSegments[i];
+
+            // Extract airline info
+            final airlineCode = segment.operatingAirline ?? segment.marketingAirline;
+            final airlineName = segment.operatingAirlineName ?? segment.marketingAirlineName ?? 'Airline';
+            if (airlineCode != null && airlineCode.isNotEmpty && !airlinesMap.containsKey(airlineCode)) {
+              airlinesMap[airlineCode] = {
+                'name': airlineName,
+                'code': airlineCode,
+                'logo': _getAirlineLogoUrl(airlineCode),
+                'selected': false,
+              };
+            }
+
+            // Extract departure airports (first segment of first journey)
+            if (i == 0) {
+              final depCode = segment.departureAirportCode;
+              final depDetails = segment.departureAirportDetails;
+              if (depCode != null && !departureAirportsMap.containsKey(depCode)) {
+                departureAirportsMap[depCode] = {
+                  'name': depDetails?.name ?? depCode,
+                  'code': depCode,
+                  'city': depDetails?.city ?? '',
+                  'selected': false,
+                };
+              }
+            }
+
+            // Extract arrival airports (last segment of last journey)
+            if (i == journey.flightSegments.length - 1) {
+              final arrCode = segment.arrivalAirportCode;
+              final arrDetails = segment.arrivalAirportDetails;
+              if (arrCode != null && !arrivalAirportsMap.containsKey(arrCode)) {
+                arrivalAirportsMap[arrCode] = {
+                  'name': arrDetails?.name ?? arrCode,
+                  'code': arrCode,
+                  'city': arrDetails?.city ?? '',
+                  'selected': false,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Build escale options based on max stops found
+    final List<String> escaleOptions = ['Tous', 'Direct'];
+    if (maxStops >= 1) escaleOptions.add('Jusqu\'à 1 escale');
+    if (maxStops >= 2) escaleOptions.add('Jusqu\'à 2 escales');
+
+    // Get cities for departure/arrival sections
+    final departureCity = departureAirportsMap.isNotEmpty
+        ? (departureAirportsMap.values.first['city'] as String?) ?? widget.fromAirport.city
+        : widget.fromAirport.city;
+    final arrivalCity = arrivalAirportsMap.isNotEmpty
+        ? (arrivalAirportsMap.values.first['city'] as String?) ?? widget.toAirport.city
+        : widget.toAirport.city;
+
+    return {
+      'categories': ['Compagnies', 'Prix', 'Escale', 'Aéroport'],
+      'compagnies': airlinesMap.values.toList(),
+      'prix': {
+        'min': minPrice == double.infinity ? 0 : minPrice,
+        'max': maxPrice == 0 ? 50000 : maxPrice,
+        'currency': apiFlights.isNotEmpty ? apiFlights.first.currency : 'DZD',
       },
-      'arrivee': {
-        'city': 'Algiers',
-        'airports': [
-          {'name': 'Houari Boumediene.', 'code': 'ALG', 'selected': false},
-        ],
+      'escale': escaleOptions,
+      'aeroports': {
+        'depart': {
+          'city': departureCity.split(',').first,
+          'airports': departureAirportsMap.values.toList(),
+        },
+        'arrivee': {
+          'city': arrivalCity.split(',').first,
+          'airports': arrivalAirportsMap.values.toList(),
+        },
       },
-    },
-  };
+    };
+  }
 
   void _showFilterBottomSheet() {
     int tempSelectedCategory = selectedFilterCategory;
@@ -928,27 +1231,36 @@ class _SearchResultState extends State<SearchResult> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Reset button
+                          // Reset button - only resets current filter category
                           GestureDetector(
                             onTap: () {
                               setModalState(() {
-                                tempEscaleOption = 'Tous';
-                                tempSelectedCategory = 2;
-                                tempSelectedTab = 0;
-                                for (var c in tempCompagnies) {
-                                  c['selected'] = false;
-                                }
-                                for (var a in tempAeroports['depart']['airports']) {
-                                  a['selected'] = false;
-                                }
-                                for (var a in tempAeroports['arrivee']['airports']) {
-                                  a['selected'] = false;
+                                switch (tempSelectedCategory) {
+                                  case 0: // Compagnies
+                                    for (var c in tempCompagnies) {
+                                      c['selected'] = false;
+                                    }
+                                    break;
+                                  case 1: // Prix
+                                    // Reset price range if implemented
+                                    break;
+                                  case 2: // Escale
+                                    tempEscaleOption = 'Tous';
+                                    break;
+                                  case 3: // Aéroport
+                                    for (var a in tempAeroports['depart']['airports']) {
+                                      a['selected'] = false;
+                                    }
+                                    for (var a in tempAeroports['arrivee']['airports']) {
+                                      a['selected'] = false;
+                                    }
+                                    break;
                                 }
                               });
                             },
                             child: Container(
-                              width: 126,
                               height: 30,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF0F0F0),
                                 borderRadius: BorderRadius.circular(10),
@@ -1215,37 +1527,54 @@ class _SearchResultState extends State<SearchResult> {
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
           children: [
-            // Airline logo
-            Container(
-              width: 40,
-              height: 40,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  logo,
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 40,
-                      height: 40,
-                      color: const Color(0xFFF5F5F5),
-                      child: Center(
-                        child: Text(
-                          name.isNotEmpty ? name[0].toUpperCase() : 'A',
-                          style: GoogleFonts.poppins(
-                            color: kSubTitleColor,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+            // Airline logo from network
+            ClipOval(
+              child: Image.network(
+                logo,
+                width: 40,
+                height: 40,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: kPrimaryColor.withOpacity(0.1),
+                    ),
+                    child: Center(
+                      child: Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : 'A',
+                        style: GoogleFonts.poppins(
+                          color: kPrimaryColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: kPrimaryColor.withOpacity(0.05),
+                    ),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: kPrimaryColor,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -1287,80 +1616,252 @@ class _SearchResultState extends State<SearchResult> {
     );
   }
 
-  // Dynamic filter chips data - can be loaded from API/JSON
-  List<Map<String, dynamic>> get filterChips => [
-    {
-      'logo': 'assets/turkish_airlines2.png',
-      'text': '10408 DZD',
-      'type': 'price',
-    },
-    {
-      'logo': 'assets/turkish_airlines.png',
-      'text': '10408 DZD',
-      'type': 'price',
-    },
-    {
-      'logo': 'assets/TU.png',
-      'text': 'Tunisiair',
-      'type': 'airline',
-    },
-  ];
+  // Extract unique airlines with their best prices from API flights
+  List<Map<String, dynamic>> get filterChips {
+    if (!hasApiFlights) {
+      // Return empty list if no API data - chips won't show
+      return [];
+    }
+
+    // Map to store airline code -> {name, bestPrice, code}
+    final Map<String, Map<String, dynamic>> airlineData = {};
+
+    for (final offer in apiFlights) {
+      for (final journey in offer.journey) {
+        for (final segment in journey.flightSegments) {
+          final airlineCode = segment.operatingAirline ?? segment.marketingAirline;
+          final airlineName = segment.operatingAirlineName ?? segment.marketingAirlineName ?? 'Airline';
+
+          if (airlineCode != null && airlineCode.isNotEmpty) {
+            final price = offer.totalPrice;
+
+            if (!airlineData.containsKey(airlineCode)) {
+              airlineData[airlineCode] = {
+                'code': airlineCode,
+                'name': airlineName,
+                'bestPrice': price,
+              };
+            } else {
+              // Update if this offer has a better price
+              if (price < (airlineData[airlineCode]!['bestPrice'] as double)) {
+                airlineData[airlineCode]!['bestPrice'] = price;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Convert to list of chips
+    final chips = airlineData.values.map((data) {
+      final code = data['code'] as String;
+      final name = data['name'] as String;
+      final price = data['bestPrice'] as double;
+
+      return {
+        'text': '${price.toInt()} DZD',
+        'airlineName': name,
+        'airlineCode': code,
+        'type': 'price',
+      };
+    }).toList();
+
+    // Sort by price (numeric comparison)
+    chips.sort((a, b) {
+      final priceA = int.tryParse((a['text'] as String).replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+      final priceB = int.tryParse((b['text'] as String).replaceAll(RegExp(r'[^\d]'), '')) ?? 0;
+      return priceA.compareTo(priceB);
+    });
+
+    return chips;
+  }
+
+  // Helper to get airline logo URL from API
+  String _getAirlineLogoUrl(String airlineCode) {
+    // Using pics.avs.io API for airline logos (works with any IATA code)
+    // Alternative APIs:
+    // - https://content.airhex.com/content/logos/airlines_{code}_50_50_s.png
+    // - https://www.gstatic.com/flights/airline_logos/70px/{code}.png
+    return 'https://pics.avs.io/70/70/${airlineCode.toUpperCase()}.png';
+  }
+
+  // Get filtered flights based on direct toggle and selected airline
+  List<FlightOffer> get filteredApiFlights {
+    List<FlightOffer> result = apiFlights;
+
+    // Filter by direct flights if toggle is on
+    if (isDirectOnly) {
+      result = result.where((offer) => _isDirectFlight(offer)).toList();
+    }
+
+    // Filter by airline if selected
+    if (selectedAirlineCode != null) {
+      result = result.where((offer) {
+        for (final journey in offer.journey) {
+          for (final segment in journey.flightSegments) {
+            final code = segment.operatingAirline ?? segment.marketingAirline;
+            if (code?.toUpperCase() == selectedAirlineCode?.toUpperCase()) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }).toList();
+    }
+
+    return result;
+  }
+
+  // Check if a flight offer is direct (no stops)
+  bool _isDirectFlight(FlightOffer offer) {
+    for (final journey in offer.journey) {
+      final stops = journey.flight?.stopQuantity ?? (journey.flightSegments.length - 1);
+      if (stops > 0) {
+        return false; // Has stops, not direct
+      }
+    }
+    return true; // All journeys are direct
+  }
+
+  // Count of direct flights available
+  int get directFlightsCount {
+    return apiFlights.where((offer) => _isDirectFlight(offer)).length;
+  }
 
   Widget _buildPriceChips() {
+    final chips = filterChips;
+
+    if (chips.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 7),
       child: Row(
-        children: filterChips.map((chip) {
-          return Container(
-            margin: const EdgeInsets.only(right: 10),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: kWhite,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: kBorderColorTextField, width: 1),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Airline logo
-                ClipOval(
-                  child: Image.asset(
-                    chip['logo'],
-                    width: 20,
-                    height: 20,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: kPrimaryColor.withOpacity(0.1),
-                        ),
-                        child: Icon(
-                          Icons.flight,
-                          size: 12,
-                          color: kPrimaryColor,
-                        ),
-                      );
-                    },
-                  ),
+        children: [
+          // "All" chip to clear filter
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedAirlineCode = null;
+              });
+            },
+            child: Container(
+              height: 36,
+              margin: const EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: selectedAirlineCode == null ? kPrimaryColor.withOpacity(0.1) : kWhite,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: selectedAirlineCode == null ? kPrimaryColor : kBorderColorTextField,
+                  width: 1,
                 ),
-                const SizedBox(width: 8),
-                // Text (price or airline name)
-                Text(
-                  chip['text'],
+              ),
+              child: Center(
+                child: Text(
+                  'Tous',
                   style: kTextStyle.copyWith(
-                    color: kTitleColor,
-                    fontSize: 13,
+                    color: selectedAirlineCode == null ? kPrimaryColor : kTitleColor,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-              ],
+              ),
             ),
-          );
-        }).toList(),
+          ),
+          // Airline chips
+          ...chips.map((chip) {
+            final airlineName = chip['airlineName'] as String? ?? '';
+            final airlineCode = chip['airlineCode'] as String? ?? '';
+            final isSelected = selectedAirlineCode == airlineCode;
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  if (selectedAirlineCode == airlineCode) {
+                    selectedAirlineCode = null;
+                  } else {
+                    selectedAirlineCode = airlineCode;
+                  }
+                });
+              },
+              child: Tooltip(
+                message: airlineName.isNotEmpty ? airlineName : airlineCode,
+                child: Container(
+                  height: 36,
+                  margin: const EdgeInsets.only(right: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? kPrimaryColor.withOpacity(0.1) : kWhite,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected ? kPrimaryColor : kBorderColorTextField,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Airline logo from API
+                      ClipOval(
+                        child: Image.network(
+                          _getAirlineLogoUrl(airlineCode),
+                          width: 22,
+                          height: 22,
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: kPrimaryColor.withOpacity(0.1),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  airlineCode.isNotEmpty ? airlineCode : 'A',
+                                  style: kTextStyle.copyWith(
+                                    color: kPrimaryColor,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: kPrimaryColor.withOpacity(0.05),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Price text
+                      Text(
+                        chip['text'],
+                        style: kTextStyle.copyWith(
+                          color: kTitleColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ],
       ),
     );
   }
@@ -1508,22 +2009,8 @@ class _SearchResultState extends State<SearchResult> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     // Price with dropdown
-                    Row(
-                      children: [
-                        Text(
-                          '${f.price} $currencySign',
-                          style: GoogleFonts.poppins(
-                            color: kTitleColor,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
-                            height: 24 / 16,
-                          ),
-                        ),
-                        const SizedBox(width: 2),
-                        Icon(Icons.keyboard_arrow_down,
-                            color: kTitleColor, size: 18),
-                      ],
-                    ),
+
+
 
                     const SizedBox(width: 12),
 
@@ -2262,19 +2749,10 @@ class _SearchResultState extends State<SearchResult> {
     }
   }
 
-  // Get airline logo based on airline code
+  // Get airline logo URL from API based on airline code
   String _getAirlineLogo(String airlineCode) {
-    // Map common airline codes to their logos
-    switch (airlineCode.toUpperCase()) {
-      case 'AH':
-        return 'assets/air_algerie.png';
-      case 'TK':
-        return 'assets/turkish_airlines.png';
-      case 'AF':
-        return 'assets/air_france.png';
-      default:
-        return 'assets/turkish_airlines.png'; // Default logo
-    }
+    // Using pics.avs.io API for airline logos (works with any IATA code)
+    return _getAirlineLogoUrl(airlineCode);
   }
 
   // Show baggage details bottom sheet
@@ -2732,15 +3210,47 @@ class _SearchResultState extends State<SearchResult> {
         // Airline info row
         Row(
           children: [
-            Container(
-              height: 20,
-              width: 20,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage(airlineLogo),
-                  fit: BoxFit.cover,
-                ),
+            ClipOval(
+              child: Image.network(
+                airlineLogo,
+                height: 20,
+                width: 20,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback to airline code initials if image fails to load
+                  final code = airlineName.split(' ').length > 1
+                      ? airlineName.split(' ')[1]
+                      : airlineName.substring(0, 2);
+                  return Container(
+                    height: 20,
+                    width: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: kPrimaryColor.withOpacity(0.1),
+                    ),
+                    child: Center(
+                      child: Text(
+                        code.substring(0, code.length > 2 ? 2 : code.length),
+                        style: GoogleFonts.poppins(
+                          color: kPrimaryColor,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    height: 20,
+                    width: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: kPrimaryColor.withOpacity(0.1),
+                    ),
+                  );
+                },
               ),
             ),
             const SizedBox(width: 8),

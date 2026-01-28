@@ -16,6 +16,7 @@ import '../search/search.dart';
 import '../search/search_result.dart';
 import '../widgets/button_global.dart';
 import '../widgets/CustomDatePicker.dart';
+import '../widgets/flight_search_loading.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -166,9 +167,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool showCounter = false;
   int selectedIndex = 0; // Default to Aller-retour (Round-trip) at index 0
 
-  List<String> classKeys = ['economy', 'business'];
+  List<String> classKeys = ['first', 'business', 'premium_economy', 'economy'];
   String selectedClass = 'economy';
   // String selectedClass = 'Economy';
+
+  String _getClassDisplayName(String classKey) {
+    switch (classKey) {
+      case 'first':
+        return 'Première';
+      case 'business':
+        return 'Affaires';
+      case 'premium_economy':
+        return 'Éco Premium';
+      case 'economy':
+      default:
+        return 'Économique';
+    }
+  }
 
   DateTime? departureDate;
   DateTime? returnDate;
@@ -202,85 +217,106 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return DateFormat('dd MMM', locale).format(date);
   }
 
-  // Search one-way flights using the API
-  Future<void> _searchOneWayFlights() async {
-    setState(() => _isSearching = true);
-
-    try {
-      await _flightController.searchOneWay(
-        fromAirport: fromAirport!,
-        toAirport: toAirport!,
-        departureDate: departureDate!,
-        adultCount: adultCount,
-        childCount: childCount,
-        infantCount: infantCount,
-        cabinClass: selectedClass,
-        directOnly: isDirectFlight,
-        withBaggage: withBaggage,
-      );
-
-      if (_flightController.hasError) {
-        toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
-      } else {
-        // Navigate to SearchResult with the flight offers
-        SearchResult(
-          fromAirport: fromAirport!,
-          toAirport: toAirport!,
-          adultCount: adultCount,
-          childCount: childCount,
-          infantCount: infantCount,
-          dateRange: departureDate != null
-              ? DateTimeRange(start: departureDate!, end: departureDate!)
-              : null,
-          flightOffers: _flightController.offers,
-          isOneWay: true,
-        ).launch(context);
-      }
-    } catch (e) {
-      toast('Erreur: $e');
-    } finally {
-      setState(() => _isSearching = false);
-    }
+  // Show loading screen and search one-way flights
+  void _showLoadingAndSearchOneWay() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlightSearchLoading(
+          destinationCity: toAirport?.city ?? 'Destination',
+          searchFunction: () => _performOneWaySearch(),
+          onSearchComplete: () {
+            Navigator.pop(context); // Pop loading screen
+            if (!_flightController.hasError) {
+              SearchResult(
+                fromAirport: fromAirport!,
+                toAirport: toAirport!,
+                adultCount: adultCount,
+                childCount: childCount,
+                infantCount: infantCount,
+                dateRange: departureDate != null
+                    ? DateTimeRange(start: departureDate!, end: departureDate!)
+                    : null,
+                flightOffers: _flightController.offers,
+                isOneWay: true,
+              ).launch(context);
+            } else {
+              toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
+            }
+          },
+        ),
+      ),
+    );
   }
 
-  // Search round-trip flights using the API
+  // Perform the actual one-way search API call
+  Future<void> _performOneWaySearch() async {
+    await _flightController.searchOneWay(
+      fromAirport: fromAirport!,
+      toAirport: toAirport!,
+      departureDate: departureDate!,
+      adultCount: adultCount,
+      childCount: childCount,
+      infantCount: infantCount,
+      cabinClass: selectedClass,
+      directOnly: isDirectFlight,
+      withBaggage: withBaggage,
+    );
+  }
+
+  // Show loading screen and search round-trip flights
+  void _showLoadingAndSearchRoundTrip() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlightSearchLoading(
+          destinationCity: toAirport?.city ?? 'Destination',
+          searchFunction: () => _performRoundTripSearch(),
+          onSearchComplete: () {
+            Navigator.pop(context); // Pop loading screen
+            if (!_flightController.hasError) {
+              SearchResult(
+                fromAirport: fromAirport!,
+                toAirport: toAirport!,
+                adultCount: adultCount,
+                childCount: childCount,
+                infantCount: infantCount,
+                dateRange: _selectedDateRange,
+                flightOffers: _flightController.offers,
+                isOneWay: false,
+              ).launch(context);
+            } else {
+              toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  // Perform the actual round-trip search API call
+  Future<void> _performRoundTripSearch() async {
+    await _flightController.searchRoundTrip(
+      fromAirport: fromAirport!,
+      toAirport: toAirport!,
+      departureDate: departureDate!,
+      returnDate: returnDate!,
+      adultCount: adultCount,
+      childCount: childCount,
+      infantCount: infantCount,
+      cabinClass: selectedClass,
+      directOnly: isDirectFlight,
+      withBaggage: withBaggage,
+    );
+  }
+
+  // Legacy search methods (kept for compatibility)
+  Future<void> _searchOneWayFlights() async {
+    _showLoadingAndSearchOneWay();
+  }
+
   Future<void> _searchRoundTripFlights() async {
-    setState(() => _isSearching = true);
-
-    try {
-      await _flightController.searchRoundTrip(
-        fromAirport: fromAirport!,
-        toAirport: toAirport!,
-        departureDate: departureDate!,
-        returnDate: returnDate!,
-        adultCount: adultCount,
-        childCount: childCount,
-        infantCount: infantCount,
-        cabinClass: selectedClass,
-        directOnly: isDirectFlight,
-        withBaggage: withBaggage,
-      );
-
-      if (_flightController.hasError) {
-        toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
-      } else {
-        // Navigate to SearchResult with the flight offers
-        SearchResult(
-          fromAirport: fromAirport!,
-          toAirport: toAirport!,
-          adultCount: adultCount,
-          childCount: childCount,
-          infantCount: infantCount,
-          dateRange: _selectedDateRange,
-          flightOffers: _flightController.offers,
-          isOneWay: false,
-        ).launch(context);
-      }
-    } catch (e) {
-      toast('Erreur: $e');
-    } finally {
-      setState(() => _isSearching = false);
-    }
+    _showLoadingAndSearchRoundTrip();
   }
 
   // Search multi-destination flights using the API
@@ -364,7 +400,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       decoration: const BoxDecoration(color: Colors.transparent),
       child: Column(
         children: [
-          const SizedBox(height: 10.0),
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -587,7 +622,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          const SizedBox(height: 10.0),
         ],
       ),
     );
@@ -1176,6 +1210,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: InkWell(
                             onTap: () {
                               showModalBottomSheet(
+                                isScrollControlled: true,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30.0),
                                 ),
@@ -1183,40 +1218,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 builder: (BuildContext context) {
                                   return StatefulBuilder(
                                     builder: (BuildContext context, setStated) {
-                                    return Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(20.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
+                                    return Container(
+                                      constraints: BoxConstraints(
+                                        maxHeight: MediaQuery.of(context).size.height * 0.85,
+                                      ),
+                                      child: SingleChildScrollView(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(20.0),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(
-                                                    lang.S.of(context).travellerTitle,
-                                                    style: kTextStyle.copyWith(
-                                                      color: kTitleColor,
-                                                      fontSize: 18.0,
-                                                      fontWeight: FontWeight.bold,
-                                                    ),
+                                                  Row(
+                                                    children: [
+                                                      Text(
+                                                        lang.S.of(context).travellerTitle,
+                                                        style: kTextStyle.copyWith(
+                                                          color: kTitleColor,
+                                                          fontSize: 18.0,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const Spacer(),
+                                                      const Icon(
+                                                        FeatherIcons.x,
+                                                        size: 18.0,
+                                                        color: kTitleColor,
+                                                      ).onTap(() => finish(context)),
+                                                    ],
                                                   ),
-                                                  const Spacer(),
-                                                  const Icon(
-                                                    FeatherIcons.x,
-                                                    size: 18.0,
-                                                    color: kTitleColor,
-                                                  ).onTap(() => finish(context)),
+                                                  Text(
+                                                    'Algerie a Tunisie, Jeu. 8 janv. 2026',
+                                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                  ),
                                                 ],
                                               ),
-                                              Text(
-                                                'Algerie a Tunisie, Jeu. 8 janv. 2026',
-                                                style: kTextStyle.copyWith(color: kSubTitleColor),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                            ),
                                         Container(
                                           padding: const EdgeInsets.all(20.0),
                                           decoration: const BoxDecoration(
@@ -1366,6 +1406,131 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 ],
                                               ),
                                               const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                              const SizedBox(height: 30),
+
+                                              // 🎫 Class Selection Header
+                                              Row(
+                                                children: [
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Classe de cabine',
+                                                        style: kTextStyle.copyWith(
+                                                          color: kTitleColor,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        'Sélectionnez votre classe de voyage',
+                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                              const SizedBox(height: 10),
+
+                                              // First Class (F)
+                                              ListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                title: Text(
+                                                  'Première classe (F)',
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                subtitle: Text(
+                                                  'Luxe absolu et service personnalisé',
+                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                ),
+                                                trailing: selectedClass == 'first'
+                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                onTap: () {
+                                                  setStated(() {
+                                                    selectedClass = 'first';
+                                                  });
+                                                },
+                                              ),
+                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                              // Business Class (B)
+                                              ListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                title: Text(
+                                                  'Classe Affaires (B)',
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                subtitle: Text(
+                                                  'Confort premium et services exclusifs',
+                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                ),
+                                                trailing: selectedClass == 'business'
+                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                onTap: () {
+                                                  setStated(() {
+                                                    selectedClass = 'business';
+                                                  });
+                                                },
+                                              ),
+                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                              // Premium Economy (PE)
+                                              ListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                title: Text(
+                                                  'Économie Premium (PE)',
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                subtitle: Text(
+                                                  'Plus d\'espace et de confort',
+                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                ),
+                                                trailing: selectedClass == 'premium_economy'
+                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                onTap: () {
+                                                  setStated(() {
+                                                    selectedClass = 'premium_economy';
+                                                  });
+                                                },
+                                              ),
+                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                              // Economy Class (E)
+                                              ListTile(
+                                                contentPadding: EdgeInsets.zero,
+                                                title: Text(
+                                                  'Économie (E)',
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                subtitle: Text(
+                                                  'Tarif standard avec bagages inclus',
+                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                ),
+                                                trailing: selectedClass == 'economy'
+                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                onTap: () {
+                                                  setStated(() {
+                                                    selectedClass = 'economy';
+                                                  });
+                                                },
+                                              ),
+                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
                                               const SizedBox(height: 20),
 
                                               // ✅ Done Button
@@ -1384,7 +1549,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           ),
                                         ),
                                       ],
-                                    );
+                                    ),
+                                  ),
+                                  );
                                   },
                                 );
                               },
@@ -1602,8 +1769,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Transform.scale(
-                                              scale: 0.8,
+                                            SizedBox(
+                                              height: 24,
                                               child: Switch(
                                                 value: isDirectFlight,
                                                 onChanged: (value) {
@@ -1611,14 +1778,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     isDirectFlight = value;
                                                   });
                                                 },
-                                                activeTrackColor: kPrimaryColor,
-                                                activeThumbColor: Colors.white,
-                                                inactiveTrackColor: Colors.grey.shade300,
-                                                inactiveThumbColor: Colors.white,
-                                                trackOutlineColor: MaterialStateProperty.all(Colors.grey.shade400),
+                                                activeColor: kPrimaryColor,
+                                                activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                                                inactiveThumbColor: kWhite,
+                                                inactiveTrackColor: const Color(0xFFE0E0E0),
+                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
                                               ),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 8),
                                             Flexible(
                                               child: Text(
                                                 'Vols directs',
@@ -1636,8 +1804,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       Expanded(
                                         child: Row(
                                           children: [
-                                            Transform.scale(
-                                              scale: 0.8,
+                                            SizedBox(
+                                              height: 24,
                                               child: Switch(
                                                 value: withBaggage,
                                                 onChanged: (value) {
@@ -1645,14 +1813,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     withBaggage = value;
                                                   });
                                                 },
-                                                activeTrackColor: kPrimaryColor,
-                                                activeThumbColor: Colors.white,
-                                                inactiveTrackColor: Colors.grey.shade300,
-                                                inactiveThumbColor: Colors.white,
-                                                trackOutlineColor: MaterialStateProperty.all(Colors.grey.shade400),
+                                                activeColor: kPrimaryColor,
+                                                activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                                                inactiveThumbColor: kWhite,
+                                                inactiveTrackColor: const Color(0xFFE0E0E0),
+                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
                                               ),
                                             ),
-                                            const SizedBox(width: 4),
+                                            const SizedBox(width: 8),
                                             Flexible(
                                               child: Text(
                                                 'Avec bagages',
@@ -1718,7 +1887,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 10.0),
+                                  const SizedBox(height: 5.0),
                                   // Vol 1 - From/To airports
                                   Stack(
                                     clipBehavior: Clip.none,
@@ -1890,7 +2059,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 10.0),
+                                  const SizedBox(height: 5.0),
                                   // Vol 1 - Date picker
                                   Container(
                                     decoration: BoxDecoration(
@@ -1942,7 +2111,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 10.0),
                                   // Multi-destination legs list
                                   ListView.builder(
                                       shrinkWrap: true,
@@ -1977,6 +2145,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           ],
                                         );
                                       }),
+                                  const SizedBox(height: 10.0),
                                   ButtonGlobalWithoutIcon(
                                     buttontext: lang.S.of(context).addFightButton,
                                     buttonDecoration: kButtonDecoration.copyWith(
@@ -2011,46 +2180,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ),
                                     child: InkWell(
                                       onTap: () => showModalBottomSheet(
+                                        isScrollControlled: true,
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(30.0),
                                         ),
                                         context: context,
                                         builder: (BuildContext context) {
                                           return StatefulBuilder(builder: (BuildContext context, setStated) {
-                                            return Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.all(20.0),
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Row(
+                                            return Container(
+                                              constraints: BoxConstraints(
+                                                maxHeight: MediaQuery.of(context).size.height * 0.85,
+                                              ),
+                                              child: SingleChildScrollView(
+                                                child: Column(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets.all(20.0),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
                                                         children: [
-                                                          Text(
-                                                            lang.S.of(context).travellerTitle,
-                                                            style: kTextStyle.copyWith(
-                                                              color: kTitleColor,
-                                                              fontSize: 18.0,
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
+                                                          Row(
+                                                            children: [
+                                                              Text(
+                                                                lang.S.of(context).travellerTitle,
+                                                                style: kTextStyle.copyWith(
+                                                                  color: kTitleColor,
+                                                                  fontSize: 18.0,
+                                                                  fontWeight: FontWeight.bold,
+                                                                ),
+                                                              ),
+                                                              const Spacer(),
+                                                              const Icon(
+                                                                FeatherIcons.x,
+                                                                size: 18.0,
+                                                                color: kTitleColor,
+                                                              ).onTap(() => finish(context)),
+                                                            ],
                                                           ),
-                                                          const Spacer(),
-                                                          const Icon(
-                                                            FeatherIcons.x,
-                                                            size: 18.0,
-                                                            color: kTitleColor,
-                                                          ).onTap(() => finish(context)),
+                                                          Text(
+                                                            '${fromAirport?.city ?? 'Départ'} à ${toAirport?.city ?? 'Destination'}',
+                                                            style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                          ),
                                                         ],
                                                       ),
-                                                      Text(
-                                                        '${fromAirport?.city ?? 'Départ'} à ${toAirport?.city ?? 'Destination'}',
-                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
+                                                    ),
                                                 Container(
                                                   padding: const EdgeInsets.all(20.0),
                                                   decoration: const BoxDecoration(
@@ -2275,6 +2450,131 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                       ),
 
                                                       const Divider(color: kBorderColorTextField),
+                                                      const SizedBox(height: 30.0),
+
+                                                      // 🎫 Class Selection Header
+                                                      Row(
+                                                        children: [
+                                                          Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              Text(
+                                                                'Classe de cabine',
+                                                                style: kTextStyle.copyWith(
+                                                                  color: kTitleColor,
+                                                                  fontWeight: FontWeight.bold,
+                                                                ),
+                                                              ),
+                                                              Text(
+                                                                'Sélectionnez votre classe de voyage',
+                                                                style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                      const SizedBox(height: 10),
+
+                                                      // First Class (F)
+                                                      ListTile(
+                                                        contentPadding: EdgeInsets.zero,
+                                                        title: Text(
+                                                          'Première classe (F)',
+                                                          style: kTextStyle.copyWith(
+                                                            color: kTitleColor,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        subtitle: Text(
+                                                          'Luxe absolu et service personnalisé',
+                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                        ),
+                                                        trailing: selectedClass == 'first'
+                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                        onTap: () {
+                                                          setStated(() {
+                                                            selectedClass = 'first';
+                                                          });
+                                                        },
+                                                      ),
+                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                                      // Business Class (B)
+                                                      ListTile(
+                                                        contentPadding: EdgeInsets.zero,
+                                                        title: Text(
+                                                          'Classe Affaires (B)',
+                                                          style: kTextStyle.copyWith(
+                                                            color: kTitleColor,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        subtitle: Text(
+                                                          'Confort premium et services exclusifs',
+                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                        ),
+                                                        trailing: selectedClass == 'business'
+                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                        onTap: () {
+                                                          setStated(() {
+                                                            selectedClass = 'business';
+                                                          });
+                                                        },
+                                                      ),
+                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                                      // Premium Economy (PE)
+                                                      ListTile(
+                                                        contentPadding: EdgeInsets.zero,
+                                                        title: Text(
+                                                          'Économie Premium (PE)',
+                                                          style: kTextStyle.copyWith(
+                                                            color: kTitleColor,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        subtitle: Text(
+                                                          'Plus d\'espace et de confort',
+                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                        ),
+                                                        trailing: selectedClass == 'premium_economy'
+                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                        onTap: () {
+                                                          setStated(() {
+                                                            selectedClass = 'premium_economy';
+                                                          });
+                                                        },
+                                                      ),
+                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                                      // Economy Class (E)
+                                                      ListTile(
+                                                        contentPadding: EdgeInsets.zero,
+                                                        title: Text(
+                                                          'Économie (E)',
+                                                          style: kTextStyle.copyWith(
+                                                            color: kTitleColor,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                        subtitle: Text(
+                                                          'Tarif standard avec bagages inclus',
+                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                        ),
+                                                        trailing: selectedClass == 'economy'
+                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                        onTap: () {
+                                                          setStated(() {
+                                                            selectedClass = 'economy';
+                                                          });
+                                                        },
+                                                      ),
+                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
                                                       const SizedBox(height: 20.0),
 
                                                       ButtonGlobal(
@@ -2291,7 +2591,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ),
                                                 ),
                                               ],
-                                            );
+                                            ),
+                                          ),
+                                          );
                                           });
                                         },
                                       ),
