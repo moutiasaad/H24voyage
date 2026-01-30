@@ -27,15 +27,13 @@ class _EditProfileState extends State<EditProfile> {
     return Scaffold(
       backgroundColor: kPrimaryColor,
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-        height: 90,
         decoration: const BoxDecoration(
           color: kWhite,
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0, bottom: 10.0),
+            child: SizedBox(
               height: 50,
               width: double.infinity,
               child: ElevatedButton(
@@ -59,8 +57,8 @@ class _EditProfileState extends State<EditProfile> {
                   style: kTextStyle.copyWith(color: kWhite),
                 ),
               ),
-            )
-          ],
+            ),
+          ),
         ),
       ),
       appBar: AppBar(

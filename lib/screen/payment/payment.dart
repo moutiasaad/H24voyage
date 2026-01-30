@@ -973,34 +973,36 @@ class _PaymentState extends State<Payment> {
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(color: kWhite),
-        child: ListTile(
-          contentPadding: const EdgeInsets.only(left: 15.0, right: 15.0),
-          visualDensity: const VisualDensity(vertical: 2),
-          title: Text(
-            'For 1 Adult',
-            style: kTextStyle.copyWith(color: kSubTitleColor),
-          ),
-          subtitle: Text(
-            ' ${45000.00} $currencySign',
-            style: kTextStyle.copyWith(
-                color: kTitleColor, fontWeight: FontWeight.bold),
-          ),
-          trailing: SizedBox(
-            width: 200,
-            child: ButtonGlobalWithoutIcon(
-              buttontext: lang.S.of(context).continueButton,
-              buttonDecoration: kButtonDecoration.copyWith(
-                color: kPrimaryColor,
-                borderRadius: BorderRadius.circular(30.0),
+        child: SafeArea(
+          child: ListTile(
+            contentPadding: const EdgeInsets.only(left: 15.0, right: 15.0),
+            visualDensity: const VisualDensity(vertical: 2),
+            title: Text(
+              'For 1 Adult',
+              style: kTextStyle.copyWith(color: kSubTitleColor),
+            ),
+            subtitle: Text(
+              ' ${45000.00} $currencySign',
+              style: kTextStyle.copyWith(
+                  color: kTitleColor, fontWeight: FontWeight.bold),
+            ),
+            trailing: SizedBox(
+              width: 200,
+              child: ButtonGlobalWithoutIcon(
+                buttontext: lang.S.of(context).continueButton,
+                buttonDecoration: kButtonDecoration.copyWith(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                onPressed: () {
+                  setState(() {
+                    selectedMethod == 'Carte bancaire'
+                        ? const PaymentMethod().launch(context)
+                        : null;
+                  });
+                },
+                buttonTextColor: kWhite,
               ),
-              onPressed: () {
-                setState(() {
-                  selectedMethod == 'Carte bancaire'
-                      ? const PaymentMethod().launch(context)
-                      : null;
-                });
-              },
-              buttonTextColor: kWhite,
             ),
           ),
         ),

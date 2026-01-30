@@ -234,18 +234,23 @@ class _PaymentMethodState extends State<PaymentMethod> {
         decoration: const BoxDecoration(
           color: kWhite,
         ),
-        child: ButtonGlobalWithoutIcon(
-          buttontext: 'Payer',
-          buttonDecoration: kButtonDecoration.copyWith(
-            color: kWebsiteGreyBg,
-            borderRadius: BorderRadius.circular(30.0),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: ButtonGlobalWithoutIcon(
+              buttontext: 'Payer',
+              buttonDecoration: kButtonDecoration.copyWith(
+                color: kWebsiteGreyBg,
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              onPressed: () {
+                setState(() {
+                  showSuccessPopup();
+                });
+              },
+              buttonTextColor: kTitleColor,
+            ),
           ),
-          onPressed: () {
-            setState(() {
-              showSuccessPopup();
-            });
-          },
-          buttonTextColor: kTitleColor,
         ),
       ),
     );

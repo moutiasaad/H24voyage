@@ -70,39 +70,43 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
       length: 2,
       child: Scaffold(
         bottomNavigationBar: Container(
-          padding: const EdgeInsets.all(5.0),
           decoration: const BoxDecoration(
             color: kWhite,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                child: ButtonGlobalWithoutIcon(
-                  buttontext: lang.S.of(context).cancelButton,
-                  buttonDecoration: kButtonDecoration.copyWith(
-                    color: kWhite,
-                    border: Border.all(color: Colors.red),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: ButtonGlobalWithoutIcon(
+                      buttontext: lang.S.of(context).cancelButton,
+                      buttonDecoration: kButtonDecoration.copyWith(
+                        color: kWhite,
+                        border: Border.all(color: Colors.red),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      buttonTextColor: Colors.red,
+                    ),
                   ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  buttonTextColor: Colors.red,
-                ),
-              ),
-              Expanded(
-                child: ButtonGlobalWithoutIcon(
-                  buttontext: lang.S.of(context).applyButton,
-                  buttonDecoration: kButtonDecoration.copyWith(
-                    color: kPrimaryColor,
+                  Expanded(
+                    child: ButtonGlobalWithoutIcon(
+                      buttontext: lang.S.of(context).applyButton,
+                      buttonDecoration: kButtonDecoration.copyWith(
+                        color: kPrimaryColor,
+                      ),
+                      onPressed: () {
+                        finish(context);
+                      },
+                      buttonTextColor: kWhite,
+                    ),
                   ),
-                  onPressed: () {
-                    finish(context);
-                  },
-                  buttonTextColor: kWhite,
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
         backgroundColor: kPrimaryColor,

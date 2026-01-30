@@ -30,72 +30,76 @@ class _TicketStatusState extends State<TicketStatus> {
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(color: kDarkWhite),
-        child: Container(
-          padding: const EdgeInsets.all(10.0),
-          height: 90,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30.0),
-              topRight: Radius.circular(30.0),
-            ),
-            color: kTitleColor,
-            boxShadow: [
-              BoxShadow(
-                color: kDarkWhite,
-                offset: Offset(
-                  0,
-                  -2,
-                ),
-                blurRadius: 7.0,
-                spreadRadius: 2.0,
+        child: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.all(10.0),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30.0),
+                topRight: Radius.circular(30.0),
               ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                height: 50,
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(40),
-                    ),
-                    elevation: 0.0,
-                    backgroundColor: kPrimaryColor,
+              color: kTitleColor,
+              boxShadow: [
+                BoxShadow(
+                  color: kDarkWhite,
+                  offset: Offset(
+                    0,
+                    -2,
                   ),
-                  onPressed: () {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const Home(initialIndex: 1), // ✅ MyBooking
-                      ),
-                          (route) => false,
-                    );
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Text(
-                        'Télécharger',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            color: kWhite),
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      FaIcon(
-                        FeatherIcons.downloadCloud,
-                        size: 25,
-                      )
-                    ],
-                  ),
+                  blurRadius: 7.0,
+                  spreadRadius: 2.0,
                 ),
-              )
-            ],
+              ],
+            ),
+            child: SizedBox(
+              height: 70,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 50,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        elevation: 0.0,
+                        backgroundColor: kPrimaryColor,
+                      ),
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const Home(initialIndex: 1), // ✅ MyBooking
+                          ),
+                              (route) => false,
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Text(
+                            'Télécharger',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                                color: kWhite),
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          FaIcon(
+                            FeatherIcons.downloadCloud,
+                            size: 25,
+                          )
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
           ),
         ),
       ),

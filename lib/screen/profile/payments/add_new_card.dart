@@ -46,7 +46,6 @@ class _AddNewCardState extends State<AddNewCard> {
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: Container(
-        height: 105,
         decoration: const BoxDecoration(
             color: kWhite,
             boxShadow: [
@@ -67,41 +66,38 @@ class _AddNewCardState extends State<AddNewCard> {
               ), //BoxShadow
             ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
-              child: SizedBox(
-                height: 50,
-                width: double.infinity,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(40),
-                      ),
-                      elevation: 0.0,
-                      backgroundColor: kPrimaryColor,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
+            child: SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(40),
                     ),
-                    onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>const ProfilePayments()));
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children:  const [
+                    elevation: 0.0,
+                    backgroundColor: kPrimaryColor,
+                  ),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=>const ProfilePayments()));
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children:  const [
 
-                        Text(
-                          'Save',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 16,
-                              color: kWhite),
-                        )
-                      ],
-                    )),
-              ),
-            )
-          ],
+                      Text(
+                        'Save',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: kWhite),
+                      )
+                    ],
+                  )),
+            ),
+          ),
         ),
       ),
       backgroundColor: kPrimaryColor,

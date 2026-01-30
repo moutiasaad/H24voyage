@@ -48,42 +48,43 @@ class _EditPaymentsProfileState extends State<EditPaymentsProfile> {
     return Scaffold(
       bottomNavigationBar: Container(
         color: kWhite,
-        child: Container(
-          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-          height: 90,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topRight: Radius.circular(30.0),
-              topLeft: Radius.circular(30.0),
-            ),
-            color: kWhite,
-            boxShadow: [
-              BoxShadow(
-                color: kBorderColorTextField,
-                offset: Offset(0, 5.0),
-                blurRadius: 10.0,
-                spreadRadius: 2.0,
-              ), //BoxShadow//BoxShadow
-            ],
-          ),
-          child: SizedBox(
-            height: 50,
-            width: double.infinity,
-            child: ButtonGlobalWithoutIcon(
-              buttontext: 'Update',
-              buttonDecoration: kButtonDecoration.copyWith(
-                color: kPrimaryColor,
-                borderRadius: BorderRadius.circular(30.0),
+        child: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0, bottom: 10.0),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(30.0),
+                topLeft: Radius.circular(30.0),
               ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfilePayments(),
-                  ),
-                );
-              },
-              buttonTextColor: kWhite,
+              color: kWhite,
+              boxShadow: [
+                BoxShadow(
+                  color: kBorderColorTextField,
+                  offset: Offset(0, 5.0),
+                  blurRadius: 10.0,
+                  spreadRadius: 2.0,
+                ), //BoxShadow//BoxShadow
+              ],
+            ),
+            child: SizedBox(
+              height: 50,
+              width: double.infinity,
+              child: ButtonGlobalWithoutIcon(
+                buttontext: 'Update',
+                buttonDecoration: kButtonDecoration.copyWith(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(30.0),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfilePayments(),
+                    ),
+                  );
+                },
+                buttonTextColor: kWhite,
+              ),
             ),
           ),
         ),

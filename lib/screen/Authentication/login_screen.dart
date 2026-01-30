@@ -195,23 +195,25 @@ class _LogInState extends State<LogIn> {
           ),
         ),
       ),
-      bottomNavigationBar: SizedBox(
-        height: 50,
-        child: Container(
-          decoration: const BoxDecoration(color: kWhite),
-          child: GestureDetector(
-            onTap: () => const SignUp().launch(context),
-            child: Center(
-              child: RichText(
-                text: TextSpan(
-                  text: lang.S.of(context).noAccTitle1,
-                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                  children: [
-                    TextSpan(
-                      text: lang.S.of(context).noAccTitle2,
-                      style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold),
-                    ),
-                  ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(color: kWhite),
+        child: SafeArea(
+          child: SizedBox(
+            height: 50,
+            child: GestureDetector(
+              onTap: () => const SignUp().launch(context),
+              child: Center(
+                child: RichText(
+                  text: TextSpan(
+                    text: lang.S.of(context).noAccTitle1,
+                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                    children: [
+                      TextSpan(
+                        text: lang.S.of(context).noAccTitle2,
+                        style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

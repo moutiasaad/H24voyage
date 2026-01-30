@@ -358,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       // Validate that we have at least 2 legs for multi-destination
       if (bounds.length < 2) {
-        toast('Veuillez ajouter au moins 2 vols pour une recherche multi-destination.');
+        toast('Veuillez ajouterau moins 2 vols pour une recherche multi-destination.');
         setState(() => _isSearching = false);
         return;
       }
@@ -1226,320 +1226,340 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       constraints: BoxConstraints(
                                         maxHeight: MediaQuery.of(context).size.height * 0.85,
                                       ),
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.all(20.0),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        lang.S.of(context).travellerTitle,
-                                                        style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontSize: 18.0,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      const Spacer(),
-                                                      const Icon(
-                                                        FeatherIcons.x,
-                                                        size: 18.0,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Header (fixed)
+                                          Padding(
+                                            padding: const EdgeInsets.all(20.0),
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      lang.S.of(context).travellerTitle,
+                                                      style: kTextStyle.copyWith(
                                                         color: kTitleColor,
-                                                      ).onTap(() => finish(context)),
-                                                    ],
-                                                  ),
-                                                  Text(
-                                                    'Algerie a Tunisie, Jeu. 8 janv. 2026',
-                                                    style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                  ),
-                                                ],
-                                              ),
+                                                        fontSize: 18.0,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const Spacer(),
+                                                    const Icon(
+                                                      FeatherIcons.x,
+                                                      size: 18.0,
+                                                      color: kTitleColor,
+                                                    ).onTap(() => finish(context)),
+                                                  ],
+                                                ),
+                                                Text(
+                                                  'Algerie a Tunisie, Jeu. 8 janv. 2026',
+                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                ),
+                                              ],
                                             ),
-                                        Container(
-                                          padding: const EdgeInsets.all(20.0),
-                                          decoration: const BoxDecoration(
-                                            borderRadius: BorderRadius.only(
-                                              topRight: Radius.circular(30.0),
-                                              topLeft: Radius.circular(30.0),
-                                            ),
-                                            color: kWhite,
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: kDarkWhite,
-                                                spreadRadius: 5.0,
-                                                blurRadius: 7.0,
-                                                offset: Offset(0, -5),
-                                              ),
-                                            ],
                                           ),
-                                          child: Column(
-                                            children: [
-                                              // 👨 Adults
-                                              Row(
-                                                children: [
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(lang.S.of(context).adults,
-                                                          style: kTextStyle.copyWith(
-                                                              color: kTitleColor,
-                                                              fontWeight: FontWeight.bold)),
-                                                      Text('12 ans et plus',
-                                                          style: kTextStyle.copyWith(
-                                                              color: kSubTitleColor)),
-                                                    ],
+                                          // Scrollable content
+                                          Expanded(
+                                            child: SingleChildScrollView(
+                                              child: Container(
+                                                padding: const EdgeInsets.all(20.0),
+                                                decoration: const BoxDecoration(
+                                                  borderRadius: BorderRadius.only(
+                                                    topRight: Radius.circular(30.0),
+                                                    topLeft: Radius.circular(30.0),
                                                   ),
-                                                  const Spacer(),
-                                                  _counterButton(
-                                                    icon: FeatherIcons.minus,
-                                                    enabled: adultCount > 1,
-                                                    onTap: () {
-                                                      setStated(() {
-                                                        if (adultCount > 1) adultCount--;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Text(adultCount.toString()),
-                                                  const SizedBox(width: 10),
-                                                  _counterButton(
-                                                    icon: FeatherIcons.plus,
-                                                    enabled: (adultCount + childCount + infantCount) < 9,
-                                                    onTap: () {
-                                                      setStated(() {
-                                                        if ((adultCount + childCount + infantCount) < 9) {
-                                                          adultCount++;
-                                                        }
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                              const SizedBox(height: 15),
+                                                  color: kWhite,
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: kDarkWhite,
+                                                      spreadRadius: 5.0,
+                                                      blurRadius: 7.0,
+                                                      offset: Offset(0, -5),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Column(
+                                                  children: [
+                                                    // 👨 Adults
+                                                    Row(
+                                                      children: [
+                                                        Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(lang.S.of(context).adults,
+                                                                style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold)),
+                                                            Text('12 ans et plus',
+                                                                style: kTextStyle.copyWith(
+                                                                    color: kSubTitleColor)),
+                                                          ],
+                                                        ),
+                                                        const Spacer(),
+                                                        _counterButton(
+                                                          icon: FeatherIcons.minus,
+                                                          enabled: adultCount > 1,
+                                                          onTap: () {
+                                                            setStated(() {
+                                                              if (adultCount > 1) adultCount--;
+                                                            });
+                                                          },
+                                                        ),
+                                                        const SizedBox(width: 10),
+                                                        Text(adultCount.toString()),
+                                                        const SizedBox(width: 10),
+                                                        _counterButton(
+                                                          icon: FeatherIcons.plus,
+                                                          enabled: (adultCount + childCount + infantCount) < 9,
+                                                          onTap: () {
+                                                            setStated(() {
+                                                              if ((adultCount + childCount + infantCount) < 9) {
+                                                                adultCount++;
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                    const SizedBox(height: 15),
 
-                                              // 👶 Child
-                                              Row(
-                                                children: [
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(lang.S.of(context).child,
-                                                          style: kTextStyle.copyWith(
-                                                              color: kTitleColor,
-                                                              fontWeight: FontWeight.bold)),
-                                                      Text('2-12 ans',
-                                                          style: kTextStyle.copyWith(
-                                                              color: kSubTitleColor)),
-                                                    ],
-                                                  ),
-                                                  const Spacer(),
-                                                  _counterButton(
-                                                    icon: FeatherIcons.minus,
-                                                    enabled: childCount > 0,
-                                                    onTap: () {
-                                                      setStated(() {
-                                                        if (childCount > 0) childCount--;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Text(childCount.toString()),
-                                                  const SizedBox(width: 10),
-                                                  _counterButton(
-                                                    icon: FeatherIcons.plus,
-                                                    enabled: (adultCount + childCount + infantCount) < 9,
-                                                    onTap: () {
-                                                      setStated(() {
-                                                        if ((adultCount + childCount + infantCount) < 9) {
-                                                          childCount++;
-                                                        }
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                              const SizedBox(height: 15),
+                                                    // 👶 Child
+                                                    Row(
+                                                      children: [
+                                                        Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(lang.S.of(context).child,
+                                                                style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold)),
+                                                            Text('2-12 ans',
+                                                                style: kTextStyle.copyWith(
+                                                                    color: kSubTitleColor)),
+                                                          ],
+                                                        ),
+                                                        const Spacer(),
+                                                        _counterButton(
+                                                          icon: FeatherIcons.minus,
+                                                          enabled: childCount > 0,
+                                                          onTap: () {
+                                                            setStated(() {
+                                                              if (childCount > 0) childCount--;
+                                                            });
+                                                          },
+                                                        ),
+                                                        const SizedBox(width: 10),
+                                                        Text(childCount.toString()),
+                                                        const SizedBox(width: 10),
+                                                        _counterButton(
+                                                          icon: FeatherIcons.plus,
+                                                          enabled: (adultCount + childCount + infantCount) < 9,
+                                                          onTap: () {
+                                                            setStated(() {
+                                                              if ((adultCount + childCount + infantCount) < 9) {
+                                                                childCount++;
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                    const SizedBox(height: 15),
 
-                                              // 🍼 Infants
-                                              Row(
-                                                children: [
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(lang.S.of(context).infants,
-                                                          style: kTextStyle.copyWith(
-                                                              color: kTitleColor,
-                                                              fontWeight: FontWeight.bold)),
-                                                      Text('Moins de 2 ans',
-                                                          style: kTextStyle.copyWith(
-                                                              color: kSubTitleColor)),
-                                                    ],
-                                                  ),
-                                                  const Spacer(),
-                                                  _counterButton(
-                                                    icon: FeatherIcons.minus,
-                                                    enabled: infantCount > 0,
-                                                    onTap: () {
-                                                      setStated(() {
-                                                        if (infantCount > 0) infantCount--;
-                                                      });
-                                                    },
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Text(infantCount.toString()),
-                                                  const SizedBox(width: 10),
-                                                  _counterButton(
-                                                    icon: FeatherIcons.plus,
-                                                    enabled: (adultCount + childCount + infantCount) < 9,
-                                                    onTap: () {
-                                                      setStated(() {
-                                                        if ((adultCount + childCount + infantCount) < 9) {
-                                                          infantCount++;
-                                                        }
-                                                      });
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                              const SizedBox(height: 30),
+                                                    // 🍼 Infants
+                                                    Row(
+                                                      children: [
+                                                        Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(lang.S.of(context).infants,
+                                                                style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold)),
+                                                            Text('Moins de 2 ans',
+                                                                style: kTextStyle.copyWith(
+                                                                    color: kSubTitleColor)),
+                                                          ],
+                                                        ),
+                                                        const Spacer(),
+                                                        _counterButton(
+                                                          icon: FeatherIcons.minus,
+                                                          enabled: infantCount > 0,
+                                                          onTap: () {
+                                                            setStated(() {
+                                                              if (infantCount > 0) infantCount--;
+                                                            });
+                                                          },
+                                                        ),
+                                                        const SizedBox(width: 10),
+                                                        Text(infantCount.toString()),
+                                                        const SizedBox(width: 10),
+                                                        _counterButton(
+                                                          icon: FeatherIcons.plus,
+                                                          enabled: (adultCount + childCount + infantCount) < 9,
+                                                          onTap: () {
+                                                            setStated(() {
+                                                              if ((adultCount + childCount + infantCount) < 9) {
+                                                                infantCount++;
+                                                              }
+                                                            });
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                    const SizedBox(height: 30),
 
-                                              // 🎫 Class Selection Header
-                                              Row(
-                                                children: [
-                                                  Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(
-                                                        'Classe de cabine',
+                                                    // 🎫 Class Selection Header
+                                                    Row(
+                                                      children: [
+                                                        Column(
+                                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                                          children: [
+                                                            Text(
+                                                              'Classe de cabine',
+                                                              style: kTextStyle.copyWith(
+                                                                color: kTitleColor,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
+                                                            ),
+                                                            Text(
+                                                              'Sélectionnez votre classe de voyage',
+                                                              style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                    const SizedBox(height: 10),
+
+                                                    // First Class (F)
+                                                    ListTile(
+                                                      contentPadding: EdgeInsets.zero,
+                                                      title: Text(
+                                                        'Première classe (F)',
                                                         style: kTextStyle.copyWith(
                                                           color: kTitleColor,
                                                           fontWeight: FontWeight.bold,
                                                         ),
                                                       ),
-                                                      Text(
-                                                        'Sélectionnez votre classe de voyage',
+                                                      subtitle: Text(
+                                                        'Luxe absolu et service personnalisé',
                                                         style: kTextStyle.copyWith(color: kSubTitleColor),
                                                       ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                              const SizedBox(height: 10),
+                                                      trailing: selectedClass == 'first'
+                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                      onTap: () {
+                                                        setStated(() {
+                                                          selectedClass = 'first';
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
 
-                                              // First Class (F)
-                                              ListTile(
-                                                contentPadding: EdgeInsets.zero,
-                                                title: Text(
-                                                  'Première classe (F)',
-                                                  style: kTextStyle.copyWith(
-                                                    color: kTitleColor,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                subtitle: Text(
-                                                  'Luxe absolu et service personnalisé',
-                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                ),
-                                                trailing: selectedClass == 'first'
-                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                onTap: () {
-                                                  setStated(() {
-                                                    selectedClass = 'first';
-                                                  });
-                                                },
-                                              ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                    // Business Class (B)
+                                                    ListTile(
+                                                      contentPadding: EdgeInsets.zero,
+                                                      title: Text(
+                                                        'Classe Affaires (B)',
+                                                        style: kTextStyle.copyWith(
+                                                          color: kTitleColor,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      subtitle: Text(
+                                                        'Confort premium et services exclusifs',
+                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                      ),
+                                                      trailing: selectedClass == 'business'
+                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                      onTap: () {
+                                                        setStated(() {
+                                                          selectedClass = 'business';
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
 
-                                              // Business Class (B)
-                                              ListTile(
-                                                contentPadding: EdgeInsets.zero,
-                                                title: Text(
-                                                  'Classe Affaires (B)',
-                                                  style: kTextStyle.copyWith(
-                                                    color: kTitleColor,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                subtitle: Text(
-                                                  'Confort premium et services exclusifs',
-                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                ),
-                                                trailing: selectedClass == 'business'
-                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                onTap: () {
-                                                  setStated(() {
-                                                    selectedClass = 'business';
-                                                  });
-                                                },
-                                              ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                    // Premium Economy (PE)
+                                                    ListTile(
+                                                      contentPadding: EdgeInsets.zero,
+                                                      title: Text(
+                                                        'Économie Premium (PE)',
+                                                        style: kTextStyle.copyWith(
+                                                          color: kTitleColor,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      subtitle: Text(
+                                                        'Plus d\'espace et de confort',
+                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                      ),
+                                                      trailing: selectedClass == 'premium_economy'
+                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                      onTap: () {
+                                                        setStated(() {
+                                                          selectedClass = 'premium_economy';
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
 
-                                              // Premium Economy (PE)
-                                              ListTile(
-                                                contentPadding: EdgeInsets.zero,
-                                                title: Text(
-                                                  'Économie Premium (PE)',
-                                                  style: kTextStyle.copyWith(
-                                                    color: kTitleColor,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                                    // Economy Class (E)
+                                                    ListTile(
+                                                      contentPadding: EdgeInsets.zero,
+                                                      title: Text(
+                                                        'Économie (E)',
+                                                        style: kTextStyle.copyWith(
+                                                          color: kTitleColor,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      subtitle: Text(
+                                                        'Tarif standard avec bagages inclus',
+                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                      ),
+                                                      trailing: selectedClass == 'economy'
+                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                      onTap: () {
+                                                        setStated(() {
+                                                          selectedClass = 'economy';
+                                                        });
+                                                      },
+                                                    ),
+                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                    const SizedBox(height: 20),
+                                                  ],
                                                 ),
-                                                subtitle: Text(
-                                                  'Plus d\'espace et de confort',
-                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                ),
-                                                trailing: selectedClass == 'premium_economy'
-                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                onTap: () {
-                                                  setStated(() {
-                                                    selectedClass = 'premium_economy';
-                                                  });
-                                                },
                                               ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                              // Economy Class (E)
-                                              ListTile(
-                                                contentPadding: EdgeInsets.zero,
-                                                title: Text(
-                                                  'Économie (E)',
-                                                  style: kTextStyle.copyWith(
-                                                    color: kTitleColor,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
+                                            ),
+                                          ),
+                                          // ✅ Fixed Done Button at bottom
+                                          Container(
+                                            padding: const EdgeInsets.all(20.0),
+                                            decoration: const BoxDecoration(
+                                              color: kWhite,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: kDarkWhite,
+                                                  spreadRadius: 2.0,
+                                                  blurRadius: 5.0,
+                                                  offset: Offset(0, -2),
                                                 ),
-                                                subtitle: Text(
-                                                  'Tarif standard avec bagages inclus',
-                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                ),
-                                                trailing: selectedClass == 'economy'
-                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                onTap: () {
-                                                  setStated(() {
-                                                    selectedClass = 'economy';
-                                                  });
-                                                },
-                                              ),
-                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                              const SizedBox(height: 20),
-
-                                              // ✅ Done Button
-                                              ButtonGlobal(
-                                                buttontext: lang.S.of(context).done,
+                                              ],
+                                            ),
+                                            child: SafeArea(
+                                              child: ButtonGlobal(
+                                                buttontext: 'Terminé',
                                                 buttonDecoration: kButtonDecoration.copyWith(
                                                   color: kPrimaryColor,
                                                 ),
@@ -1549,13 +1569,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   });
                                                 },
                                               ),
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  );
+                                        ],
+                                      ),
+                                    );
                                   },
                                 );
                               },
@@ -1577,7 +1595,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        'Passager',
+                                        'Passager & Classe',
                                         style: kTextStyle.copyWith(
                                           color: Colors.grey.shade600,
                                           fontSize: 13,
@@ -1585,7 +1603,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        '$adultCount Adulte, $childCount enfant, $infantCount ${infantCount > 1 ? 's' : ''}',
+                                        '${adultCount + childCount + infantCount} Passager${(adultCount + childCount + infantCount) > 1 ? 's' : ''}, ${_getClassDisplayName(selectedClass)}',
                                         style: kTextStyle.copyWith(
                                           color: kTitleColor,
                                           fontSize: 13,
@@ -1602,170 +1620,170 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
 
                                   const SizedBox(height: 10.0),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF5F5F5),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {
-                                        showModalBottomSheet(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(30.0),
-                                          ),
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return StatefulBuilder(
-                                              builder: (BuildContext context, setModalState) {
-                                                final t = lang.S.of(context);
-                                              return Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.all(20.0),
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              t.classTitle,
-                                                              style: kTextStyle.copyWith(
-                                                                color: kTitleColor,
-                                                                fontSize: 18.0,
-                                                                fontWeight: FontWeight.bold,
-                                                              ),
-                                                            ),
-                                                            const Spacer(),
-                                                            const Icon(
-                                                              FeatherIcons.x,
-                                                              size: 18.0,
-                                                              color: kTitleColor,
-                                                            ).onTap(() => finish(context)),
-                                                          ],
-                                                        ),
-                                                        Text(
-                                                          'Algerie a Tunisie, Jeu. 8 janv. 2026',
-                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    padding: const EdgeInsets.all(20.0),
-                                                    decoration: const BoxDecoration(
-                                                      borderRadius: BorderRadius.only(
-                                                        topRight: Radius.circular(30.0),
-                                                        topLeft: Radius.circular(30.0),
-                                                      ),
-                                                      color: kWhite,
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: kDarkWhite,
-                                                          spreadRadius: 5.0,
-                                                          blurRadius: 7.0,
-                                                          offset: Offset(0, -5),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: Column(
-                                                      children: [
-                                                        ListTile(
-                                                          contentPadding: EdgeInsets.zero,
-                                                          title: Text(
-                                                            t.classEconomy,
-                                                            style: kTextStyle.copyWith(
-                                                              color: kTitleColor,
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
-                                                          ),
-                                                          trailing: selectedClass == 'economy'
-                                                              ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                              : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                          onTap: () {
-                                                            setState(() {
-                                                              selectedClass = 'economy';
-                                                            });
-                                                            Navigator.pop(context);
-                                                          },
-                                                        ),
-                                                        const Divider(
-                                                          thickness: 1.0,
-                                                          color: kBorderColorTextField,
-                                                        ),
-                                                        ListTile(
-                                                          contentPadding: EdgeInsets.zero,
-                                                          title: Text(
-                                                            t.classBusiness,
-                                                            style: kTextStyle.copyWith(
-                                                              color: kTitleColor,
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
-                                                          ),
-                                                          trailing: selectedClass == 'business'
-                                                              ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                              : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                          onTap: () {
-                                                            setState(() {
-                                                              selectedClass = 'business';
-                                                            });
-                                                            Navigator.pop(context);
-                                                          },
-                                                        ),
-                                                        const Divider(
-                                                          thickness: 1.0,
-                                                          color: kBorderColorTextField,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-                                      child: Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.airline_seat_recline_extra,
-                                            color: kPrimaryColor,
-                                            size: 26,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Text(
-                                                  'Classe',
-                                                  style: kTextStyle.copyWith(
-                                                    color: Colors.grey.shade600,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 2),
-                                                Text(
-                                                  selectedClass == 'economy' ? 'Economique' : 'Affaires',
-                                                  style: kTextStyle.copyWith(
-                                                    color: kTitleColor,
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                //   Container(
+                                //     decoration: BoxDecoration(
+                                //       color: const Color(0xFFF5F5F5),
+                                //       borderRadius: BorderRadius.circular(8.0),
+                                //     ),
+                                //     child: InkWell(
+                                //       onTap: () {
+                                //         showModalBottomSheet(
+                                //           shape: RoundedRectangleBorder(
+                                //             borderRadius: BorderRadius.circular(30.0),
+                                //           ),
+                                //           context: context,
+                                //           builder: (BuildContext context) {
+                                //             return StatefulBuilder(
+                                //               builder: (BuildContext context, setModalState) {
+                                //                 final t = lang.S.of(context);
+                                //               return Column(
+                                //                 mainAxisSize: MainAxisSize.min,
+                                //                 crossAxisAlignment: CrossAxisAlignment.start,
+                                //                 children: [
+                                //                   Padding(
+                                //                     padding: const EdgeInsets.all(20.0),
+                                //                     child: Column(
+                                //                       crossAxisAlignment: CrossAxisAlignment.start,
+                                //                       children: [
+                                //                         Row(
+                                //                           children: [
+                                //                             Text(
+                                //                               t.classTitle,
+                                //                               style: kTextStyle.copyWith(
+                                //                                 color: kTitleColor,
+                                //                                 fontSize: 18.0,
+                                //                                 fontWeight: FontWeight.bold,
+                                //                               ),
+                                //                             ),
+                                //                             const Spacer(),
+                                //                             const Icon(
+                                //                               FeatherIcons.x,
+                                //                               size: 18.0,
+                                //                               color: kTitleColor,
+                                //                             ).onTap(() => finish(context)),
+                                //                           ],
+                                //                         ),
+                                //                         Text(
+                                //                           'Algerie a Tunisie, Jeu. 8 janv. 2026',
+                                //                           style: kTextStyle.copyWith(color: kSubTitleColor),
+                                //                         ),
+                                //                       ],
+                                //                     ),
+                                //                   ),
+                                //                   Container(
+                                //                     padding: const EdgeInsets.all(20.0),
+                                //                     decoration: const BoxDecoration(
+                                //                       borderRadius: BorderRadius.only(
+                                //                         topRight: Radius.circular(30.0),
+                                //                         topLeft: Radius.circular(30.0),
+                                //                       ),
+                                //                       color: kWhite,
+                                //                       boxShadow: [
+                                //                         BoxShadow(
+                                //                           color: kDarkWhite,
+                                //                           spreadRadius: 5.0,
+                                //                           blurRadius: 7.0,
+                                //                           offset: Offset(0, -5),
+                                //                         ),
+                                //                       ],
+                                //                     ),
+                                //                     child: Column(
+                                //                       children: [
+                                //                         ListTile(
+                                //                           contentPadding: EdgeInsets.zero,
+                                //                           title: Text(
+                                //                             t.classEconomy,
+                                //                             style: kTextStyle.copyWith(
+                                //                               color: kTitleColor,
+                                //                               fontWeight: FontWeight.bold,
+                                //                             ),
+                                //                           ),
+                                //                           trailing: selectedClass == 'economy'
+                                //                               ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                //                               : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                //                           onTap: () {
+                                //                             setState(() {
+                                //                               selectedClass = 'economy';
+                                //                             });
+                                //                             Navigator.pop(context);
+                                //                           },
+                                //                         ),
+                                //                         const Divider(
+                                //                           thickness: 1.0,
+                                //                           color: kBorderColorTextField,
+                                //                         ),
+                                //                         ListTile(
+                                //                           contentPadding: EdgeInsets.zero,
+                                //                           title: Text(
+                                //                             t.classBusiness,
+                                //                             style: kTextStyle.copyWith(
+                                //                               color: kTitleColor,
+                                //                               fontWeight: FontWeight.bold,
+                                //                             ),
+                                //                           ),
+                                //                           trailing: selectedClass == 'business'
+                                //                               ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                //                               : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                //                           onTap: () {
+                                //                             setState(() {
+                                //                               selectedClass = 'business';
+                                //                             });
+                                //                             Navigator.pop(context);
+                                //                           },
+                                //                         ),
+                                //                         const Divider(
+                                //                           thickness: 1.0,
+                                //                           color: kBorderColorTextField,
+                                //                         ),
+                                //                       ],
+                                //                     ),
+                                //                   ),
+                                //                 ],
+                                //               );
+                                //             },
+                                //           );
+                                //         },
+                                //       );
+                                //     },
+                                //     child: Padding(
+                                //       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                //       child: Row(
+                                //         children: [
+                                //           const Icon(
+                                //             Icons.airline_seat_recline_extra,
+                                //             color: kPrimaryColor,
+                                //             size: 26,
+                                //           ),
+                                //           const SizedBox(width: 12),
+                                //           Expanded(
+                                //             child: Column(
+                                //               crossAxisAlignment: CrossAxisAlignment.start,
+                                //               mainAxisSize: MainAxisSize.min,
+                                //               children: [
+                                //                 Text(
+                                //                   'Classe',
+                                //                   style: kTextStyle.copyWith(
+                                //                     color: Colors.grey.shade600,
+                                //                     fontSize: 13,
+                                //                   ),
+                                //                 ),
+                                //                 const SizedBox(height: 2),
+                                //                 Text(
+                                //                   selectedClass == 'economy' ? 'Economique' : 'Affaires',
+                                //                   style: kTextStyle.copyWith(
+                                //                     color: kTitleColor,
+                                //                     fontSize: 13,
+                                //                     fontWeight: FontWeight.w500,
+                                //                   ),
+                                //                 ),
+                                //               ],
+                                //             ),
+                                //           ),
+                                //         ],
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ),
                                   const SizedBox(height: 15.0),
                                   // Toggle switches for direct flights and baggage
                                   Row(
@@ -2183,23 +2201,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                     child: InkWell(
-                                      onTap: () => showModalBottomSheet(
-                                        isScrollControlled: true,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(30.0),
-                                        ),
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return StatefulBuilder(builder: (BuildContext context, setStated) {
-                                            return Container(
-                                              constraints: BoxConstraints(
-                                                maxHeight: MediaQuery.of(context).size.height * 0.85,
-                                              ),
-                                              child: SingleChildScrollView(
+                                      onTap: () {
+                                        showModalBottomSheet(
+                                          isScrollControlled: true,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(30.0),
+                                          ),
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return StatefulBuilder(
+                                              builder: (BuildContext context, setStated) {
+                                              return Container(
+                                                constraints: BoxConstraints(
+                                                  maxHeight: MediaQuery.of(context).size.height * 0.85,
+                                                ),
                                                 child: Column(
                                                   mainAxisSize: MainAxisSize.min,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
+                                                    // Header (fixed)
                                                     Padding(
                                                       padding: const EdgeInsets.all(20.0),
                                                       child: Column(
@@ -2230,383 +2249,331 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         ],
                                                       ),
                                                     ),
-                                                Container(
-                                                  padding: const EdgeInsets.all(20.0),
-                                                  decoration: const BoxDecoration(
-                                                    borderRadius: BorderRadius.only(
-                                                      topRight: Radius.circular(30.0),
-                                                      topLeft: Radius.circular(30.0),
-                                                    ),
-                                                    color: kWhite,
-                                                    boxShadow: [
-                                                      BoxShadow(
-                                                        color: kDarkWhite,
-                                                        spreadRadius: 5.0,
-                                                        blurRadius: 7.0,
-                                                        offset: Offset(0, -5),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  child: Column(
-                                                    children: [
-                                                      /// Adults
-                                                      Row(
-                                                        children: [
-                                                          Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                                                lang.S.of(context).adults,
-                                                                style: kTextStyle.copyWith(
-                                                                    color: kTitleColor,
-                                                                    fontWeight: FontWeight.bold),
-                                                              ),
-                                                              Text(
-                                                                '12 ans et plus',
-                                                                style:
-                                                                kTextStyle.copyWith(color: kSubTitleColor),
+                                                    // Scrollable content
+                                                    Expanded(
+                                                      child: SingleChildScrollView(
+                                                        child: Container(
+                                                          padding: const EdgeInsets.all(20.0),
+                                                          decoration: const BoxDecoration(
+                                                            borderRadius: BorderRadius.only(
+                                                              topRight: Radius.circular(30.0),
+                                                              topLeft: Radius.circular(30.0),
+                                                            ),
+                                                            color: kWhite,
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: kDarkWhite,
+                                                                spreadRadius: 5.0,
+                                                                blurRadius: 7.0,
+                                                                offset: Offset(0, -5),
                                                               ),
                                                             ],
                                                           ),
-                                                          const Spacer(),
-                                                          Container(
-                                                            padding: const EdgeInsets.all(5.0),
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              color: adultCount == 1
-                                                                  ? kPrimaryColor.withOpacity(0.2)
-                                                                  : kPrimaryColor,
-                                                            ),
-                                                            child: const Icon(
-                                                              FeatherIcons.minus,
-                                                              color: Colors.white,
-                                                              size: 14.0,
-                                                            ).onTap(() {
-                                                              setStated(() {
-                                                                adultCount > 1
-                                                                    ? adultCount--
-                                                                    : adultCount = 1;
-                                                              });
-                                                            }),
-                                                          ),
-                                                          const SizedBox(width: 10.0),
-                                                          Text(adultCount.toString()),
-                                                          const SizedBox(width: 10.0),
-                                                          Container(
-                                                            padding: const EdgeInsets.all(5.0),
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              color: (adultCount + childCount + infantCount) >= 9
-                                                                  ? kPrimaryColor.withOpacity(0.2)
-                                                                  : kPrimaryColor,
-                                                            ),
-                                                            child: const Icon(
-                                                              FeatherIcons.plus,
-                                                              color: Colors.white,
-                                                              size: 14.0,
-                                                            ).onTap(() {
-                                                              setStated(() {
-                                                                if ((adultCount + childCount + infantCount) < 9) {
-                                                                  adultCount++;
-                                                                }
-                                                              });
-                                                            }),
-                                                          ),
-                                                        ],
-                                                      ),
-
-                                                      const Divider(color: kBorderColorTextField),
-                                                      const SizedBox(height: 15.0),
-
-                                                      /// Children
-                                                      Row(
-                                                        children: [
-                                                          Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                          child: Column(
                                                             children: [
-                                                              Text(
-                                                                lang.S.of(context).child,
-                                                                style: kTextStyle.copyWith(
+                                                              // Adults
+                                                              Row(
+                                                                children: [
+                                                                  Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Text(lang.S.of(context).adults,
+                                                                          style: kTextStyle.copyWith(
+                                                                              color: kTitleColor,
+                                                                              fontWeight: FontWeight.bold)),
+                                                                      Text('12 ans et plus',
+                                                                          style: kTextStyle.copyWith(
+                                                                              color: kSubTitleColor)),
+                                                                    ],
+                                                                  ),
+                                                                  const Spacer(),
+                                                                  _counterButton(
+                                                                    icon: FeatherIcons.minus,
+                                                                    enabled: adultCount > 1,
+                                                                    onTap: () {
+                                                                      setStated(() {
+                                                                        if (adultCount > 1) adultCount--;
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                  const SizedBox(width: 10),
+                                                                  Text(adultCount.toString()),
+                                                                  const SizedBox(width: 10),
+                                                                  _counterButton(
+                                                                    icon: FeatherIcons.plus,
+                                                                    enabled: (adultCount + childCount + infantCount) < 9,
+                                                                    onTap: () {
+                                                                      setStated(() {
+                                                                        if ((adultCount + childCount + infantCount) < 9) {
+                                                                          adultCount++;
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                              const SizedBox(height: 15),
+
+                                                              // Child
+                                                              Row(
+                                                                children: [
+                                                                  Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Text(lang.S.of(context).child,
+                                                                          style: kTextStyle.copyWith(
+                                                                              color: kTitleColor,
+                                                                              fontWeight: FontWeight.bold)),
+                                                                      Text('2-12 ans',
+                                                                          style: kTextStyle.copyWith(
+                                                                              color: kSubTitleColor)),
+                                                                    ],
+                                                                  ),
+                                                                  const Spacer(),
+                                                                  _counterButton(
+                                                                    icon: FeatherIcons.minus,
+                                                                    enabled: childCount > 0,
+                                                                    onTap: () {
+                                                                      setStated(() {
+                                                                        if (childCount > 0) childCount--;
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                  const SizedBox(width: 10),
+                                                                  Text(childCount.toString()),
+                                                                  const SizedBox(width: 10),
+                                                                  _counterButton(
+                                                                    icon: FeatherIcons.plus,
+                                                                    enabled: (adultCount + childCount + infantCount) < 9,
+                                                                    onTap: () {
+                                                                      setStated(() {
+                                                                        if ((adultCount + childCount + infantCount) < 9) {
+                                                                          childCount++;
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                              const SizedBox(height: 15),
+
+                                                              // Infants
+                                                              Row(
+                                                                children: [
+                                                                  Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Text(lang.S.of(context).infants,
+                                                                          style: kTextStyle.copyWith(
+                                                                              color: kTitleColor,
+                                                                              fontWeight: FontWeight.bold)),
+                                                                      Text('Moins de 2 ans',
+                                                                          style: kTextStyle.copyWith(
+                                                                              color: kSubTitleColor)),
+                                                                    ],
+                                                                  ),
+                                                                  const Spacer(),
+                                                                  _counterButton(
+                                                                    icon: FeatherIcons.minus,
+                                                                    enabled: infantCount > 0,
+                                                                    onTap: () {
+                                                                      setStated(() {
+                                                                        if (infantCount > 0) infantCount--;
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                  const SizedBox(width: 10),
+                                                                  Text(infantCount.toString()),
+                                                                  const SizedBox(width: 10),
+                                                                  _counterButton(
+                                                                    icon: FeatherIcons.plus,
+                                                                    enabled: (adultCount + childCount + infantCount) < 9,
+                                                                    onTap: () {
+                                                                      setStated(() {
+                                                                        if ((adultCount + childCount + infantCount) < 9) {
+                                                                          infantCount++;
+                                                                        }
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                              const SizedBox(height: 30),
+
+                                                              // Class Selection Header
+                                                              Row(
+                                                                children: [
+                                                                  Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    children: [
+                                                                      Text(
+                                                                        'Classe de cabine',
+                                                                        style: kTextStyle.copyWith(
+                                                                          color: kTitleColor,
+                                                                          fontWeight: FontWeight.bold,
+                                                                        ),
+                                                                      ),
+                                                                      Text(
+                                                                        'Sélectionnez votre classe de voyage',
+                                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                              const SizedBox(height: 10),
+
+                                                              // First Class (F)
+                                                              ListTile(
+                                                                contentPadding: EdgeInsets.zero,
+                                                                title: Text(
+                                                                  'Première classe (F)',
+                                                                  style: kTextStyle.copyWith(
                                                                     color: kTitleColor,
-                                                                    fontWeight: FontWeight.bold),
-                                                              ),
-                                                              Text(
-                                                                '2-12 ans',
-                                                                style:
-                                                                kTextStyle.copyWith(color: kSubTitleColor),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          const Spacer(),
-                                                          Container(
-                                                            padding: const EdgeInsets.all(5.0),
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              color: childCount == 0
-                                                                  ? kPrimaryColor.withOpacity(0.2)
-                                                                  : kPrimaryColor,
-                                                            ),
-                                                            child: const Icon(
-                                                              FeatherIcons.minus,
-                                                              color: Colors.white,
-                                                              size: 14.0,
-                                                            ).onTap(() {
-                                                              setStated(() {
-                                                                childCount > 0
-                                                                    ? childCount--
-                                                                    : childCount = 0;
-                                                              });
-                                                            }),
-                                                          ),
-                                                          const SizedBox(width: 10.0),
-                                                          Text(childCount.toString()),
-                                                          const SizedBox(width: 10.0),
-                                                          Container(
-                                                            padding: const EdgeInsets.all(5.0),
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              color: (adultCount + childCount + infantCount) >= 9
-                                                                  ? kPrimaryColor.withOpacity(0.2)
-                                                                  : kPrimaryColor,
-                                                            ),
-                                                            child: const Icon(
-                                                              FeatherIcons.plus,
-                                                              color: Colors.white,
-                                                              size: 14.0,
-                                                            ).onTap(() {
-                                                              setStated(() {
-                                                                if ((adultCount + childCount + infantCount) < 9) {
-                                                                  childCount++;
-                                                                }
-                                                              });
-                                                            }),
-                                                          ),
-                                                        ],
-                                                      ),
-
-                                                      const Divider(color: kBorderColorTextField),
-                                                      const SizedBox(height: 15.0),
-
-                                                      /// Infants
-                                                      Row(
-                                                        children: [
-                                                          Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                                                lang.S.of(context).infants,
-                                                                style: kTextStyle.copyWith(
-                                                                    color: kTitleColor,
-                                                                    fontWeight: FontWeight.bold),
-                                                              ),
-                                                              Text(
-                                                                'Moins de 2 ans',
-                                                                style:
-                                                                kTextStyle.copyWith(color: kSubTitleColor),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          const Spacer(),
-                                                          Container(
-                                                            padding: const EdgeInsets.all(5.0),
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              color: infantCount == 0
-                                                                  ? kPrimaryColor.withOpacity(0.2)
-                                                                  : kPrimaryColor,
-                                                            ),
-                                                            child: const Icon(
-                                                              FeatherIcons.minus,
-                                                              color: Colors.white,
-                                                              size: 14.0,
-                                                            ).onTap(() {
-                                                              setStated(() {
-                                                                infantCount > 0
-                                                                    ? infantCount--
-                                                                    : infantCount = 0;
-                                                              });
-                                                            }),
-                                                          ),
-                                                          const SizedBox(width: 10.0),
-                                                          Text(infantCount.toString()),
-                                                          const SizedBox(width: 10.0),
-                                                          Container(
-                                                            padding: const EdgeInsets.all(5.0),
-                                                            decoration: BoxDecoration(
-                                                              shape: BoxShape.circle,
-                                                              color: (adultCount + childCount + infantCount) >= 9
-                                                                  ? kPrimaryColor.withOpacity(0.2)
-                                                                  : kPrimaryColor,
-                                                            ),
-                                                            child: const Icon(
-                                                              FeatherIcons.plus,
-                                                              color: Colors.white,
-                                                              size: 14.0,
-                                                            ).onTap(() {
-                                                              setStated(() {
-                                                                if ((adultCount + childCount + infantCount) < 9) {
-                                                                  infantCount++;
-                                                                }
-                                                              });
-                                                            }),
-                                                          ),
-                                                        ],
-                                                      ),
-
-                                                      const Divider(color: kBorderColorTextField),
-                                                      const SizedBox(height: 30.0),
-
-                                                      // 🎫 Class Selection Header
-                                                      Row(
-                                                        children: [
-                                                          Column(
-                                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                                            children: [
-                                                              Text(
-                                                                'Classe de cabine',
-                                                                style: kTextStyle.copyWith(
-                                                                  color: kTitleColor,
-                                                                  fontWeight: FontWeight.bold,
+                                                                    fontWeight: FontWeight.bold,
+                                                                  ),
                                                                 ),
+                                                                subtitle: Text(
+                                                                  'Luxe absolu et service personnalisé',
+                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                                ),
+                                                                trailing: selectedClass == 'first'
+                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                                onTap: () {
+                                                                  setStated(() {
+                                                                    selectedClass = 'first';
+                                                                  });
+                                                                },
                                                               ),
-                                                              Text(
-                                                                'Sélectionnez votre classe de voyage',
-                                                                style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                                              // Business Class (B)
+                                                              ListTile(
+                                                                contentPadding: EdgeInsets.zero,
+                                                                title: Text(
+                                                                  'Classe Affaires (B)',
+                                                                  style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold,
+                                                                  ),
+                                                                ),
+                                                                subtitle: Text(
+                                                                  'Confort premium et services exclusifs',
+                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                                ),
+                                                                trailing: selectedClass == 'business'
+                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                                onTap: () {
+                                                                  setStated(() {
+                                                                    selectedClass = 'business';
+                                                                  });
+                                                                },
                                                               ),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                                              // Premium Economy (PE)
+                                                              ListTile(
+                                                                contentPadding: EdgeInsets.zero,
+                                                                title: Text(
+                                                                  'Économie Premium (PE)',
+                                                                  style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold,
+                                                                  ),
+                                                                ),
+                                                                subtitle: Text(
+                                                                  'Plus d\'espace et de confort',
+                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                                ),
+                                                                trailing: selectedClass == 'premium_economy'
+                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                                onTap: () {
+                                                                  setStated(() {
+                                                                    selectedClass = 'premium_economy';
+                                                                  });
+                                                                },
+                                                              ),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+
+                                                              // Economy Class (E)
+                                                              ListTile(
+                                                                contentPadding: EdgeInsets.zero,
+                                                                title: Text(
+                                                                  'Économie (E)',
+                                                                  style: kTextStyle.copyWith(
+                                                                    color: kTitleColor,
+                                                                    fontWeight: FontWeight.bold,
+                                                                  ),
+                                                                ),
+                                                                subtitle: Text(
+                                                                  'Tarif standard avec bagages inclus',
+                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                                ),
+                                                                trailing: selectedClass == 'economy'
+                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                                                onTap: () {
+                                                                  setStated(() {
+                                                                    selectedClass = 'economy';
+                                                                  });
+                                                                },
+                                                              ),
+                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
+                                                              const SizedBox(height: 20),
                                                             ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    // Fixed Done Button at bottom
+                                                    Container(
+                                                      padding: const EdgeInsets.all(20.0),
+                                                      decoration: const BoxDecoration(
+                                                        color: kWhite,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: kDarkWhite,
+                                                            spreadRadius: 2.0,
+                                                            blurRadius: 5.0,
+                                                            offset: Offset(0, -2),
                                                           ),
                                                         ],
                                                       ),
-                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                      const SizedBox(height: 10),
-
-                                                      // First Class (F)
-                                                      ListTile(
-                                                        contentPadding: EdgeInsets.zero,
-                                                        title: Text(
-                                                          'Première classe (F)',
-                                                          style: kTextStyle.copyWith(
-                                                            color: kTitleColor,
-                                                            fontWeight: FontWeight.bold,
+                                                      child: SafeArea(
+                                                        child: ButtonGlobal(
+                                                          buttontext: 'Terminé',
+                                                          buttonDecoration: kButtonDecoration.copyWith(
+                                                            color: kPrimaryColor,
                                                           ),
+                                                          onPressed: () {
+                                                            setState(() {
+                                                              finish(context);
+                                                            });
+                                                          },
                                                         ),
-                                                        subtitle: Text(
-                                                          'Luxe absolu et service personnalisé',
-                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                        ),
-                                                        trailing: selectedClass == 'first'
-                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                        onTap: () {
-                                                          setStated(() {
-                                                            selectedClass = 'first';
-                                                          });
-                                                        },
                                                       ),
-                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                      // Business Class (B)
-                                                      ListTile(
-                                                        contentPadding: EdgeInsets.zero,
-                                                        title: Text(
-                                                          'Classe Affaires (B)',
-                                                          style: kTextStyle.copyWith(
-                                                            color: kTitleColor,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                        subtitle: Text(
-                                                          'Confort premium et services exclusifs',
-                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                        ),
-                                                        trailing: selectedClass == 'business'
-                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                        onTap: () {
-                                                          setStated(() {
-                                                            selectedClass = 'business';
-                                                          });
-                                                        },
-                                                      ),
-                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                      // Premium Economy (PE)
-                                                      ListTile(
-                                                        contentPadding: EdgeInsets.zero,
-                                                        title: Text(
-                                                          'Économie Premium (PE)',
-                                                          style: kTextStyle.copyWith(
-                                                            color: kTitleColor,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                        subtitle: Text(
-                                                          'Plus d\'espace et de confort',
-                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                        ),
-                                                        trailing: selectedClass == 'premium_economy'
-                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                        onTap: () {
-                                                          setStated(() {
-                                                            selectedClass = 'premium_economy';
-                                                          });
-                                                        },
-                                                      ),
-                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                      // Economy Class (E)
-                                                      ListTile(
-                                                        contentPadding: EdgeInsets.zero,
-                                                        title: Text(
-                                                          'Économie (E)',
-                                                          style: kTextStyle.copyWith(
-                                                            color: kTitleColor,
-                                                            fontWeight: FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                        subtitle: Text(
-                                                          'Tarif standard avec bagages inclus',
-                                                          style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                        ),
-                                                        trailing: selectedClass == 'economy'
-                                                            ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                            : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                        onTap: () {
-                                                          setStated(() {
-                                                            selectedClass = 'economy';
-                                                          });
-                                                        },
-                                                      ),
-                                                      const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                      const SizedBox(height: 20.0),
-
-                                                      ButtonGlobal(
-                                                        buttontext: lang.S.of(context).done,
-                                                        buttonDecoration:
-                                                        kButtonDecoration.copyWith(color: kPrimaryColor),
-                                                        onPressed: () {
-                                                          setState(() {
-                                                            finish(context);
-                                                          });
-                                                        },
-                                                      ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
-                                              ],
-                                            ),
-                                          ),
+                                              );
+                                            },
                                           );
-                                          });
                                         },
-                                      ),
+                                      );
+                                    },
                                       child: Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
                                         child: Row(
                                           children: [
                                             const Icon(
-                                              FeatherIcons.users,
+                                              Icons.person_outline,
                                               color: kPrimaryColor,
                                               size: 26,
                                             ),
@@ -2617,7 +2584,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Text(
-                                                    'Voyageurs',
+                                                    'Passager & Classe',
                                                     style: kTextStyle.copyWith(
                                                       color: Colors.grey.shade600,
                                                       fontSize: 13,
@@ -2625,7 +2592,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
-                                                    '$adultCount Adulte${adultCount > 1 ? 's' : ''}, $childCount Enfant${childCount > 1 ? 's' : ''}, $infantCount Bébé${infantCount > 1 ? 's' : ''}',
+                                                    '${adultCount + childCount + infantCount} Passager${(adultCount + childCount + infantCount) > 1 ? 's' : ''}, ${_getClassDisplayName(selectedClass)}',
                                                     style: kTextStyle.copyWith(
                                                       color: kTitleColor,
                                                       fontSize: 13,
@@ -2634,10 +2601,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ),
                                                 ],
                                               ),
-                                            ),
-                                            const Icon(
-                                              IconlyLight.arrowDown2,
-                                              color: kSubTitleColor,
                                             ),
                                           ],
                                         ),
@@ -2646,176 +2609,176 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                   const SizedBox(height: 10.0),
                                   // Class selector
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF5F5F5),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {
-                                        showModalBottomSheet(
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(30.0),
-                                          ),
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return StatefulBuilder(
-                                              builder: (BuildContext context, setModalState) {
-                                                final t = lang.S.of(context);
-                                                return Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.all(20.0),
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              Text(
-                                                                t.classTitle,
-                                                                style: kTextStyle.copyWith(
-                                                                  color: kTitleColor,
-                                                                  fontSize: 18.0,
-                                                                  fontWeight: FontWeight.bold,
-                                                                ),
-                                                              ),
-                                                              const Spacer(),
-                                                              const Icon(
-                                                                FeatherIcons.x,
-                                                                size: 18.0,
-                                                                color: kTitleColor,
-                                                              ).onTap(() => finish(context)),
-                                                            ],
-                                                          ),
-                                                          Text(
-                                                            '${fromAirport?.city ?? 'Départ'} à ${toAirport?.city ?? 'Destination'}',
-                                                            style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      padding: const EdgeInsets.all(20.0),
-                                                      decoration: const BoxDecoration(
-                                                        borderRadius: BorderRadius.only(
-                                                          topRight: Radius.circular(30.0),
-                                                          topLeft: Radius.circular(30.0),
-                                                        ),
-                                                        color: kWhite,
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: kDarkWhite,
-                                                            spreadRadius: 5.0,
-                                                            blurRadius: 7.0,
-                                                            offset: Offset(0, -5),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      child: Column(
-                                                        children: [
-                                                          ListTile(
-                                                            contentPadding: EdgeInsets.zero,
-                                                            title: Text(
-                                                              t.classEconomy,
-                                                              style: kTextStyle.copyWith(
-                                                                color: kTitleColor,
-                                                                fontWeight: FontWeight.bold,
-                                                              ),
-                                                            ),
-                                                            trailing: selectedClass == 'economy'
-                                                                ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                                : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                            onTap: () {
-                                                              setState(() {
-                                                                selectedClass = 'economy';
-                                                              });
-                                                              Navigator.pop(context);
-                                                            },
-                                                          ),
-                                                          const Divider(
-                                                            thickness: 1.0,
-                                                            color: kBorderColorTextField,
-                                                          ),
-                                                          ListTile(
-                                                            contentPadding: EdgeInsets.zero,
-                                                            title: Text(
-                                                              t.classBusiness,
-                                                              style: kTextStyle.copyWith(
-                                                                color: kTitleColor,
-                                                                fontWeight: FontWeight.bold,
-                                                              ),
-                                                            ),
-                                                            trailing: selectedClass == 'business'
-                                                                ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                                : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                            onTap: () {
-                                                              setState(() {
-                                                                selectedClass = 'business';
-                                                              });
-                                                              Navigator.pop(context);
-                                                            },
-                                                          ),
-                                                          const Divider(
-                                                            thickness: 1.0,
-                                                            color: kBorderColorTextField,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              },
-                                            );
-                                          },
-                                        );
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Icons.airline_seat_recline_extra,
-                                              color: kPrimaryColor,
-                                              size: 26,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                    'Classe',
-                                                    style: kTextStyle.copyWith(
-                                                      color: Colors.grey.shade600,
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    selectedClass == 'economy'
-                                                        ? lang.S.of(context).classEconomy
-                                                        : lang.S.of(context).classBusiness,
-                                                    style: kTextStyle.copyWith(
-                                                      color: kTitleColor,
-                                                      fontSize: 13,
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                            const Icon(
-                                              IconlyLight.arrowDown2,
-                                              color: kSubTitleColor,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
+                                  // Container(
+                                  //   decoration: BoxDecoration(
+                                  //     color: const Color(0xFFF5F5F5),
+                                  //     borderRadius: BorderRadius.circular(8.0),
+                                  //   ),
+                                  //   child: InkWell(
+                                  //     onTap: () {
+                                  //       showModalBottomSheet(
+                                  //         shape: RoundedRectangleBorder(
+                                  //           borderRadius: BorderRadius.circular(30.0),
+                                  //         ),
+                                  //         context: context,
+                                  //         builder: (BuildContext context) {
+                                  //           return StatefulBuilder(
+                                  //             builder: (BuildContext context, setModalState) {
+                                  //               final t = lang.S.of(context);
+                                  //               return Column(
+                                  //                 mainAxisSize: MainAxisSize.min,
+                                  //                 crossAxisAlignment: CrossAxisAlignment.start,
+                                  //                 children: [
+                                  //                   Padding(
+                                  //                     padding: const EdgeInsets.all(20.0),
+                                  //                     child: Column(
+                                  //                       crossAxisAlignment: CrossAxisAlignment.start,
+                                  //                       children: [
+                                  //                         Row(
+                                  //                           children: [
+                                  //                             Text(
+                                  //                               t.classTitle,
+                                  //                               style: kTextStyle.copyWith(
+                                  //                                 color: kTitleColor,
+                                  //                                 fontSize: 18.0,
+                                  //                                 fontWeight: FontWeight.bold,
+                                  //                               ),
+                                  //                             ),
+                                  //                             const Spacer(),
+                                  //                             const Icon(
+                                  //                               FeatherIcons.x,
+                                  //                               size: 18.0,
+                                  //                               color: kTitleColor,
+                                  //                             ).onTap(() => finish(context)),
+                                  //                           ],
+                                  //                         ),
+                                  //                         Text(
+                                  //                           '${fromAirport?.city ?? 'Départ'} à ${toAirport?.city ?? 'Destination'}',
+                                  //                           style: kTextStyle.copyWith(color: kSubTitleColor),
+                                  //                         ),
+                                  //                       ],
+                                  //                     ),
+                                  //                   ),
+                                  //                   Container(
+                                  //                     padding: const EdgeInsets.all(20.0),
+                                  //                     decoration: const BoxDecoration(
+                                  //                       borderRadius: BorderRadius.only(
+                                  //                         topRight: Radius.circular(30.0),
+                                  //                         topLeft: Radius.circular(30.0),
+                                  //                       ),
+                                  //                       color: kWhite,
+                                  //                       boxShadow: [
+                                  //                         BoxShadow(
+                                  //                           color: kDarkWhite,
+                                  //                           spreadRadius: 5.0,
+                                  //                           blurRadius: 7.0,
+                                  //                           offset: Offset(0, -5),
+                                  //                         ),
+                                  //                       ],
+                                  //                     ),
+                                  //                     child: Column(
+                                  //                       children: [
+                                  //                         ListTile(
+                                  //                           contentPadding: EdgeInsets.zero,
+                                  //                           title: Text(
+                                  //                             t.classEconomy,
+                                  //                             style: kTextStyle.copyWith(
+                                  //                               color: kTitleColor,
+                                  //                               fontWeight: FontWeight.bold,
+                                  //                             ),
+                                  //                           ),
+                                  //                           trailing: selectedClass == 'economy'
+                                  //                               ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                  //                               : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                  //                           onTap: () {
+                                  //                             setState(() {
+                                  //                               selectedClass = 'economy';
+                                  //                             });
+                                  //                             Navigator.pop(context);
+                                  //                           },
+                                  //                         ),
+                                  //                         const Divider(
+                                  //                           thickness: 1.0,
+                                  //                           color: kBorderColorTextField,
+                                  //                         ),
+                                  //                         ListTile(
+                                  //                           contentPadding: EdgeInsets.zero,
+                                  //                           title: Text(
+                                  //                             t.classBusiness,
+                                  //                             style: kTextStyle.copyWith(
+                                  //                               color: kTitleColor,
+                                  //                               fontWeight: FontWeight.bold,
+                                  //                             ),
+                                  //                           ),
+                                  //                           trailing: selectedClass == 'business'
+                                  //                               ? const Icon(Icons.check_circle, color: kPrimaryColor)
+                                  //                               : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
+                                  //                           onTap: () {
+                                  //                             setState(() {
+                                  //                               selectedClass = 'business';
+                                  //                             });
+                                  //                             Navigator.pop(context);
+                                  //                           },
+                                  //                         ),
+                                  //                         const Divider(
+                                  //                           thickness: 1.0,
+                                  //                           color: kBorderColorTextField,
+                                  //                         ),
+                                  //                       ],
+                                  //                     ),
+                                  //                   ),
+                                  //                 ],
+                                  //               );
+                                  //             },
+                                  //           );
+                                  //         },
+                                  //       );
+                                  //     },
+                                  //     child: Padding(
+                                  //       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                  //       child: Row(
+                                  //         children: [
+                                  //           const Icon(
+                                  //             Icons.airline_seat_recline_extra,
+                                  //             color: kPrimaryColor,
+                                  //             size: 26,
+                                  //           ),
+                                  //           const SizedBox(width: 12),
+                                  //           Expanded(
+                                  //             child: Column(
+                                  //               crossAxisAlignment: CrossAxisAlignment.start,
+                                  //               mainAxisSize: MainAxisSize.min,
+                                  //               children: [
+                                  //                 Text(
+                                  //                   'Classe',
+                                  //                   style: kTextStyle.copyWith(
+                                  //                     color: Colors.grey.shade600,
+                                  //                     fontSize: 13,
+                                  //                   ),
+                                  //                 ),
+                                  //                 const SizedBox(height: 2),
+                                  //                 Text(
+                                  //                   selectedClass == 'economy'
+                                  //                       ? lang.S.of(context).classEconomy
+                                  //                       : lang.S.of(context).classBusiness,
+                                  //                   style: kTextStyle.copyWith(
+                                  //                     color: kTitleColor,
+                                  //                     fontSize: 13,
+                                  //                     fontWeight: FontWeight.w500,
+                                  //                   ),
+                                  //                 ),
+                                  //               ],
+                                  //             ),
+                                  //           ),
+                                  //           const Icon(
+                                  //             IconlyLight.arrowDown2,
+                                  //             color: kSubTitleColor,
+                                  //           ),
+                                  //         ],
+                                  //       ),
+                                  //     ),
+                                  //   ),
+                                  // ),
                                   const SizedBox(height: 10.0),
                                   ButtonGlobalWithoutIcon(
                                     buttontext: lang.S.of(context).searchFlight,
