@@ -112,6 +112,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     fromAirport = airports.firstWhere((a) => a.code == "ALG", orElse: () => airports.first);
     toAirport = airports.firstWhere((a) => a.code == "TUN", orElse: () => airports.first);
 
+    // Default dates - today for departure, tomorrow for return
+    departureDate = DateTime.now();
+    returnDate = DateTime.now().add(const Duration(days: 1));
+    _selectedDateRange = DateTimeRange(start: departureDate!, end: returnDate!);
+
     // Initialize slider data - replace with API call in future
     _loadSliderData();
 
@@ -217,8 +222,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   String _formatDate(DateTime? date) {
     if (date == null) return '';
-    final locale = Localizations.localeOf(context).languageCode;
-    return DateFormat('dd MMM', locale).format(date);
+    return DateFormat('dd MMM yyyy', 'fr').format(date);
   }
 
   // Show loading screen and search one-way flights
@@ -719,7 +723,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Scaffold(
           backgroundColor: Colors.white,
           body: Stack(
-            alignment: Alignment.bottomCenter,
             children: [
               // Background image with opacity
               Positioned.fill(
@@ -731,126 +734,129 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
               ),
-              Column(
-                children: [
-          Container(
-            height: 290,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.only(
-                bottomRight: Radius.circular(30.0),
-                bottomLeft: Radius.circular(30.0),
-              ),
-            ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomRight: Radius.circular(30.0),
-                bottomLeft: Radius.circular(30.0),
-              ),
-              child: Stack(
-                children: [
-                  // Solid orange background
-                  Positioned.fill(
-                    child: Container(
+              SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Header that scrolls with content
+                    Container(
+                      height: 200,
                       decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFFFF5100),
-                            Color(0xFFFF5100),
+                        borderRadius: BorderRadius.only(
+                          bottomRight: Radius.circular(30.0),
+                          bottomLeft: Radius.circular(30.0),
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          bottomRight: Radius.circular(30.0),
+                          bottomLeft: Radius.circular(30.0),
+                        ),
+                        child: Stack(
+                          children: [
+                            // Solid orange background
+                            Positioned.fill(
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Color(0xFFFF5100),
+                                      Color(0xFFFF5100),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Background image on top
+                            Positioned.fill(
+                              child: Opacity(
+                                opacity: 0.8,
+                                child: Image.asset(
+                                  'images/background-home.png',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            // Content
+                            Padding(
+                              padding: EdgeInsets.only(
+                                top: MediaQuery.of(context).padding.top + 10,
+                                left: 15.0,
+                                right: 15.0,
+                                bottom: 15.0,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Header with logo and notification
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(left: 15.0),
+                                        child: Image.asset(
+                                          'images/logo-h24-v2.png',
+                                          height: 40,
+                                          fit: BoxFit.contain,
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFE14900),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.notifications,
+                                          color: Colors.white,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // Flight icon with text
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFE14900),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Image.asset(
+                                          'images/avion.png',
+                                          width: 24,
+                                          height: 14,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Réserver votre vol',
+                                        style: kTextStyle.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 18.0,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  // Background image on top
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: 0.8,
-                      child: Image.asset(
-                        'images/background-home.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  // Content
-                  Padding(
-              padding: const EdgeInsets.only(top: 50.0, left: 15.0, right: 15.0, bottom: 15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with logo and notification
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 15.0),
-                        child: Image.asset(
-                          'images/logo-h24-v2.png',
-                          height: 40,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE14900),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.notifications,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  // Flight icon with text
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10.0),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE14900),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Image.asset(
-                          'images/avion.png',
-                          width: 24,
-                          height: 24,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Réserver votre vol',
-                        style: kTextStyle.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 18.0,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-                ],
-              ),
-            ),
-          )
-
-          ],
-              ),
-              SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
+                    // Search form card
                     Padding(
-                      padding: const EdgeInsets.only(top: 178, left: 15.0, right: 15),
-                      child: Material(
+                      padding: const EdgeInsets.only(top: 0, left: 15.0, right: 15),
+                      child: Transform.translate(
+                        offset: const Offset(0, -30),
+                        child: Material(
                         borderRadius: BorderRadius.circular(30.0),
                         elevation: 2,
                         shadowColor: kDarkWhite,
@@ -1199,6 +1205,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               ),
                                             ],
                                           ),
+
+
                                         ),
                                       ),
                                     ),
@@ -2822,6 +2830,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
+                  ),
                     const SizedBox(height: 20.0),
                     // Nos avantages section - Dynamic Slider
                     Padding(

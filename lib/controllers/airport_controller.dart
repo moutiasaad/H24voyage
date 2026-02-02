@@ -42,7 +42,7 @@ class AirportController extends ChangeNotifier {
 
     try {
       // Search for Algerian airports
-      final response = await AirportService.suggestAirports('algerie');
+      final response = await AirportService.suggestAirports('alg');
       if (response.success && response.suggestions.isNotEmpty) {
         _initialAirports = response.suggestions;
       } else {

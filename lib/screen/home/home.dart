@@ -1,4 +1,5 @@
 import 'package:flight_booking/screen/History_Screen/history_screen.dart';
+import 'package:flight_booking/screen/support/support.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 import '../my_boking_screen/my_boking.dart';
@@ -32,7 +33,7 @@ class _HomeState extends State<Home> {
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     MyBooking(),
-    History(),
+    SupportMain(),
     Profile(),
   ];
 

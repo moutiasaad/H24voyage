@@ -60,6 +60,11 @@ class _SearchResultState extends State<SearchResult> {
   // Airline filter - null means show all
   String? selectedAirlineCode;
 
+  // Responsive breakpoints
+  bool get isSmallScreen => MediaQuery.of(context).size.width < 360;
+  bool get isMediumScreen => MediaQuery.of(context).size.width < 400;
+  double get screenWidth => MediaQuery.of(context).size.width;
+
   @override
   void initState() {
     super.initState();
@@ -210,7 +215,7 @@ class _SearchResultState extends State<SearchResult> {
                               itemCount: flights.length,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 16),
                               itemBuilder: (_, i) {
                                 final offer = flights[i];
                                 return _buildApiFlightCard(offer, i, fromCode, toCode);
@@ -251,7 +256,7 @@ class _SearchResultState extends State<SearchResult> {
                               itemCount: flights.length,
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 16),
                               itemBuilder: (_, i) {
                                 final f = flights[i];
                                 return _buildFlightCard(f, i, fromCode, toCode);
@@ -272,6 +277,14 @@ class _SearchResultState extends State<SearchResult> {
     final startDate = _formatDate(widget.dateRange?.start);
     final endDate = _formatDate(widget.dateRange?.end);
     final statusBarHeight = MediaQuery.of(context).padding.top;
+
+    // Responsive values
+    final horizontalPadding = isSmallScreen ? 10.0 : 16.0;
+    final containerPadding = isSmallScreen ? 8.0 : 12.0;
+    final titleFontSize = isSmallScreen ? 13.0 : (isMediumScreen ? 14.0 : 16.0);
+    final subTitleFontSize = isSmallScreen ? 10.0 : 12.0;
+    final iconSize = isSmallScreen ? 20.0 : 24.0;
+    final smallIconSize = isSmallScreen ? 12.0 : 14.0;
 
     return Container(
       decoration: const BoxDecoration(
@@ -299,12 +312,12 @@ class _SearchResultState extends State<SearchResult> {
           Padding(
             padding: EdgeInsets.only(
               top: statusBarHeight + 16,
-              left: 16,
-              right: 16,
+              left: horizontalPadding,
+              right: horizontalPadding,
               bottom: 20,
             ),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: containerPadding, vertical: containerPadding),
               decoration: BoxDecoration(
                 color: kWhite,
                 borderRadius: BorderRadius.circular(16),
@@ -321,9 +334,9 @@ class _SearchResultState extends State<SearchResult> {
                   // Back button
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, color: kTitleColor, size: 24),
+                    child: Icon(Icons.arrow_back, color: kTitleColor, size: iconSize),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: isSmallScreen ? 8 : 12),
 
                   // Route info
                   Expanded(
@@ -333,31 +346,36 @@ class _SearchResultState extends State<SearchResult> {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              fromCity,
-                              style: kTextStyle.copyWith(
-                                color: kTitleColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            Flexible(
+                              flex: 1,
+                              child: Text(
+                                fromCity,
+                                style: kTextStyle.copyWith(
+                                  color: kTitleColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: titleFontSize,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: isSmallScreen ? 4 : 6),
                             Text(
                               '⇆',
                               style: kTextStyle.copyWith(
                                 color: kTitleColor,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: titleFontSize,
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            SizedBox(width: isSmallScreen ? 4 : 6),
                             Flexible(
+                              flex: 1,
                               child: Text(
                                 toCity,
                                 style: kTextStyle.copyWith(
                                   color: kTitleColor,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                  fontSize: titleFontSize,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -365,56 +383,88 @@ class _SearchResultState extends State<SearchResult> {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              '$startDate à $endDate',
-                              style: kTextStyle.copyWith(
-                                color: kTitleColor,
-                                fontSize: 12,
+                        // Use Wrap for small screens to allow text to flow
+                        isSmallScreen
+                            ? Wrap(
+                                spacing: 4,
+                                runSpacing: 2,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Text(
+                                    '$startDate - $endDate',
+                                    style: kTextStyle.copyWith(
+                                      color: kTitleColor,
+                                      fontSize: subTitleFontSize,
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.person_outline,
+                                          color: kTitleColor.withOpacity(0.8), size: smallIconSize),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        '$totalPassengers',
+                                        style: kTextStyle.copyWith(
+                                          color: kTitleColor,
+                                          fontSize: subTitleFontSize,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      '$startDate à $endDate',
+                                      style: kTextStyle.copyWith(
+                                        color: kTitleColor,
+                                        fontSize: subTitleFontSize,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' · ',
+                                    style: kTextStyle.copyWith(
+                                      color: kTitleColor,
+                                      fontSize: subTitleFontSize,
+                                    ),
+                                  ),
+                                  Icon(Icons.person_outline,
+                                      color: kTitleColor.withOpacity(0.8), size: smallIconSize),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '$totalPassengers',
+                                    style: kTextStyle.copyWith(
+                                      color: kTitleColor,
+                                      fontSize: subTitleFontSize,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' · ',
+                                    style: kTextStyle.copyWith(
+                                      color: kTitleColor,
+                                      fontSize: subTitleFontSize,
+                                    ),
+                                  ),
+                                  Icon(Icons.luggage_outlined,
+                                      color: kTitleColor.withOpacity(0.8), size: smallIconSize),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '${widget.infantCount}',
+                                    style: kTextStyle.copyWith(
+                                      color: kSubTitleColor,
+                                      fontSize: subTitleFontSize,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            Text(
-                              ' · ',
-                              style: kTextStyle.copyWith(
-                                color: kTitleColor,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Icon(Icons.person_outline,
-                                color: kTitleColor.withOpacity(0.8), size: 14),
-                            const SizedBox(width: 2),
-                            Text(
-                              '$totalPassengers',
-                              style: kTextStyle.copyWith(
-                                color: kTitleColor,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Text(
-                              ' · ',
-                              style: kTextStyle.copyWith(
-                                color: kTitleColor,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Icon(Icons.luggage_outlined,
-                                color: kTitleColor.withOpacity(0.8), size: 14),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${widget.infantCount}',
-                              style: kTextStyle.copyWith(
-                                color: kSubTitleColor,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
-
-                  // const SizedBox(width: 8),
 
                   // Edit button - returns to home page to modify search
                   GestureDetector(
@@ -422,20 +472,20 @@ class _SearchResultState extends State<SearchResult> {
                       Navigator.pop(context);
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: EdgeInsets.all(isSmallScreen ? 6 : 8),
                       decoration: BoxDecoration(
                         color: kWhite.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Image.asset(
                         'assets/editer 1.png',
-                        width: 20,
-                        height: 20,
+                        width: isSmallScreen ? 16 : 20,
+                        height: isSmallScreen ? 16 : 20,
                         errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
+                          return Icon(
                             Icons.edit,
                             color: kWhite,
-                            size: 20,
+                            size: isSmallScreen ? 16 : 20,
                           );
                         },
                       ),
@@ -452,131 +502,259 @@ class _SearchResultState extends State<SearchResult> {
   }
 
   Widget _buildFilterSection() {
+    // Responsive values
+    final horizontalPadding = isSmallScreen ? 10.0 : 16.0;
+    final buttonPaddingH = isSmallScreen ? 8.0 : 14.0;
+    final buttonPaddingV = isSmallScreen ? 6.0 : 8.0;
+    final fontSize = isSmallScreen ? 12.0 : 14.0;
+    final iconSize = isSmallScreen ? 14.0 : 18.0;
+    final buttonSpacing = isSmallScreen ? 6.0 : 10.0;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          // Vol direct toggle with count
-          Text(
-            'Vol direct',
-            style: kTextStyle.copyWith(
-              color: kTitleColor,
-              fontSize: 14,
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: isSmallScreen
+          // Compact layout for small screens
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Vol direct toggle with count
+                Row(
+                  children: [
+                    Text(
+                      'Vol direct',
+                      style: kTextStyle.copyWith(
+                        color: kTitleColor,
+                        fontSize: fontSize,
+                      ),
+                    ),
+                    if (hasApiFlights && directFlightsCount > 0) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '$directFlightsCount',
+                          style: kTextStyle.copyWith(
+                            color: kPrimaryColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      height: 22,
+                      child: Switch(
+                        value: isDirectOnly,
+                        onChanged: directFlightsCount > 0
+                            ? (val) => setState(() => isDirectOnly = val)
+                            : null,
+                        activeColor: kPrimaryColor,
+                        activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                        inactiveThumbColor: directFlightsCount > 0 ? kWhite : kSubTitleColor,
+                        inactiveTrackColor: const Color(0xFFE0E0E0),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                      ),
+                    ),
+                    const Spacer(),
+                    // Filter and Sort buttons in a row
+                    _buildCompactFilterButton(buttonPaddingH, buttonPaddingV, fontSize, iconSize),
+                    SizedBox(width: buttonSpacing),
+                    _buildCompactSortButton(buttonPaddingH, buttonPaddingV, fontSize, iconSize),
+                  ],
+                ),
+              ],
+            )
+          // Normal layout for medium and large screens - wrapped in scroll view to prevent overflow
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  // Vol direct toggle with count
+                  Text(
+                    'Vol direct',
+                    style: kTextStyle.copyWith(
+                      color: kTitleColor,
+                      fontSize: fontSize,
+                    ),
+                  ),
+                  if (hasApiFlights && directFlightsCount > 0) ...[
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$directFlightsCount',
+                        style: kTextStyle.copyWith(
+                          color: kPrimaryColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(width: 4),
+                  SizedBox(
+                    height: 24,
+                    child: Switch(
+                      value: isDirectOnly,
+                      onChanged: directFlightsCount > 0
+                          ? (val) => setState(() => isDirectOnly = val)
+                          : null,
+                      activeColor: kPrimaryColor,
+                      activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                      inactiveThumbColor: directFlightsCount > 0 ? kWhite : kSubTitleColor,
+                      inactiveTrackColor: const Color(0xFFE0E0E0),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                    ),
+                  ),
+
+                  SizedBox(width: buttonSpacing * 2),
+
+                  // Filtrer button
+                  GestureDetector(
+                    onTap: () => _showFilterBottomSheet(),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: buttonPaddingH, vertical: buttonPaddingV),
+                      decoration: BoxDecoration(
+                        color: kWhite,
+                        border: Border.all(color: kPrimaryColor, width: 1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Image.asset(
+                            'assets/filter.png',
+                            width: iconSize,
+                            height: iconSize,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.tune, color: kPrimaryColor, size: iconSize);
+                            },
+                        ),
+                        SizedBox(width: isMediumScreen ? 4 : 8),
+                        Text(
+                          'Filtrer',
+                          style: kTextStyle.copyWith(
+                            color: kPrimaryColor,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: buttonSpacing),
+
+                // Trier button
+                GestureDetector(
+                  onTap: () => _showSortBottomSheet(),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: buttonPaddingH, vertical: buttonPaddingV),
+                    decoration: BoxDecoration(
+                      color: kWhite,
+                      border: Border.all(color: kPrimaryColor, width: 1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          'assets/trie.png',
+                          width: iconSize,
+                          height: iconSize,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(Icons.swap_vert, color: kPrimaryColor, size: iconSize);
+                          },
+                        ),
+                        SizedBox(width: isMediumScreen ? 4 : 8),
+                        Text(
+                          _getSortDisplayText(selectedSortOption),
+                          style: kTextStyle.copyWith(
+                            color: kPrimaryColor,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.keyboard_arrow_down,
+                          color: kPrimaryColor,
+                          size: iconSize,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          if (hasApiFlights && directFlightsCount > 0) ...[
+    );
+  }
+
+  // Compact filter button for small screens
+  Widget _buildCompactFilterButton(double paddingH, double paddingV, double fontSize, double iconSize) {
+    return GestureDetector(
+      onTap: () => _showFilterBottomSheet(),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
+        decoration: BoxDecoration(
+          color: kWhite,
+          border: Border.all(color: kPrimaryColor, width: 1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.tune, color: kPrimaryColor, size: iconSize),
             const SizedBox(width: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: kPrimaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                '$directFlightsCount',
-                style: kTextStyle.copyWith(
-                  color: kPrimaryColor,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
+            Text(
+              'Filtrer',
+              style: kTextStyle.copyWith(
+                color: kPrimaryColor,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
-          const SizedBox(width: 4),
-          SizedBox(
-            height: 24,
-            child: Switch(
-              value: isDirectOnly,
-              onChanged: directFlightsCount > 0
-                  ? (val) => setState(() => isDirectOnly = val)
-                  : null, // Disable if no direct flights
-              activeColor: kPrimaryColor,
-              activeTrackColor: kPrimaryColor.withOpacity(0.3),
-              inactiveThumbColor: directFlightsCount > 0 ? kWhite : kSubTitleColor,
-              inactiveTrackColor: const Color(0xFFE0E0E0),
-              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-            ),
-          ),
+        ),
+      ),
+    );
+  }
 
-          const Spacer(),
-
-          // Filtrer button
-          GestureDetector(
-            onTap: () => _showFilterBottomSheet(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: kWhite,
-                border: Border.all(color: kPrimaryColor, width: 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/filter.png',
-                    width: 18,
-                    height: 18,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.tune, color: kPrimaryColor, size: 18);
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Filtrer',
-                    style: kTextStyle.copyWith(
-                      color: kPrimaryColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+  // Compact sort button for small screens
+  Widget _buildCompactSortButton(double paddingH, double paddingV, double fontSize, double iconSize) {
+    return GestureDetector(
+      onTap: () => _showSortBottomSheet(),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
+        decoration: BoxDecoration(
+          color: kWhite,
+          border: Border.all(color: kPrimaryColor, width: 1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.swap_vert, color: kPrimaryColor, size: iconSize),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down,
+              color: kPrimaryColor,
+              size: iconSize,
             ),
-          ),
-          const SizedBox(width: 10),
-
-          // Trier button - shows current sort option
-          GestureDetector(
-            onTap: () => _showSortBottomSheet(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: kWhite,
-                border: Border.all(color: kPrimaryColor, width: 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    'assets/trie.png',
-                    width: 18,
-                    height: 18,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.swap_vert, color: kPrimaryColor, size: 18);
-                    },
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _getSortDisplayText(selectedSortOption),
-                    style: kTextStyle.copyWith(
-                      color: kPrimaryColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    color: kPrimaryColor,
-                    size: 18,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1030,6 +1208,17 @@ class _SearchResultState extends State<SearchResult> {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            // Responsive values for bottom sheet
+            final sheetWidth = MediaQuery.of(context).size.width;
+            final isSheetSmall = sheetWidth < 360;
+            final isSheetMedium = sheetWidth < 400;
+            final menuWidth = isSheetSmall ? 85.0 : (isSheetMedium ? 95.0 : 110.0);
+            final menuFontSize = isSheetSmall ? 10.0 : 12.0;
+            final menuPaddingH = isSheetSmall ? 8.0 : 12.0;
+            final menuPaddingV = isSheetSmall ? 10.0 : 14.0;
+            final headerPadding = isSheetSmall ? 14.0 : 20.0;
+            final headerFontSize = isSheetSmall ? 16.0 : 18.0;
+
             return Container(
               height: MediaQuery.of(context).size.height * 0.55,
               decoration: const BoxDecoration(
@@ -1043,7 +1232,7 @@ class _SearchResultState extends State<SearchResult> {
                 children: [
                   // Header
                   Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(headerPadding),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -1051,7 +1240,7 @@ class _SearchResultState extends State<SearchResult> {
                           'Filtrer',
                           style: GoogleFonts.poppins(
                             color: kTitleColor,
-                            fontSize: 18,
+                            fontSize: headerFontSize,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1082,7 +1271,7 @@ class _SearchResultState extends State<SearchResult> {
                       children: [
                         // Left side menu
                         Container(
-                          width: 110,
+                          width: menuWidth,
                           decoration: const BoxDecoration(
                             border: Border(
                               right: BorderSide(color: kBorderColorTextField),
@@ -1098,9 +1287,9 @@ class _SearchResultState extends State<SearchResult> {
                                 },
                                 child: Container(
                                   width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 14,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: menuPaddingH,
+                                    vertical: menuPaddingV,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected ? const Color(0xFFF5F5F5) : Colors.transparent,
@@ -1109,7 +1298,7 @@ class _SearchResultState extends State<SearchResult> {
                                     filterCategories[index],
                                     style: GoogleFonts.poppins(
                                       color: isSelected ? kTitleColor : kSubTitleColor,
-                                      fontSize: 12,
+                                      fontSize: menuFontSize,
                                       fontWeight: FontWeight.w500,
                                       height: 30 / 12,
                                     ),
@@ -1735,9 +1924,16 @@ class _SearchResultState extends State<SearchResult> {
       return const SizedBox.shrink();
     }
 
+    // Responsive values
+    final chipHeight = isSmallScreen ? 30.0 : 36.0;
+    final chipPaddingH = isSmallScreen ? 10.0 : 16.0;
+    final chipFontSize = isSmallScreen ? 12.0 : 14.0;
+    final chipMargin = isSmallScreen ? 6.0 : 10.0;
+    final logoSize = isSmallScreen ? 18.0 : 22.0;
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 7),
+      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 5 : 7),
       child: Row(
         children: [
           // "All" chip to clear filter
@@ -1748,9 +1944,9 @@ class _SearchResultState extends State<SearchResult> {
               });
             },
             child: Container(
-              height: 36,
-              margin: const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: chipHeight,
+              margin: EdgeInsets.only(right: chipMargin),
+              padding: EdgeInsets.symmetric(horizontal: chipPaddingH),
               decoration: BoxDecoration(
                 color: selectedAirlineCode == null ? kPrimaryColor.withOpacity(0.1) : kWhite,
                 borderRadius: BorderRadius.circular(10),
@@ -1764,7 +1960,7 @@ class _SearchResultState extends State<SearchResult> {
                   'Tous',
                   style: kTextStyle.copyWith(
                     color: selectedAirlineCode == null ? kPrimaryColor : kTitleColor,
-                    fontSize: 14,
+                    fontSize: chipFontSize,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -1790,9 +1986,9 @@ class _SearchResultState extends State<SearchResult> {
               child: Tooltip(
                 message: airlineName.isNotEmpty ? airlineName : airlineCode,
                 child: Container(
-                  height: 36,
-                  margin: const EdgeInsets.only(right: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  height: chipHeight,
+                  margin: EdgeInsets.only(right: chipMargin),
+                  padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8 : 12),
                   decoration: BoxDecoration(
                     color: isSelected ? kPrimaryColor.withOpacity(0.1) : kWhite,
                     borderRadius: BorderRadius.circular(10),
@@ -1809,13 +2005,13 @@ class _SearchResultState extends State<SearchResult> {
                       ClipOval(
                         child: Image.network(
                           _getAirlineLogoUrl(airlineCode),
-                          width: 22,
-                          height: 22,
+                          width: logoSize,
+                          height: logoSize,
                           fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
-                              width: 22,
-                              height: 22,
+                              width: logoSize,
+                              height: logoSize,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: kPrimaryColor.withOpacity(0.1),
@@ -1825,7 +2021,7 @@ class _SearchResultState extends State<SearchResult> {
                                   airlineCode.isNotEmpty ? airlineCode : 'A',
                                   style: kTextStyle.copyWith(
                                     color: kPrimaryColor,
-                                    fontSize: 8,
+                                    fontSize: isSmallScreen ? 6 : 8,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -1835,8 +2031,8 @@ class _SearchResultState extends State<SearchResult> {
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
                             return Container(
-                              width: 22,
-                              height: 22,
+                              width: logoSize,
+                              height: logoSize,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: kPrimaryColor.withOpacity(0.05),
@@ -1845,13 +2041,13 @@ class _SearchResultState extends State<SearchResult> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: isSmallScreen ? 4 : 8),
                       // Price text
                       Text(
                         chip['text'],
                         style: kTextStyle.copyWith(
                           color: kTitleColor,
-                          fontSize: 14,
+                          fontSize: chipFontSize,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -2147,8 +2343,15 @@ class _SearchResultState extends State<SearchResult> {
       returnStops = returnFlight?.stopQuantity ?? 0;
     }
 
+    // Responsive values for card
+    final cardPadding = isSmallScreen ? 8.0 : 12.0;
+    final badgeFontSize = isSmallScreen ? 8.0 : 10.0;
+    final badgeIconSize = isSmallScreen ? 12.0 : 14.0;
+    final badgePaddingH = isSmallScreen ? 6.0 : 8.0;
+    final badgePaddingV = isSmallScreen ? 3.0 : 4.0;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: isSmallScreen ? 8 : 10),
       decoration: BoxDecoration(
         color: kWhite,
         borderRadius: BorderRadius.circular(12),
@@ -2167,9 +2370,9 @@ class _SearchResultState extends State<SearchResult> {
           // Recommandé badge
           if (index == 0)
             Padding(
-              padding: const EdgeInsets.only(left: 12, top: 10),
+              padding: EdgeInsets.only(left: cardPadding, top: isSmallScreen ? 8 : 10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(221, 225, 255, 1),
                   borderRadius: BorderRadius.circular(16),
@@ -2178,7 +2381,7 @@ class _SearchResultState extends State<SearchResult> {
                   'Recommandé',
                   style: kTextStyle.copyWith(
                     color: const Color.fromRGBO(147, 133, 245, 1),
-                    fontSize: 10,
+                    fontSize: badgeFontSize,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -2186,16 +2389,17 @@ class _SearchResultState extends State<SearchResult> {
             ),
 
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(cardPadding),
             child: Column(
               children: [
                 // Baggage and refund badges
-                Row(
+                Wrap(
+                  spacing: isSmallScreen ? 4 : 8,
+                  runSpacing: 4,
                   children: [
                     if (hasBaggage == true)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        margin: const EdgeInsets.only(right: 8),
+                        padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                         decoration: BoxDecoration(
                           color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -2203,13 +2407,13 @@ class _SearchResultState extends State<SearchResult> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.luggage, size: 14, color: Colors.green[700]),
-                            const SizedBox(width: 4),
+                            Icon(Icons.luggage, size: badgeIconSize, color: Colors.green[700]),
+                            SizedBox(width: isSmallScreen ? 2 : 4),
                             Text(
-                              'Bagages inclus',
+                              isSmallScreen ? 'Bagages' : 'Bagages inclus',
                               style: kTextStyle.copyWith(
                                 color: Colors.green[700],
-                                fontSize: 10,
+                                fontSize: badgeFontSize,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -2218,7 +2422,7 @@ class _SearchResultState extends State<SearchResult> {
                       ),
                     if (isRefundable == true)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -2226,13 +2430,13 @@ class _SearchResultState extends State<SearchResult> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.check_circle_outline, size: 14, color: Colors.blue[700]),
-                            const SizedBox(width: 4),
+                            Icon(Icons.check_circle_outline, size: badgeIconSize, color: Colors.blue[700]),
+                            SizedBox(width: isSmallScreen ? 2 : 4),
                             Text(
                               'Remboursable',
                               style: kTextStyle.copyWith(
                                 color: Colors.blue[700],
-                                fontSize: 10,
+                                fontSize: badgeFontSize,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -2241,7 +2445,7 @@ class _SearchResultState extends State<SearchResult> {
                       ),
                   ],
                 ),
-                if (hasBaggage == true || isRefundable == true) const SizedBox(height: 10),
+                if (hasBaggage == true || isRefundable == true) SizedBox(height: isSmallScreen ? 8 : 10),
 
                 // Outbound Flight Segment
                 _buildFlightSegment(
@@ -2300,7 +2504,7 @@ class _SearchResultState extends State<SearchResult> {
                   ),
                 ],
 
-                const SizedBox(height: 12),
+                SizedBox(height: isSmallScreen ? 8 : 12),
 
                 // Price and Reserve button
                 Row(
@@ -2308,29 +2512,35 @@ class _SearchResultState extends State<SearchResult> {
                   children: [
                     // Stops info
                     if (outboundStops > 0)
-                      Text(
-                        '$outboundStops escale${outboundStops > 1 ? 's' : ''}',
-                        style: kTextStyle.copyWith(
-                          color: kPrimaryColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          '$outboundStops escale${outboundStops > 1 ? 's' : ''}',
+                          style: kTextStyle.copyWith(
+                            color: kPrimaryColor,
+                            fontSize: isSmallScreen ? 10 : 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       )
                     else
-                      Text(
-                        'Vol direct',
-                        style: kTextStyle.copyWith(
-                          color: Colors.green[700],
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          'Vol direct',
+                          style: kTextStyle.copyWith(
+                            color: Colors.green[700],
+                            fontSize: isSmallScreen ? 10 : 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         // Price - clickable to show details
                         GestureDetector(
                           onTap: () => _showPriceDetailsBottomSheet(context, offer),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -2340,42 +2550,45 @@ class _SearchResultState extends State<SearchResult> {
                                     style: GoogleFonts.poppins(
                                       color: kTitleColor,
                                       fontWeight: FontWeight.w800,
-                                      fontSize: 16,
+                                      fontSize: isSmallScreen ? 13 : 16,
                                       height: 24 / 16,
                                     ),
                                   ),
                                   Text(
-                                    'par personne',
+                                    isSmallScreen ? '/pers.' : 'par personne',
                                     style: kTextStyle.copyWith(
                                       color: kSubTitleColor,
-                                      fontSize: 10,
+                                      fontSize: isSmallScreen ? 8 : 10,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(width: 2),
-                              Icon(Icons.keyboard_arrow_down, color: kTitleColor, size: 18),
+                              Icon(Icons.keyboard_arrow_down, color: kTitleColor, size: isSmallScreen ? 14 : 18),
                             ],
                           ),
                         ),
 
-                        const SizedBox(width: 12),
+                        SizedBox(width: isSmallScreen ? 6 : 12),
 
                         // Reserve button
                         GestureDetector(
                           onTap: () => const FlightDetails().launch(context),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 12 : 20,
+                              vertical: isSmallScreen ? 6 : 8,
+                            ),
                             decoration: BoxDecoration(
                               color: kPrimaryColor,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'Réservez',
+                              isSmallScreen ? 'Réserver' : 'Réservez',
                               style: kTextStyle.copyWith(
                                 color: kWhite,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                                fontSize: isSmallScreen ? 11 : 13,
                               ),
                             ),
                           ),
@@ -2416,8 +2629,15 @@ class _SearchResultState extends State<SearchResult> {
       totalStops += journey.flight?.stopQuantity ?? 0;
     }
 
+    // Responsive values for multi-destination card
+    final cardPadding = isSmallScreen ? 8.0 : 12.0;
+    final badgeFontSize = isSmallScreen ? 8.0 : 10.0;
+    final badgeIconSize = isSmallScreen ? 12.0 : 14.0;
+    final badgePaddingH = isSmallScreen ? 6.0 : 8.0;
+    final badgePaddingV = isSmallScreen ? 3.0 : 4.0;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: isSmallScreen ? 8 : 10),
       decoration: BoxDecoration(
         color: kWhite,
         borderRadius: BorderRadius.circular(12),
@@ -2436,9 +2656,9 @@ class _SearchResultState extends State<SearchResult> {
           // Recommandé badge
           if (index == 0)
             Padding(
-              padding: const EdgeInsets.only(left: 12, top: 10),
+              padding: EdgeInsets.only(left: cardPadding, top: isSmallScreen ? 8 : 10),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(221, 225, 255, 1),
                   borderRadius: BorderRadius.circular(16),
@@ -2447,7 +2667,7 @@ class _SearchResultState extends State<SearchResult> {
                   'Recommandé',
                   style: kTextStyle.copyWith(
                     color: const Color.fromRGBO(147, 133, 245, 1),
-                    fontSize: 10,
+                    fontSize: badgeFontSize,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -2456,18 +2676,20 @@ class _SearchResultState extends State<SearchResult> {
 
           // Multi-destination badge
           Padding(
-            padding: EdgeInsets.only(left: 12, top: index == 0 ? 6 : 10),
+            padding: EdgeInsets.only(left: cardPadding, top: index == 0 ? (isSmallScreen ? 4 : 6) : (isSmallScreen ? 8 : 10)),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
               decoration: BoxDecoration(
                 color: Colors.purple.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                'Multi-destination (${journeyList.length} trajets)',
+                isSmallScreen
+                    ? 'Multi-dest. (${journeyList.length})'
+                    : 'Multi-destination (${journeyList.length} trajets)',
                 style: kTextStyle.copyWith(
                   color: Colors.purple[700],
-                  fontSize: 10,
+                  fontSize: badgeFontSize,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -2475,16 +2697,17 @@ class _SearchResultState extends State<SearchResult> {
           ),
 
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(cardPadding),
             child: Column(
               children: [
                 // Baggage and refund badges
-                Row(
+                Wrap(
+                  spacing: isSmallScreen ? 4 : 8,
+                  runSpacing: 4,
                   children: [
                     if (hasBaggage == true)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        margin: const EdgeInsets.only(right: 8),
+                        padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                         decoration: BoxDecoration(
                           color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -2492,13 +2715,13 @@ class _SearchResultState extends State<SearchResult> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.luggage, size: 14, color: Colors.green[700]),
-                            const SizedBox(width: 4),
+                            Icon(Icons.luggage, size: badgeIconSize, color: Colors.green[700]),
+                            SizedBox(width: isSmallScreen ? 2 : 4),
                             Text(
-                              'Bagages inclus',
+                              isSmallScreen ? 'Bagages' : 'Bagages inclus',
                               style: kTextStyle.copyWith(
                                 color: Colors.green[700],
-                                fontSize: 10,
+                                fontSize: badgeFontSize,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -2507,7 +2730,7 @@ class _SearchResultState extends State<SearchResult> {
                       ),
                     if (isRefundable == true)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -2515,13 +2738,13 @@ class _SearchResultState extends State<SearchResult> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.check_circle_outline, size: 14, color: Colors.blue[700]),
-                            const SizedBox(width: 4),
+                            Icon(Icons.check_circle_outline, size: badgeIconSize, color: Colors.blue[700]),
+                            SizedBox(width: isSmallScreen ? 2 : 4),
                             Text(
                               'Remboursable',
                               style: kTextStyle.copyWith(
                                 color: Colors.blue[700],
-                                fontSize: 10,
+                                fontSize: badgeFontSize,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -2530,7 +2753,7 @@ class _SearchResultState extends State<SearchResult> {
                       ),
                   ],
                 ),
-                if (hasBaggage == true || isRefundable == true) const SizedBox(height: 10),
+                if (hasBaggage == true || isRefundable == true) SizedBox(height: isSmallScreen ? 8 : 10),
 
                 // Build all journey segments dynamically
                 ...journeyList.asMap().entries.map((entry) {
@@ -2613,7 +2836,7 @@ class _SearchResultState extends State<SearchResult> {
                   );
                 }).toList(),
 
-                const SizedBox(height: 12),
+                SizedBox(height: isSmallScreen ? 8 : 12),
 
                 // Price and Reserve button
                 Row(
@@ -2621,29 +2844,37 @@ class _SearchResultState extends State<SearchResult> {
                   children: [
                     // Stops info
                     if (totalStops > 0)
-                      Text(
-                        '$totalStops escale${totalStops > 1 ? 's' : ''} au total',
-                        style: kTextStyle.copyWith(
-                          color: kPrimaryColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          isSmallScreen
+                              ? '$totalStops esc.'
+                              : '$totalStops escale${totalStops > 1 ? 's' : ''} au total',
+                          style: kTextStyle.copyWith(
+                            color: kPrimaryColor,
+                            fontSize: isSmallScreen ? 10 : 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       )
                     else
-                      Text(
-                        'Vols directs',
-                        style: kTextStyle.copyWith(
-                          color: Colors.green[700],
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          'Vols directs',
+                          style: kTextStyle.copyWith(
+                            color: Colors.green[700],
+                            fontSize: isSmallScreen ? 10 : 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         // Price - clickable to show details
                         GestureDetector(
                           onTap: () => _showPriceDetailsBottomSheet(context, offer),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -2653,42 +2884,45 @@ class _SearchResultState extends State<SearchResult> {
                                     style: GoogleFonts.poppins(
                                       color: kTitleColor,
                                       fontWeight: FontWeight.w800,
-                                      fontSize: 16,
+                                      fontSize: isSmallScreen ? 13 : 16,
                                       height: 24 / 16,
                                     ),
                                   ),
                                   Text(
-                                    'par personne',
+                                    isSmallScreen ? '/pers.' : 'par personne',
                                     style: kTextStyle.copyWith(
                                       color: kSubTitleColor,
-                                      fontSize: 10,
+                                      fontSize: isSmallScreen ? 8 : 10,
                                     ),
                                   ),
                                 ],
                               ),
                               const SizedBox(width: 2),
-                              Icon(Icons.keyboard_arrow_down, color: kTitleColor, size: 18),
+                              Icon(Icons.keyboard_arrow_down, color: kTitleColor, size: isSmallScreen ? 14 : 18),
                             ],
                           ),
                         ),
 
-                        const SizedBox(width: 12),
+                        SizedBox(width: isSmallScreen ? 6 : 12),
 
                         // Reserve button
                         GestureDetector(
                           onTap: () => const FlightDetails().launch(context),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 12 : 20,
+                              vertical: isSmallScreen ? 6 : 8,
+                            ),
                             decoration: BoxDecoration(
                               color: kPrimaryColor,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'Réservez',
+                              isSmallScreen ? 'Réserver' : 'Réservez',
                               style: kTextStyle.copyWith(
                                 color: kWhite,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                                fontSize: isSmallScreen ? 11 : 13,
                               ),
                             ),
                           ),
@@ -3174,6 +3408,16 @@ class _SearchResultState extends State<SearchResult> {
     const Color directGreen = Color.fromRGBO(76, 175, 80, 1);
     const Color detailsBlue = Color.fromRGBO(0, 118, 209, 1);
 
+    // Responsive values
+    final dateFontSize = isSmallScreen ? 9.0 : 11.0;
+    final timeFontSize = isSmallScreen ? 12.0 : 14.0;
+    final badgeFontSize = isSmallScreen ? 8.0 : 10.0;
+    final badgePaddingH = isSmallScreen ? 6.0 : 10.0;
+    final badgePaddingV = isSmallScreen ? 3.0 : 5.0;
+    final airlineLogoSize = isSmallScreen ? 16.0 : 20.0;
+    final baggageIconSize = isSmallScreen ? 12.0 : 16.0;
+    final baggageFontSize = isSmallScreen ? 8.0 : 10.0;
+
     // Get baggage info from baggageAllowance or segments
     BaggageAllowance? baggage = baggageAllowance;
     String cabinWeight = '7Kg';
@@ -3213,8 +3457,8 @@ class _SearchResultState extends State<SearchResult> {
             ClipOval(
               child: Image.network(
                 airlineLogo,
-                height: 20,
-                width: 20,
+                height: airlineLogoSize,
+                width: airlineLogoSize,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   // Fallback to airline code initials if image fails to load
@@ -3222,8 +3466,8 @@ class _SearchResultState extends State<SearchResult> {
                       ? airlineName.split(' ')[1]
                       : airlineName.substring(0, 2);
                   return Container(
-                    height: 20,
-                    width: 20,
+                    height: airlineLogoSize,
+                    width: airlineLogoSize,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: kPrimaryColor.withOpacity(0.1),
@@ -3233,7 +3477,7 @@ class _SearchResultState extends State<SearchResult> {
                         code.substring(0, code.length > 2 ? 2 : code.length),
                         style: GoogleFonts.poppins(
                           color: kPrimaryColor,
-                          fontSize: 8,
+                          fontSize: isSmallScreen ? 6 : 8,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -3243,8 +3487,8 @@ class _SearchResultState extends State<SearchResult> {
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Container(
-                    height: 20,
-                    width: 20,
+                    height: airlineLogoSize,
+                    width: airlineLogoSize,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: kPrimaryColor.withOpacity(0.1),
@@ -3253,19 +3497,22 @@ class _SearchResultState extends State<SearchResult> {
                 },
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              airlineName,
-              style: GoogleFonts.poppins(
-                color: textBlack,
-                fontWeight: FontWeight.w500,
-                fontSize: 12,
+            SizedBox(width: isSmallScreen ? 4 : 8),
+            Expanded(
+              child: Text(
+                airlineName,
+                style: GoogleFonts.poppins(
+                  color: textBlack,
+                  fontWeight: FontWeight.w500,
+                  fontSize: isSmallScreen ? 10 : 12,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
 
-        const SizedBox(height: 6),
+        SizedBox(height: isSmallScreen ? 4 : 6),
 
         // Flight times row with connecting lines
         Row(
@@ -3279,7 +3526,7 @@ class _SearchResultState extends State<SearchResult> {
                   departureDate,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 11,
+                    fontSize: dateFontSize,
                     fontWeight: FontWeight.w500,
                     height: 1.4,
                   ),
@@ -3289,7 +3536,7 @@ class _SearchResultState extends State<SearchResult> {
                   style: GoogleFonts.poppins(
                     color: textBlack,
                     fontWeight: FontWeight.w500,
-                    fontSize: 14,
+                    fontSize: timeFontSize,
                     height: 1.4,
                   ),
                 ),
@@ -3297,7 +3544,7 @@ class _SearchResultState extends State<SearchResult> {
                   fromCode,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 11,
+                    fontSize: dateFontSize,
                     fontWeight: FontWeight.w500,
                     height: 1.4,
                   ),
@@ -3310,37 +3557,60 @@ class _SearchResultState extends State<SearchResult> {
               child: Container(
                 height: 1,
                 color: lineGray,
-                margin: const EdgeInsets.only(left: 6, right: 0),
+                margin: EdgeInsets.only(left: isSmallScreen ? 3 : 6, right: 0),
               ),
             ),
 
             // Duration and Direct badge - centered
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
               decoration: BoxDecoration(
                 color: const Color.fromRGBO(241, 241, 241, 1),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: RichText(
-                text: TextSpan(
-                  style: GoogleFonts.poppins(
-                    color: textGray,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                  ),
-                  children: [
-                    TextSpan(text: '$duration . '),
-                    TextSpan(
-                      text: isDirect ? 'Direct' : '${1} escale',
-                      style: GoogleFonts.poppins(
-                        color: isDirect ? directGreen : textOrange,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
+              child: isSmallScreen
+                  // Compact badge for small screens
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          duration,
+                          style: GoogleFonts.poppins(
+                            color: textGray,
+                            fontSize: badgeFontSize,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        Text(
+                          isDirect ? 'Direct' : '${stops ?? 1} esc.',
+                          style: GoogleFonts.poppins(
+                            color: isDirect ? directGreen : textOrange,
+                            fontSize: badgeFontSize,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    )
+                  : RichText(
+                      text: TextSpan(
+                        style: GoogleFonts.poppins(
+                          color: textGray,
+                          fontSize: badgeFontSize,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        children: [
+                          TextSpan(text: '$duration . '),
+                          TextSpan(
+                            text: isDirect ? 'Direct' : '${stops ?? 1} escale',
+                            style: GoogleFonts.poppins(
+                              color: isDirect ? directGreen : textOrange,
+                              fontSize: badgeFontSize,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
             ),
 
             // Right connecting line
@@ -3348,7 +3618,7 @@ class _SearchResultState extends State<SearchResult> {
               child: Container(
                 height: 1,
                 color: lineGray,
-                margin: const EdgeInsets.only(left: 0, right: 6),
+                margin: EdgeInsets.only(left: 0, right: isSmallScreen ? 3 : 6),
               ),
             ),
 
@@ -3360,7 +3630,7 @@ class _SearchResultState extends State<SearchResult> {
                   arrivalDate,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 11,
+                    fontSize: dateFontSize,
                     fontWeight: FontWeight.w500,
                     height: 1.4,
                   ),
@@ -3370,7 +3640,7 @@ class _SearchResultState extends State<SearchResult> {
                   style: GoogleFonts.poppins(
                     color: textBlack,
                     fontWeight: FontWeight.w500,
-                    fontSize: 14,
+                    fontSize: timeFontSize,
                     height: 1.4,
                   ),
                 ),
@@ -3378,7 +3648,7 @@ class _SearchResultState extends State<SearchResult> {
                   toCode,
                   style: GoogleFonts.poppins(
                     color: textGray,
-                    fontSize: 11,
+                    fontSize: dateFontSize,
                     fontWeight: FontWeight.w500,
                     height: 1.4,
                   ),
@@ -3388,69 +3658,73 @@ class _SearchResultState extends State<SearchResult> {
           ],
         ),
 
-        const SizedBox(height: 6),
+        SizedBox(height: isSmallScreen ? 4 : 6),
 
         // Baggage info and Details row
         Row(
           children: [
             // Baggage icons - clickable to show details
-            GestureDetector(
-              onTap: () => _showBaggageDetailsBottomSheet(context, baggage),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/cabin_bag.png',
-                    width: 16,
-                    height: 16,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.work_outline, color: textGray, size: 14);
-                    },
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    cabinWeight,
-                    style: GoogleFonts.poppins(
-                      color: textGray,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w400,
+            Expanded(
+              child: GestureDetector(
+                onTap: () => _showBaggageDetailsBottomSheet(context, baggage),
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'assets/cabin_bag.png',
+                      width: baggageIconSize,
+                      height: baggageIconSize,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.work_outline, color: textGray, size: baggageIconSize - 2);
+                      },
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Image.asset(
-                    'assets/luggage.png',
-                    width: 16,
-                    height: 16,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.luggage_outlined, color: textGray, size: 14);
-                    },
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    checkedWeight,
-                    style: GoogleFonts.poppins(
-                      color: textGray,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w400,
+                    SizedBox(width: isSmallScreen ? 2 : 3),
+                    Text(
+                      cabinWeight,
+                      style: GoogleFonts.poppins(
+                        color: textGray,
+                        fontSize: baggageFontSize,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 2),
-                  Icon(Icons.keyboard_arrow_down, color: textGray, size: 14),
-                ],
+                    SizedBox(width: isSmallScreen ? 4 : 8),
+                    Image.asset(
+                      'assets/luggage.png',
+                      width: baggageIconSize,
+                      height: baggageIconSize,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.luggage_outlined, color: textGray, size: baggageIconSize - 2);
+                      },
+                    ),
+                    SizedBox(width: isSmallScreen ? 2 : 3),
+                    Flexible(
+                      child: Text(
+                        checkedWeight,
+                        style: GoogleFonts.poppins(
+                          color: textGray,
+                          fontSize: baggageFontSize,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(Icons.keyboard_arrow_down, color: textGray, size: isSmallScreen ? 12 : 14),
+                  ],
+                ),
               ),
             ),
-
-            const Spacer(),
 
             // Details dropdown
             GestureDetector(
               onTap: onToggleExpand,
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Détails vol',
+                    isSmallScreen ? 'Détails' : 'Détails vol',
                     style: GoogleFonts.poppins(
                       color: detailsBlue,
-                      fontSize: 10,
+                      fontSize: baggageFontSize,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -3459,7 +3733,7 @@ class _SearchResultState extends State<SearchResult> {
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
                     color: detailsBlue,
-                    size: 14,
+                    size: isSmallScreen ? 12 : 14,
                   ),
                 ],
               ),
@@ -3469,9 +3743,9 @@ class _SearchResultState extends State<SearchResult> {
 
         // Expanded details
         if (isExpanded) ...[
-          const SizedBox(height: 8),
+          SizedBox(height: isSmallScreen ? 6 : 8),
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(isSmallScreen ? 8 : 10),
             decoration: BoxDecoration(
               color: kWebsiteGreyBg,
               borderRadius: BorderRadius.circular(6),
@@ -3484,10 +3758,10 @@ class _SearchResultState extends State<SearchResult> {
                   style: GoogleFonts.poppins(
                     color: textBlack,
                     fontWeight: FontWeight.w600,
-                    fontSize: 11,
+                    fontSize: isSmallScreen ? 10 : 11,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: isSmallScreen ? 4 : 6),
                 _buildDetailRow('Compagnie', airlineName.split(' ').first),
                 _buildDetailRow('Numéro de vol', airlineName.split(' ').last),
                 _buildDetailRow('Classe', 'Économique'),
@@ -3502,24 +3776,33 @@ class _SearchResultState extends State<SearchResult> {
   }
 
   Widget _buildDetailRow(String label, String value) {
+    final fontSize = isSmallScreen ? 9.0 : 10.0;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 1 : 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: kTextStyle.copyWith(
-              color: kSubTitleColor,
-              fontSize: 10,
+          Flexible(
+            child: Text(
+              label,
+              style: kTextStyle.copyWith(
+                color: kSubTitleColor,
+                fontSize: fontSize,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Text(
-            value,
-            style: kTextStyle.copyWith(
-              color: kTitleColor,
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              value,
+              style: kTextStyle.copyWith(
+                color: kTitleColor,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
             ),
           ),
         ],

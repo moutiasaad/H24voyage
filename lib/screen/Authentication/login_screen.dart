@@ -19,44 +19,75 @@ class LogIn extends StatefulWidget {
 
 class _LogInState extends State<LogIn> {
   bool hidePassword = true;
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = keyboardHeight > 0;
+    final isSmallScreen = screenHeight < 700;
+    final isVerySmallScreen = screenHeight < 600;
+
+    // Responsive sizes
+    final logoHeight = isKeyboardOpen ? 0.0 : (isVerySmallScreen ? 50.0 : (isSmallScreen ? 60.0 : 70.0));
+    final logoWidth = isKeyboardOpen ? 0.0 : (isVerySmallScreen ? 110.0 : (isSmallScreen ? 130.0 : 150.0));
+    final titleSize = isVerySmallScreen ? 16.0 : 18.0;
+    final inputVerticalPadding = isVerySmallScreen ? 12.0 : 16.0;
+    final buttonRadius = 30.0;
+
     return Scaffold(
       backgroundColor: kWebsiteGreyBg,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: kWebsiteGreyBg,
         centerTitle: true,
         title: Text(lang.S.of(context).loginButton),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: kWebsiteGreyBg,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 10.0),
+      ),
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Column(
+          children: [
+            // Logo - hide when keyboard is open
+            if (!isKeyboardOpen) ...[
+              SizedBox(height: isVerySmallScreen ? 6 : 10),
               Center(
                 child: Container(
-                  height: 70,
-                  width: 150,
+                  height: logoHeight,
+                  width: logoWidth,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage('assets/logo.png'),
-                      fit: BoxFit.fill,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20.0),
-              Container(
-                padding: const EdgeInsets.all(10.0),
-                width: context.width(),
-                height: context.height() / 1.2,
+              SizedBox(height: isVerySmallScreen ? 12 : 20),
+            ],
+
+            // Main content container
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: isVerySmallScreen ? 12 : 16,
+                ),
+                width: double.infinity,
                 decoration: const BoxDecoration(
                   color: kWhite,
                   borderRadius: BorderRadius.only(
@@ -65,22 +96,30 @@ class _LogInState extends State<LogIn> {
                   ),
                 ),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 10.0),
-                    Text(
-                      lang.S.of(context).loginTitle,
-                      style: kTextStyle.copyWith(
-                        color: kTitleColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
+                    // Title
+                    if (!isKeyboardOpen || isVerySmallScreen) ...[
+                      SizedBox(height: isVerySmallScreen ? 4 : 8),
+                      Text(
+                        lang.S.of(context).loginTitle,
+                        style: kTextStyle.copyWith(
+                          color: kTitleColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: titleSize,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 40.0),
+                      SizedBox(height: isVerySmallScreen ? 16 : 30),
+                    ],
+
+                    // Email field
                     TextFormField(
+                      focusNode: _emailFocusNode,
                       keyboardType: TextInputType.emailAddress,
                       cursorColor: kTitleColor,
                       textInputAction: TextInputAction.next,
+                      onFieldSubmitted: (_) {
+                        FocusScope.of(context).requestFocus(_passwordFocusNode);
+                      },
                       decoration: kInputDecoration.copyWith(
                         labelText: lang.S.of(context).emailLabel,
                         labelStyle: kTextStyle.copyWith(color: kTitleColor),
@@ -88,20 +127,35 @@ class _LogInState extends State<LogIn> {
                         hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
                         focusColor: kTitleColor,
                         border: const OutlineInputBorder(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: inputVerticalPadding,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 20.0),
+
+                    SizedBox(height: isVerySmallScreen ? 12 : 18),
+
+                    // Password field
                     TextFormField(
+                      focusNode: _passwordFocusNode,
                       cursorColor: kTitleColor,
-                      keyboardType: TextInputType.emailAddress,
+                      keyboardType: TextInputType.visiblePassword,
                       obscureText: hidePassword,
                       textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) {
+                        FocusScope.of(context).unfocus();
+                      },
                       decoration: kInputDecoration.copyWith(
                         border: const OutlineInputBorder(),
                         labelText: lang.S.of(context).passwordLabel,
                         labelStyle: kTextStyle.copyWith(color: kTitleColor),
                         hintText: lang.S.of(context).passwordHint,
                         hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: inputVerticalPadding,
+                        ),
                         suffixIcon: IconButton(
                           onPressed: () {
                             setState(() {
@@ -111,11 +165,15 @@ class _LogInState extends State<LogIn> {
                           icon: Icon(
                             hidePassword ? Icons.visibility_off : Icons.visibility,
                             color: kSubTitleColor,
+                            size: 22,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10.0),
+
+                    SizedBox(height: isVerySmallScreen ? 6 : 10),
+
+                    // Forgot password
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -125,60 +183,68 @@ class _LogInState extends State<LogIn> {
                             lang.S.of(context).forgotPassword,
                             style: kTextStyle.copyWith(
                               color: kPrimaryColor,
+                              fontSize: isVerySmallScreen ? 13.0 : 14.0,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20.0),
+
+                    SizedBox(height: isVerySmallScreen ? 14 : 20),
+
+                    // Login button
                     ButtonGlobalWithoutIcon(
                       buttontext: lang.S.of(context).loginButton,
                       buttonDecoration: kButtonDecoration.copyWith(
                         color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(30.0),
+                        borderRadius: BorderRadius.circular(buttonRadius),
                       ),
                       onPressed: () {
+                        FocusScope.of(context).unfocus();
                         const Home().launch(context);
                       },
                       buttonTextColor: kWhite,
                     ),
-                    const SizedBox(height: 20.0),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Divider(
-                            thickness: 1.0,
-                            color: kBorderColorTextField,
+
+                    // Flexible space
+                    Flexible(flex: 1, child: const SizedBox()),
+
+                    // Social login section - hide when keyboard is open
+                    if (!isKeyboardOpen) ...[
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Divider(thickness: 1.0, color: kBorderColorTextField),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-                          child: Text(
-                            lang.S.of(context).orSignUpTitle,
-                            style: kTextStyle.copyWith(color: kSubTitleColor),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                            child: Text(
+                              lang.S.of(context).orSignUpTitle,
+                              style: kTextStyle.copyWith(
+                                color: kSubTitleColor,
+                                fontSize: isVerySmallScreen ? 12.0 : 14.0,
+                              ),
+                            ),
                           ),
-                        ),
-                        const Expanded(
-                          child: Divider(
-                            thickness: 1.0,
-                            color: kBorderColorTextField,
+                          const Expanded(
+                            child: Divider(thickness: 1.0, color: kBorderColorTextField),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20.0),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                      child: Row(
+                        ],
+                      ),
+
+                      SizedBox(height: isVerySmallScreen ? 14 : 20),
+
+                      // Social icons
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           SocialIcon(
                             bgColor: kTitleColor,
                             iconColor: kWhite,
                             icon: FontAwesomeIcons.facebookF,
                             borderColor: Colors.transparent,
                           ),
-                          SizedBox(width: 20.0),
+                          const SizedBox(width: 20.0),
                           SocialIcon(
                             bgColor: kWhite,
                             iconColor: kTitleColor,
@@ -187,30 +253,39 @@ class _LogInState extends State<LogIn> {
                           ),
                         ],
                       ),
-                    ),
+
+                      SizedBox(height: isVerySmallScreen ? 8 : 12),
+                    ],
                   ],
                 ),
-              )
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(color: kWhite),
         child: SafeArea(
           child: SizedBox(
-            height: 50,
+            height: isVerySmallScreen ? 44 : 50,
             child: GestureDetector(
               onTap: () => const SignUp().launch(context),
               child: Center(
                 child: RichText(
                   text: TextSpan(
                     text: lang.S.of(context).noAccTitle1,
-                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                    style: kTextStyle.copyWith(
+                      color: kSubTitleColor,
+                      fontSize: isVerySmallScreen ? 13.0 : 14.0,
+                    ),
                     children: [
                       TextSpan(
                         text: lang.S.of(context).noAccTitle2,
-                        style: kTextStyle.copyWith(color: kPrimaryColor, fontWeight: FontWeight.bold),
+                        style: kTextStyle.copyWith(
+                          color: kPrimaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: isVerySmallScreen ? 13.0 : 14.0,
+                        ),
                       ),
                     ],
                   ),

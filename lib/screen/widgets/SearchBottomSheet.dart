@@ -1,6 +1,6 @@
-import 'package:flight_booking/Model/Airport.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flight_booking/controllers/airport_controller.dart';
+import 'package:flight_booking/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
@@ -15,14 +15,65 @@ class SearchBottomSheet extends StatefulWidget {
 }
 
 class _SearchBottomSheetState extends State<SearchBottomSheet> {
-  // Use singleton controller - airports are preloaded from home page
   final AirportController _controller = AirportController.instance;
+  final LocationService _locationService = LocationService.instance;
   final TextEditingController _textController = TextEditingController();
+
+  String? _currentLocationName;
+  bool _permissionGranted = false;
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(_onControllerUpdate);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializePage();
+    });
+  }
+
+  Future<void> _initializePage() async {
+    // Check if permission is already granted
+    _permissionGranted = await _locationService.isPermissionGranted();
+    if (mounted) setState(() {});
+
+    // If permission is granted, automatically get nearby airports
+    if (_permissionGranted) {
+      await _loadNearbyAirports();
+    } else {
+      // Fall back to loading initial airports
+      _loadInitialAirportsInBackground();
+    }
+  }
+
+  /// Load airports near the user's current location (silently in background)
+  Future<void> _loadNearbyAirports() async {
+    try {
+      final cityName = await _locationService.getCurrentCityName();
+
+      if (cityName != null && mounted) {
+        setState(() {
+          _currentLocationName = cityName;
+        });
+
+        // Search for airports near user's city
+        _controller.searchAirports(cityName);
+      } else if (mounted) {
+        // Fall back to initial airports if location fails
+        _loadInitialAirportsInBackground();
+      }
+    } catch (e) {
+      // Fall back to initial airports on error
+      if (mounted) {
+        _loadInitialAirportsInBackground();
+      }
+    }
+  }
+
+  void _loadInitialAirportsInBackground() {
+    if (_controller.initialAirports.isEmpty && !_controller.isLoading) {
+      _controller.fetchInitialAirports();
+    }
   }
 
   void _onControllerUpdate() {
@@ -32,14 +83,36 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   @override
   void dispose() {
     _controller.removeListener(_onControllerUpdate);
-    // Don't dispose singleton controller
     _textController.dispose();
     super.dispose();
   }
 
+  /// Get current location - requests permission if needed
+  Future<void> _useCurrentLocation() async {
+    try {
+      // This will request permission and show dialog if needed
+      final cityName = await _locationService.getCurrentCityName();
+
+      if (cityName != null && mounted) {
+        setState(() {
+          _currentLocationName = cityName;
+          _permissionGranted = true;
+        });
+
+        // Search for airports in that city
+        _controller.searchAirports(cityName);
+      } else if (mounted) {
+        // Update permission status
+        _permissionGranted = await _locationService.isPermissionGranted();
+        if (mounted) setState(() {});
+      }
+    } catch (e) {
+      // Silently fail
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Show API suggestions when searching, otherwise show initial airports from API
     final displayAirports = _controller.hasSearchQuery
         ? _controller.suggestions
         : _controller.initialAirports;
@@ -77,12 +150,16 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
                   FeatherIcons.search,
                   color: kSubTitleColor,
                 ),
-                suffixIcon: _controller.hasSearchQuery
+                suffixIcon: _controller.hasSearchQuery || _textController.text.isNotEmpty
                     ? IconButton(
                         icon: Icon(Icons.clear, color: kSubTitleColor),
                         onPressed: () {
                           _textController.clear();
                           _controller.clear();
+                          // Reload nearby airports if location is available
+                          if (_currentLocationName != null) {
+                            _controller.searchAirports(_currentLocationName!);
+                          }
                         },
                       )
                     : null,
@@ -90,47 +167,50 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
             ),
             const SizedBox(height: 20.0),
 
-            // Current location
-            ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              leading: Icon(IconlyBold.send, color: kSubTitleColor),
-              title: Text(
-                lang.S.of(context).currentLocation,
-                style: kTextStyle.copyWith(color: kSubTitleColor),
+            // Current location tile - only show when location is not yet obtained
+            if (_currentLocationName == null) ...[
+              ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onTap: _useCurrentLocation,
+                leading: Icon(
+                  IconlyBold.send,
+                  color: _permissionGranted ? kPrimaryColor : kSubTitleColor,
+                ),
+                title: Text(
+                  lang.S.of(context).currentLocation,
+                  style: kTextStyle.copyWith(color: kSubTitleColor),
+                ),
+                subtitle: Text(
+                  lang.S.of(context).useCurrentLocation,
+                  style: kTextStyle.copyWith(
+                    color: kTitleColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                trailing: Icon(
+                  _permissionGranted ? Icons.my_location : Icons.location_off,
+                  color: _permissionGranted ? kPrimaryColor : kSubTitleColor,
+                  size: 20,
+                ),
               ),
-              subtitle: Text(
-                lang.S.of(context).useCurrentLocation,
-                style: kTextStyle.copyWith(
-                    color: kTitleColor, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const Divider(thickness: 1.0, color: kBorderColorTextField),
+              const Divider(thickness: 1.0, color: kBorderColorTextField),
+            ],
 
             const SizedBox(height: 10.0),
             Text(
-              _controller.hasSearchQuery
-                  ? lang.S.of(context).recentPlaceTitle
-                  : lang.S.of(context).recentPlaceTitle,
+              _currentLocationName != null
+                  ? 'Aéroports à proximité'
+                  : (_controller.hasSearchQuery
+                      ? 'Résultats de recherche'
+                      : lang.S.of(context).recentPlaceTitle),
               style: kTextStyle.copyWith(
                   color: kSubTitleColor, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10.0),
 
-            // Airports list - no loading indicator, data is preloaded
-            if (displayAirports.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40.0),
-                child: Center(
-                  child: Text(
-                    _controller.hasSearchQuery
-                        ? 'Aucun aéroport trouvé'
-                        : 'Aucun aéroport disponible',
-                    style: kTextStyle.copyWith(color: kSubTitleColor),
-                  ),
-                ),
-              )
-            else
+            // Airports list (no loading indicator)
+            if (displayAirports.isNotEmpty)
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -142,7 +222,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
                       ListTile(
                         dense: true,
                         contentPadding: EdgeInsets.zero,
-                        leading: SizedBox(
+                        leading: const SizedBox(
                           width: 40,
                           height: 40,
                           child: Icon(

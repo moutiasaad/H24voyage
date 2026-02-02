@@ -11,6 +11,8 @@ import 'setting/currency.dart';
 import 'setting/languase.dart';
 import 'setting/notification.dart';
 import 'Privacy_Policy/privicy_policy.dart';
+import '../support/support_main.dart';
+import '../support/faq_screen.dart';
 
 /// Model for menu items - dynamic structure for future API integration
 class ProfileMenuItem {
@@ -187,17 +189,13 @@ class _ProfileState extends State<Profile> {
         id: 'contact',
         title: 'Contacter le service client',
         iconAsset: 'assets/assistIcon.png',
-        onTap: () {
-          // TODO: Implement contact service
-        },
+        destination: const SupportMain(),
       ),
       ProfileMenuItem(
         id: 'faq',
         title: 'FAQ',
         iconAsset: 'assets/fqaIcon.png',
-        onTap: () {
-          // TODO: Implement FAQ page
-        },
+        destination: const FaqScreen(),
       ),
     ];
 
