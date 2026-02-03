@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../generated/l10n.dart' as lang;
+import '../widgets/orange_dots_loader.dart';
 import 'filter.dart';
 
 class SearchResult extends StatefulWidget {
@@ -57,8 +58,19 @@ class _SearchResultState extends State<SearchResult> {
   int selectedFilterTab = 0; // 0: Aller, 1: Retour
   String selectedEscaleOption = 'Tous';
 
-  // Airline filter - null means show all
+  // Airline filter - null means show all (for quick chips)
   String? selectedAirlineCode;
+
+  // Filter dialog selections
+  Set<String> selectedFilterAirlineCodes = {};  // Airlines selected in filter dialog
+  Set<String> selectedDepartureAirportCodes = {};  // Departure airports selected in filter
+  Set<String> selectedArrivalAirportCodes = {};  // Arrival airports selected in filter
+
+  // Pagination state
+  static const int _itemsPerPage = 5;
+  int _displayedItemCount = _itemsPerPage;
+  bool _isLoadingMore = false;
+  final ScrollController _scrollController = ScrollController();
 
   // Responsive breakpoints
   bool get isSmallScreen => MediaQuery.of(context).size.width < 360;
@@ -68,6 +80,7 @@ class _SearchResultState extends State<SearchResult> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.flightOffers != null && widget.flightOffers!.isNotEmpty) {
         // Use API flight offers
@@ -79,6 +92,147 @@ class _SearchResultState extends State<SearchResult> {
         _loadFakeFlightsFromAirports();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMoreItems();
+    }
+  }
+
+  Future<void> _loadMoreItems() async {
+    final totalFiltered = filteredApiFlights.length;
+
+    if (_isLoadingMore || _displayedItemCount >= totalFiltered) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    // Simulate network delay for smooth UX
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    if (mounted) {
+      setState(() {
+        _displayedItemCount = (_displayedItemCount + _itemsPerPage)
+            .clamp(0, totalFiltered);
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  // Reset pagination when filters change
+  void _resetPagination() {
+    setState(() {
+      _displayedItemCount = _itemsPerPage;
+    });
+  }
+
+  // Build paginated API flights list as slivers
+  List<Widget> _buildPaginatedApiFlightsList(String fromCode, String toCode) {
+    final allFilteredFlights = filteredApiFlights;
+
+    // Show empty state if filters return no results
+    if (allFilteredFlights.isEmpty && (selectedAirlineCode != null || isDirectOnly)) {
+      return [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    isDirectOnly ? Icons.flight : Icons.filter_alt_off,
+                    size: 64,
+                    color: kSubTitleColor,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    isDirectOnly && selectedAirlineCode == null
+                        ? 'Aucun vol direct disponible'
+                        : isDirectOnly
+                            ? 'Aucun vol direct pour cette compagnie'
+                            : 'Aucun vol pour cette compagnie',
+                    style: GoogleFonts.poppins(
+                      color: kTitleColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        if (isDirectOnly) isDirectOnly = false;
+                        if (selectedAirlineCode != null) selectedAirlineCode = null;
+                      });
+                      _resetPagination();
+                    },
+                    child: Text(
+                      'Afficher tous les vols',
+                      style: GoogleFonts.poppins(
+                        color: kPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    // Calculate displayed count based on filtered results
+    final displayCount = _displayedItemCount.clamp(0, allFilteredFlights.length);
+    final hasMoreItems = displayCount < allFilteredFlights.length;
+
+    return [
+      // Flight cards
+      SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, i) {
+            final offer = allFilteredFlights[i];
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 16),
+              child: _buildApiFlightCard(offer, i, fromCode, toCode),
+            );
+          },
+          childCount: displayCount,
+        ),
+      ),
+      // Loading indicator or "Load more" area
+      if (hasMoreItems || _isLoadingMore)
+        SliverToBoxAdapter(
+          child: _isLoadingMore
+              ? const PaginationLoader(message: 'Chargement des vols...')
+              : Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: Text(
+                      '${allFilteredFlights.length - displayCount} vols restants',
+                      style: GoogleFonts.poppins(
+                        color: kSubTitleColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+        ),
+    ];
   }
 
   bool get hasApiFlights => apiFlights.isNotEmpty;
@@ -134,138 +288,88 @@ class _SearchResultState extends State<SearchResult> {
           // Header Section with orange gradient
           _buildHeader(fromCity, toCity, totalPassengers),
 
-          // Scrollable Content
+          // Scrollable Content with Pagination
           Expanded(
-            child: SingleChildScrollView(
+            child: CustomScrollView(
+              controller: _scrollController,
               physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
+              slivers: [
+                // Top spacing
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 16),
+                ),
 
-                  // Vol direct toggle + Filter buttons
-                  _buildFilterSection(),
+                // Vol direct toggle + Filter buttons
+                SliverToBoxAdapter(
+                  child: _buildFilterSection(),
+                ),
 
-                  const SizedBox(height: 12),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 12),
+                ),
 
-                  // Price filter chips
-                  _buildPriceChips(),
+                // Price filter chips
+                SliverToBoxAdapter(
+                  child: _buildPriceChips(),
+                ),
 
-                  const SizedBox(height: 12),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 28),
+                ),
 
-                  // Promotional banner
-                  // _buildPromoBanner(),
-
-                  const SizedBox(height: 16),
-
-                  // Flight cards
-                  hasApiFlights
-                      ? Builder(
-                          builder: (context) {
-                            final flights = filteredApiFlights;
-                            // Show empty state if filters return no results
-                            if (flights.isEmpty && (selectedAirlineCode != null || isDirectOnly)) {
-                              return Padding(
-                                padding: const EdgeInsets.all(32),
-                                child: Center(
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        isDirectOnly ? Icons.flight : Icons.filter_alt_off,
-                                        size: 64,
-                                        color: kSubTitleColor,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      Text(
-                                        isDirectOnly && selectedAirlineCode == null
-                                            ? 'Aucun vol direct disponible'
-                                            : isDirectOnly
-                                                ? 'Aucun vol direct pour cette compagnie'
-                                                : 'Aucun vol pour cette compagnie',
-                                        style: GoogleFonts.poppins(
-                                          color: kTitleColor,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            if (isDirectOnly) isDirectOnly = false;
-                                            if (selectedAirlineCode != null) selectedAirlineCode = null;
-                                          });
-                                        },
-                                        child: Text(
-                                          'Afficher tous les vols',
-                                          style: GoogleFonts.poppins(
-                                            color: kPrimaryColor,
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-                            return ListView.builder(
-                              itemCount: flights.length,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 16),
-                              itemBuilder: (_, i) {
-                                final offer = flights[i];
-                                return _buildApiFlightCard(offer, i, fromCode, toCode);
-                              },
-                            );
-                          },
-                        )
-                      : (widget.flightOffers != null && widget.flightOffers!.isEmpty)
-                          ? Padding(
-                              padding: const EdgeInsets.all(32),
-                              child: Center(
-                                child: Column(
-                                  children: [
-                                    Icon(Icons.flight_outlined, size: 64, color: kSubTitleColor),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      'Aucun vol trouvé',
-                                      style: GoogleFonts.poppins(
-                                        color: kTitleColor,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Essayez de modifier vos critères de recherche',
-                                      style: GoogleFonts.poppins(
-                                        color: kSubTitleColor,
-                                        fontSize: 14,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
+                // Flight cards with pagination
+                if (hasApiFlights)
+                  ..._buildPaginatedApiFlightsList(fromCode, toCode)
+                else if (widget.flightOffers != null && widget.flightOffers!.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(Icons.flight_outlined, size: 64, color: kSubTitleColor),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Aucun vol trouvé',
+                              style: GoogleFonts.poppins(
+                                color: kTitleColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
                               ),
-                            )
-                          : ListView.builder(
-                              itemCount: flights.length,
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 16),
-                              itemBuilder: (_, i) {
-                                final f = flights[i];
-                                return _buildFlightCard(f, i, fromCode, toCode);
-                              },
                             ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Essayez de modifier vos critères de recherche',
+                              style: GoogleFonts.poppins(
+                                color: kSubTitleColor,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, i) {
+                        final f = flights[i];
+                        return Padding(
+                          padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 16),
+                          child: _buildFlightCard(f, i, fromCode, toCode),
+                        );
+                      },
+                      childCount: flights.length,
+                    ),
+                  ),
 
-                  const SizedBox(height: 20),
-                ],
-              ),
+                // Bottom spacing
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 20),
+                ),
+              ],
             ),
           ),
         ],
@@ -551,7 +655,10 @@ class _SearchResultState extends State<SearchResult> {
                       child: Switch(
                         value: isDirectOnly,
                         onChanged: directFlightsCount > 0
-                            ? (val) => setState(() => isDirectOnly = val)
+                            ? (val) {
+                                setState(() => isDirectOnly = val);
+                                _resetPagination();
+                              }
                             : null,
                         activeColor: kPrimaryColor,
                         activeTrackColor: kPrimaryColor.withOpacity(0.3),
@@ -608,7 +715,10 @@ class _SearchResultState extends State<SearchResult> {
                     child: Switch(
                       value: isDirectOnly,
                       onChanged: directFlightsCount > 0
-                          ? (val) => setState(() => isDirectOnly = val)
+                          ? (val) {
+                              setState(() => isDirectOnly = val);
+                              _resetPagination();
+                            }
                           : null,
                       activeColor: kPrimaryColor,
                       activeTrackColor: kPrimaryColor.withOpacity(0.3),
@@ -627,7 +737,7 @@ class _SearchResultState extends State<SearchResult> {
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: buttonPaddingH, vertical: buttonPaddingV),
                       decoration: BoxDecoration(
-                        color: kWhite,
+                        color: activeFilterCount > 0 ? kPrimaryColor.withOpacity(0.1) : kWhite,
                         border: Border.all(color: kPrimaryColor, width: 1),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -650,6 +760,24 @@ class _SearchResultState extends State<SearchResult> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
+                        if (activeFilterCount > 0) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: kPrimaryColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '$activeFilterCount',
+                              style: kTextStyle.copyWith(
+                                color: kWhite,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -702,14 +830,25 @@ class _SearchResultState extends State<SearchResult> {
     );
   }
 
+  // Count of active filters from the filter dialog
+  int get activeFilterCount {
+    int count = 0;
+    if (selectedFilterAirlineCodes.isNotEmpty) count++;
+    if (selectedDepartureAirportCodes.isNotEmpty) count++;
+    if (selectedArrivalAirportCodes.isNotEmpty) count++;
+    if (selectedEscaleOption != 'Tous') count++;
+    return count;
+  }
+
   // Compact filter button for small screens
   Widget _buildCompactFilterButton(double paddingH, double paddingV, double fontSize, double iconSize) {
+    final hasActiveFilters = activeFilterCount > 0;
     return GestureDetector(
       onTap: () => _showFilterBottomSheet(),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
         decoration: BoxDecoration(
-          color: kWhite,
+          color: hasActiveFilters ? kPrimaryColor.withOpacity(0.1) : kWhite,
           border: Border.all(color: kPrimaryColor, width: 1),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -726,6 +865,24 @@ class _SearchResultState extends State<SearchResult> {
                 fontWeight: FontWeight.w500,
               ),
             ),
+            if (hasActiveFilters) ...[
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '$activeFilterCount',
+                  style: kTextStyle.copyWith(
+                    color: kWhite,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -1101,7 +1258,7 @@ class _SearchResultState extends State<SearchResult> {
                 'name': airlineName,
                 'code': airlineCode,
                 'logo': _getAirlineLogoUrl(airlineCode),
-                'selected': false,
+                'selected': selectedFilterAirlineCodes.contains(airlineCode.toUpperCase()),
               };
             }
 
@@ -1114,7 +1271,7 @@ class _SearchResultState extends State<SearchResult> {
                   'name': depDetails?.name ?? depCode,
                   'code': depCode,
                   'city': depDetails?.city ?? '',
-                  'selected': false,
+                  'selected': selectedDepartureAirportCodes.contains(depCode),
                 };
               }
             }
@@ -1128,7 +1285,7 @@ class _SearchResultState extends State<SearchResult> {
                   'name': arrDetails?.name ?? arrCode,
                   'code': arrCode,
                   'city': arrDetails?.city ?? '',
-                  'selected': false,
+                  'selected': selectedArrivalAirportCodes.contains(arrCode),
                 };
               }
             }
@@ -1473,7 +1630,31 @@ class _SearchResultState extends State<SearchResult> {
                                 selectedFilterCategory = tempSelectedCategory;
                                 selectedFilterTab = tempSelectedTab;
                                 selectedEscaleOption = tempEscaleOption;
+
+                                // Save selected airlines from filter (uppercase for consistent comparison)
+                                selectedFilterAirlineCodes = tempCompagnies
+                                    .where((c) => c['selected'] == true)
+                                    .map((c) => (c['code'] as String).toUpperCase())
+                                    .toSet();
+
+                                // Save selected departure airports
+                                selectedDepartureAirportCodes = (tempAeroports['depart']['airports'] as List)
+                                    .where((a) => a['selected'] == true)
+                                    .map((a) => a['code'] as String)
+                                    .toSet();
+
+                                // Save selected arrival airports
+                                selectedArrivalAirportCodes = (tempAeroports['arrivee']['airports'] as List)
+                                    .where((a) => a['selected'] == true)
+                                    .map((a) => a['code'] as String)
+                                    .toSet();
+
+                                // Clear the quick chip filter when applying dialog filters
+                                if (selectedFilterAirlineCodes.isNotEmpty) {
+                                  selectedAirlineCode = null;
+                                }
                               });
+                              _resetPagination();
                               Navigator.pop(context);
                             },
                             child: Container(
@@ -1874,16 +2055,23 @@ class _SearchResultState extends State<SearchResult> {
     return 'https://pics.avs.io/70/70/${airlineCode.toUpperCase()}.png';
   }
 
-  // Get filtered flights based on direct toggle and selected airline
+  // Get filtered flights based on all filter options
   List<FlightOffer> get filteredApiFlights {
     List<FlightOffer> result = apiFlights;
 
-    // Filter by direct flights if toggle is on
-    if (isDirectOnly) {
+    // Filter by direct flights if toggle is on or escale option is "Direct"
+    if (isDirectOnly || selectedEscaleOption == 'Direct') {
       result = result.where((offer) => _isDirectFlight(offer)).toList();
     }
 
-    // Filter by airline if selected
+    // Filter by escale option (stops)
+    if (selectedEscaleOption == 'Jusqu\'à 1 escale') {
+      result = result.where((offer) => _getMaxStops(offer) <= 1).toList();
+    } else if (selectedEscaleOption == 'Jusqu\'à 2 escales') {
+      result = result.where((offer) => _getMaxStops(offer) <= 2).toList();
+    }
+
+    // Filter by quick chip airline selection
     if (selectedAirlineCode != null) {
       result = result.where((offer) {
         for (final journey in offer.journey) {
@@ -1898,7 +2086,56 @@ class _SearchResultState extends State<SearchResult> {
       }).toList();
     }
 
+    // Filter by airlines selected in filter dialog (Compagnies)
+    if (selectedFilterAirlineCodes.isNotEmpty) {
+      result = result.where((offer) {
+        for (final journey in offer.journey) {
+          for (final segment in journey.flightSegments) {
+            final code = segment.operatingAirline ?? segment.marketingAirline;
+            if (code != null && selectedFilterAirlineCodes.contains(code.toUpperCase())) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }).toList();
+    }
+
+    // Filter by departure airports (Aéroport)
+    if (selectedDepartureAirportCodes.isNotEmpty) {
+      result = result.where((offer) {
+        // Check the first segment of the first journey for departure
+        if (offer.journey.isNotEmpty && offer.journey.first.flightSegments.isNotEmpty) {
+          final depCode = offer.journey.first.flightSegments.first.departureAirportCode;
+          return depCode != null && selectedDepartureAirportCodes.contains(depCode);
+        }
+        return false;
+      }).toList();
+    }
+
+    // Filter by arrival airports (Aéroport)
+    if (selectedArrivalAirportCodes.isNotEmpty) {
+      result = result.where((offer) {
+        // Check the last segment of the last journey for arrival
+        if (offer.journey.isNotEmpty && offer.journey.last.flightSegments.isNotEmpty) {
+          final arrCode = offer.journey.last.flightSegments.last.arrivalAirportCode;
+          return arrCode != null && selectedArrivalAirportCodes.contains(arrCode);
+        }
+        return false;
+      }).toList();
+    }
+
     return result;
+  }
+
+  // Get the maximum number of stops in any journey of an offer
+  int _getMaxStops(FlightOffer offer) {
+    int maxStops = 0;
+    for (final journey in offer.journey) {
+      final stops = journey.flight?.stopQuantity ?? (journey.flightSegments.length - 1);
+      if (stops > maxStops) maxStops = stops;
+    }
+    return maxStops;
   }
 
   // Check if a flight offer is direct (no stops)
@@ -1942,6 +2179,7 @@ class _SearchResultState extends State<SearchResult> {
               setState(() {
                 selectedAirlineCode = null;
               });
+              _resetPagination();
             },
             child: Container(
               height: chipHeight,
@@ -1982,6 +2220,7 @@ class _SearchResultState extends State<SearchResult> {
                     selectedAirlineCode = airlineCode;
                   }
                 });
+                _resetPagination();
               },
               child: Tooltip(
                 message: airlineName.isNotEmpty ? airlineName : airlineCode,
