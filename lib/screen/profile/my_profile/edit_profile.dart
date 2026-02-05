@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'dart:io';
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 import 'my_profile.dart';
 
 class EditProfile extends StatefulWidget {
@@ -103,21 +104,24 @@ class _EditProfileState extends State<EditProfile> {
                             ? const DecorationImage(image: AssetImage('images/man.png'), fit: BoxFit.cover)
                             : DecorationImage(image: FileImage(File(image!.path)), fit: BoxFit.cover)),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(5.0),
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
+                  SmallTapEffect(
+                    onTap: () => getImage(),
+                    child: Container(
+                      padding: const EdgeInsets.all(5.0),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: kWhite,
+                          width: 1.0,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_outlined,
+                        size: 17,
                         color: kWhite,
-                        width: 1.0,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt_outlined,
-                      size: 17,
-                      color: kWhite,
-                    ).onTap(() => getImage()),
                   ),
                 ],
               ),

@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'package:flight_booking/Model/Airport.dart';
 import 'package:flight_booking/Model/FakeFlight.dart';
 import 'package:flight_booking/models/flight_offer.dart';
+import 'package:flight_booking/models/flight_results_request.dart';
 import 'package:flight_booking/screen/search/flight_details.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
+import 'package:flight_booking/services/flight_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -12,7 +15,12 @@ import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../generated/l10n.dart' as lang;
+import '../../controllers/flight_controller.dart';
+import '../../models/flight_bound.dart';
 import '../widgets/orange_dots_loader.dart';
+import '../widgets/button_global.dart';
+import '../widgets/EditSearchBottomSheet.dart';
+import '../widgets/flight_search_loading.dart';
 import 'filter.dart';
 
 class SearchResult extends StatefulWidget {
@@ -25,6 +33,8 @@ class SearchResult extends StatefulWidget {
   final List<FlightOffer>? flightOffers;
   final bool isOneWay;
   final bool isMultiDestination;
+  final String? searchCode;
+  final int? totalOffers;
 
   const SearchResult({
     Key? key,
@@ -37,6 +47,8 @@ class SearchResult extends StatefulWidget {
     this.flightOffers,
     this.isOneWay = false,
     this.isMultiDestination = false,
+    this.searchCode,
+    this.totalOffers,
   }) : super(key: key);
 
   @override
@@ -66,16 +78,20 @@ class _SearchResultState extends State<SearchResult> {
   Set<String> selectedDepartureAirportCodes = {};  // Departure airports selected in filter
   Set<String> selectedArrivalAirportCodes = {};  // Arrival airports selected in filter
 
-  // Pagination state
-  static const int _itemsPerPage = 5;
-  int _displayedItemCount = _itemsPerPage;
+  // API Pagination state
+  int _currentPage = 1;
+  int? _totalPages;
   bool _isLoadingMore = false;
+  bool _hasMorePages = true;
   final ScrollController _scrollController = ScrollController();
 
   // Responsive breakpoints
   bool get isSmallScreen => MediaQuery.of(context).size.width < 360;
   bool get isMediumScreen => MediaQuery.of(context).size.width < 400;
   double get screenWidth => MediaQuery.of(context).size.width;
+
+  // Flight controller for new searches
+  final FlightController _flightController = FlightController();
 
   @override
   void initState() {
@@ -86,6 +102,22 @@ class _SearchResultState extends State<SearchResult> {
         // Use API flight offers
         setState(() {
           apiFlights = widget.flightOffers!;
+
+          // Determine if there are more pages based on total offers
+          // API returns 15 items per page by default
+          const int perPage = 15;
+          final int currentCount = apiFlights.length;
+          final int total = widget.totalOffers ?? currentCount;
+
+          // If we have a total and current count is less, there are more pages
+          _hasMorePages = widget.searchCode != null && currentCount < total;
+
+          // Calculate total pages if we have total
+          if (widget.totalOffers != null && widget.totalOffers! > 0) {
+            _totalPages = (widget.totalOffers! / perPage).ceil();
+          }
+
+          debugPrint('Pagination initialized: currentCount=$currentCount, total=$total, hasMorePages=$_hasMorePages, totalPages=$_totalPages');
         });
       } else {
         // Fall back to fake data
@@ -101,6 +133,141 @@ class _SearchResultState extends State<SearchResult> {
     super.dispose();
   }
 
+  /// Show edit search bottom sheet to modify search parameters
+  void _showEditSearchBottomSheet() async {
+    final result = await showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      builder: (_) => EditSearchBottomSheet(
+        fromAirport: widget.fromAirport,
+        toAirport: widget.toAirport,
+        adultCount: widget.adultCount,
+        childCount: widget.childCount,
+        infantCount: widget.infantCount,
+        dateRange: widget.dateRange,
+        isOneWay: widget.isOneWay,
+        isMultiDestination: widget.isMultiDestination,
+      ),
+    );
+
+    if (result != null && mounted) {
+      final fromAirport = result['fromAirport'] as Airport;
+      final toAirport = result['toAirport'] as Airport;
+      final adultCount = result['adultCount'] as int;
+      final childCount = result['childCount'] as int;
+      final infantCount = result['infantCount'] as int;
+      final departureDate = result['departureDate'] as DateTime?;
+      final returnDate = result['returnDate'] as DateTime?;
+      final isOneWay = result['isOneWay'] as bool;
+      final isMultiDestination = result['isMultiDestination'] as bool? ?? false;
+      final multiDestinationLegs = result['multiDestinationLegs'] as List<MultiDestinationLeg>? ?? [];
+
+      // Navigate to loading screen and perform search
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FlightSearchLoading(
+            destinationCity: toAirport.city,
+            searchFunction: () async {
+              if (isMultiDestination) {
+                // Build flight bounds for multi-destination
+                final bounds = <FlightBound>[];
+
+                // First leg (from main fromAirport to toAirport)
+                bounds.add(FlightBound(
+                  origin: fromAirport.code,
+                  destination: toAirport.code,
+                  departureDate: _formatDateForApi(departureDate!),
+                ));
+
+                // Additional legs
+                for (final leg in multiDestinationLegs) {
+                  if (leg.fromAirport != null && leg.toAirport != null && leg.departureDate != null) {
+                    bounds.add(FlightBound(
+                      origin: leg.fromAirport!.code,
+                      destination: leg.toAirport!.code,
+                      departureDate: _formatDateForApi(leg.departureDate!),
+                    ));
+                  }
+                }
+
+                await _flightController.searchMultiDestination(
+                  bounds: bounds,
+                  adultCount: adultCount,
+                  childCount: childCount,
+                  infantCount: infantCount,
+                );
+              } else if (isOneWay) {
+                await _flightController.searchOneWay(
+                  fromAirport: fromAirport,
+                  toAirport: toAirport,
+                  departureDate: departureDate!,
+                  adultCount: adultCount,
+                  childCount: childCount,
+                  infantCount: infantCount,
+                );
+              } else {
+                await _flightController.searchRoundTrip(
+                  fromAirport: fromAirport,
+                  toAirport: toAirport,
+                  departureDate: departureDate!,
+                  returnDate: returnDate!,
+                  adultCount: adultCount,
+                  childCount: childCount,
+                  infantCount: infantCount,
+                );
+              }
+            },
+            onSearchComplete: () {
+              Navigator.pop(context); // Pop loading screen
+              if (!_flightController.hasError) {
+                // Navigate to new search result, replacing current one
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SearchResult(
+                      fromAirport: fromAirport,
+                      toAirport: toAirport,
+                      adultCount: adultCount,
+                      childCount: childCount,
+                      infantCount: infantCount,
+                      dateRange: departureDate != null
+                          ? DateTimeRange(
+                              start: departureDate,
+                              end: returnDate ?? departureDate,
+                            )
+                          : null,
+                      flightOffers: _flightController.offers,
+                      isOneWay: isOneWay,
+                      isMultiDestination: isMultiDestination,
+                      searchCode: _flightController.searchCode,
+                      totalOffers: _flightController.totalOffers,
+                    ),
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_flightController.errorMessage ?? 'Erreur lors de la recherche'),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  // Format date to API format (YYYY-MM-DD)
+  String _formatDateForApi(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
@@ -109,9 +276,11 @@ class _SearchResultState extends State<SearchResult> {
   }
 
   Future<void> _loadMoreItems() async {
-    final totalFiltered = filteredApiFlights.length;
+    // If no searchCode, can't use API pagination
+    debugPrint('_loadMoreItems called: searchCode=${widget.searchCode}, hasMorePages=$_hasMorePages, isLoadingMore=$_isLoadingMore');
 
-    if (_isLoadingMore || _displayedItemCount >= totalFiltered) {
+    if (widget.searchCode == null || !_hasMorePages || _isLoadingMore) {
+      debugPrint('_loadMoreItems skipped: searchCode=${widget.searchCode}, hasMorePages=$_hasMorePages, isLoadingMore=$_isLoadingMore');
       return;
     }
 
@@ -119,23 +288,84 @@ class _SearchResultState extends State<SearchResult> {
       _isLoadingMore = true;
     });
 
-    // Simulate network delay for smooth UX
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      final request = FlightResultsRequest(
+        searchCode: widget.searchCode!,
+        page: _currentPage + 1,
+        airline: selectedAirlineCode,
+      );
 
-    if (mounted) {
-      setState(() {
-        _displayedItemCount = (_displayedItemCount + _itemsPerPage)
-            .clamp(0, totalFiltered);
-        _isLoadingMore = false;
-      });
+      debugPrint('Calling FlightService.getResults with page=${_currentPage + 1}');
+      final response = await FlightService.getResults(request);
+
+      if (mounted) {
+        setState(() {
+          final previousCount = apiFlights.length;
+          // Append new offers to existing list
+          apiFlights.addAll(response.offers);
+          _currentPage = response.currentPage ?? (_currentPage + 1);
+          _totalPages = response.totalPages;
+          _hasMorePages = response.totalPages != null && _currentPage < response.totalPages!;
+          _isLoadingMore = false;
+
+          debugPrint('Loaded ${response.offers.length} new offers. Total: $previousCount -> ${apiFlights.length}. Page: $_currentPage/$_totalPages, hasMore: $_hasMorePages');
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading more flights: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
     }
   }
 
   // Reset pagination when filters change
   void _resetPagination() {
     setState(() {
-      _displayedItemCount = _itemsPerPage;
+      _currentPage = 1;
+      _hasMorePages = true;
+      _totalPages = null;
     });
+  }
+
+  // Reload flights from API with current filters (page 1)
+  Future<void> _reloadFlightsWithFilters() async {
+    if (widget.searchCode == null) return;
+
+    setState(() {
+      _isLoadingMore = true;
+      apiFlights.clear();
+      _currentPage = 1;
+    });
+
+    try {
+      final request = FlightResultsRequest(
+        searchCode: widget.searchCode!,
+        page: 1,
+        airline: selectedAirlineCode,
+      );
+
+      final response = await FlightService.getResults(request);
+
+      if (mounted) {
+        setState(() {
+          apiFlights = response.offers;
+          _currentPage = response.currentPage ?? 1;
+          _totalPages = response.totalPages;
+          _hasMorePages = response.totalPages != null && _currentPage < response.totalPages!;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error reloading flights: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
   }
 
   // Build paginated API flights list as slivers
@@ -196,12 +426,8 @@ class _SearchResultState extends State<SearchResult> {
       ];
     }
 
-    // Calculate displayed count based on filtered results
-    final displayCount = _displayedItemCount.clamp(0, allFilteredFlights.length);
-    final hasMoreItems = displayCount < allFilteredFlights.length;
-
     return [
-      // Flight cards
+      // Flight cards - show all loaded flights (API pagination loads in batches)
       SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, i) {
@@ -211,11 +437,11 @@ class _SearchResultState extends State<SearchResult> {
               child: _buildApiFlightCard(offer, i, fromCode, toCode),
             );
           },
-          childCount: displayCount,
+          childCount: allFilteredFlights.length,
         ),
       ),
       // Loading indicator or "Load more" area
-      if (hasMoreItems || _isLoadingMore)
+      if (_hasMorePages || _isLoadingMore)
         SliverToBoxAdapter(
           child: _isLoadingMore
               ? const PaginationLoader(message: 'Chargement des vols...')
@@ -223,7 +449,9 @@ class _SearchResultState extends State<SearchResult> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Center(
                     child: Text(
-                      '${allFilteredFlights.length - displayCount} vols restants',
+                      _totalPages != null
+                          ? 'Page $_currentPage / $_totalPages - Faites défiler pour plus'
+                          : 'Faites défiler pour charger plus de vols',
                       style: GoogleFonts.poppins(
                         color: kSubTitleColor,
                         fontSize: 12,
@@ -436,7 +664,7 @@ class _SearchResultState extends State<SearchResult> {
               child: Row(
                 children: [
                   // Back button
-                  GestureDetector(
+                  SmallTapEffect(
                     onTap: () => Navigator.pop(context),
                     child: Icon(Icons.arrow_back, color: kTitleColor, size: iconSize),
                   ),
@@ -570,11 +798,9 @@ class _SearchResultState extends State<SearchResult> {
                     ),
                   ),
 
-                  // Edit button - returns to home page to modify search
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
+                  // Edit button - shows bottom sheet to modify search parameters
+                  SmallTapEffect(
+                    onTap: _showEditSearchBottomSheet,
                     child: Container(
                       padding: EdgeInsets.all(isSmallScreen ? 6 : 8),
                       decoration: BoxDecoration(
@@ -732,7 +958,7 @@ class _SearchResultState extends State<SearchResult> {
                   SizedBox(width: buttonSpacing * 2),
 
                   // Filtrer button
-                  GestureDetector(
+                  SmallTapEffect(
                     onTap: () => _showFilterBottomSheet(),
                     child: Container(
                       padding: EdgeInsets.symmetric(horizontal: buttonPaddingH, vertical: buttonPaddingV),
@@ -785,7 +1011,7 @@ class _SearchResultState extends State<SearchResult> {
                 SizedBox(width: buttonSpacing),
 
                 // Trier button
-                GestureDetector(
+                SmallTapEffect(
                   onTap: () => _showSortBottomSheet(),
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: buttonPaddingH, vertical: buttonPaddingV),
@@ -843,7 +1069,7 @@ class _SearchResultState extends State<SearchResult> {
   // Compact filter button for small screens
   Widget _buildCompactFilterButton(double paddingH, double paddingV, double fontSize, double iconSize) {
     final hasActiveFilters = activeFilterCount > 0;
-    return GestureDetector(
+    return SmallTapEffect(
       onTap: () => _showFilterBottomSheet(),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
@@ -891,7 +1117,7 @@ class _SearchResultState extends State<SearchResult> {
 
   // Compact sort button for small screens
   Widget _buildCompactSortButton(double paddingH, double paddingV, double fontSize, double iconSize) {
-    return GestureDetector(
+    return SmallTapEffect(
       onTap: () => _showSortBottomSheet(),
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
@@ -1426,43 +1652,49 @@ class _SearchResultState extends State<SearchResult> {
                   Expanded(
                     child: Row(
                       children: [
-                        // Left side menu
-                        Container(
-                          width: menuWidth,
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              right: BorderSide(color: kBorderColorTextField),
+                        // Left side menu - auto-sized to fit longest text
+                        IntrinsicWidth(
+                          child: Container(
+                            constraints: BoxConstraints(
+                              minWidth: menuWidth,
                             ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: List.generate(filterCategories.length, (index) {
-                              final isSelected = tempSelectedCategory == index;
-                              return GestureDetector(
-                                onTap: () {
-                                  setModalState(() => tempSelectedCategory = index);
-                                },
-                                child: Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: menuPaddingH,
-                                    vertical: menuPaddingV,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected ? const Color(0xFFF5F5F5) : Colors.transparent,
-                                  ),
-                                  child: Text(
-                                    filterCategories[index],
-                                    style: GoogleFonts.poppins(
-                                      color: isSelected ? kTitleColor : kSubTitleColor,
-                                      fontSize: menuFontSize,
-                                      fontWeight: FontWeight.w500,
-                                      height: 30 / 12,
+                            decoration: const BoxDecoration(
+                              border: Border(
+                                right: BorderSide(color: kBorderColorTextField),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: List.generate(filterCategories.length, (index) {
+                                final isSelected = tempSelectedCategory == index;
+                                return GestureDetector(
+                                  onTap: () {
+                                    setModalState(() => tempSelectedCategory = index);
+                                  },
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: menuPaddingH,
+                                      vertical: menuPaddingV,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? const Color(0xFFF5F5F5) : Colors.transparent,
+                                    ),
+                                    child: Text(
+                                      filterCategories[index],
+                                      style: GoogleFonts.poppins(
+                                        color: isSelected ? kTitleColor : kSubTitleColor,
+                                        fontSize: menuFontSize,
+                                        fontWeight: FontWeight.w500,
+                                        height: 30 / 12,
+                                      ),
+                                      softWrap: false,
+                                      maxLines: 1,
                                     ),
                                   ),
-                                ),
-                              );
-                            }),
+                                );
+                              }),
+                            ),
                           ),
                         ),
 
@@ -2174,7 +2406,7 @@ class _SearchResultState extends State<SearchResult> {
       child: Row(
         children: [
           // "All" chip to clear filter
-          GestureDetector(
+          SmallTapEffect(
             onTap: () {
               setState(() {
                 selectedAirlineCode = null;
@@ -2211,7 +2443,7 @@ class _SearchResultState extends State<SearchResult> {
             final airlineCode = chip['airlineCode'] as String? ?? '';
             final isSelected = selectedAirlineCode == airlineCode;
 
-            return GestureDetector(
+            return SmallTapEffect(
               onTap: () {
                 setState(() {
                   if (selectedAirlineCode == airlineCode) {

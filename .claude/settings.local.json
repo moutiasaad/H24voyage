@@ -17,7 +17,9 @@
       "Bash(Remove-Item -Recurse -Force \"C:\\\\Users\\\\Moutia bensaad\\\\AndroidStudioProjects\\\\flight-booking-flutter-app-ui-kit-master\\\\android\\\\app\\\\build\" -ErrorAction SilentlyContinue)",
       "Bash(Write-Host \"Build folders deleted\")",
       "Bash(flutter doctor:*)",
-      "Bash(flutter run:*)"
+      "Bash(flutter run:*)",
+      "Bash(copy \"C:\\\\Users\\\\Moutia bensaad\\\\Downloads\\\\notif.JPG\" \"C:\\\\Users\\\\Moutia bensaad\\\\AndroidStudioProjects\\\\flight-booking-flutter-app-ui-kit-master\\\\assets\\\\notification_bell.png\")",
+      "Bash(cmd /c copy \"C:\\\\Users\\\\Moutia bensaad\\\\Downloads\\\\notif.JPG\" \"C:\\\\Users\\\\Moutia bensaad\\\\AndroidStudioProjects\\\\flight-booking-flutter-app-ui-kit-master\\\\assets\\\\notification_bell.png\")"
     ]
   }
 }

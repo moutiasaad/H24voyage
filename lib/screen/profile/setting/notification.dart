@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
-import 'package:nb_utils/nb_utils.dart';
 
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 
 class NotificationSc extends StatefulWidget {
   const NotificationSc({Key? key}) : super(key: key);
@@ -32,7 +32,10 @@ class _NotificationScState extends State<NotificationSc> {
             padding: EdgeInsets.zero,
             itemBuilder: (context) => [
               PopupMenuItem(
-                child: const Text('All Clear').onTap(() => Navigator.pop(context)),
+                child: SmallTapEffect(
+                  onTap: () => Navigator.pop(context),
+                  child: const Text('All Clear'),
+                ),
               ),
               // popupmenu item 2
             ],

@@ -144,7 +144,7 @@ class _PaymentState extends State<Payment> {
                         style: kTextStyle.copyWith(
                             color: kSubTitleColor, fontSize: 12.0),
                       ),
-                      trailing: GestureDetector(
+                      trailing: SmallTapEffect(
                         onTap: () {
                           setState(() {
                             showModalBottomSheet(
@@ -186,7 +186,7 @@ class _PaymentState extends State<Payment> {
                                                             FontWeight.bold),
                                                   ),
                                                   const Spacer(),
-                                                  GestureDetector(
+                                                  SmallTapEffect(
                                                     onTap: () {
                                                       setState(() {
                                                         finish(context);
@@ -600,7 +600,7 @@ class _PaymentState extends State<Payment> {
                 ),
               ),
               const SizedBox(height: 20.0),
-              GestureDetector(
+              SmallTapEffect(
                 onTap: () {
                   setState(() {
                     showModalBottomSheet(
@@ -638,7 +638,7 @@ class _PaymentState extends State<Payment> {
                                                 fontWeight: FontWeight.bold),
                                           ),
                                           const Spacer(),
-                                          GestureDetector(
+                                          SmallTapEffect(
                                             onTap: () {
                                               setState(() {
                                                 finish(context);

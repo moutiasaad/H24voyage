@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../widgets/constant.dart';
+import '../widgets/button_global.dart';
 import '../Authentication/welcome_screen.dart';
 import 'my_profile/my_profile.dart';
 import 'my_profile/edit_profile.dart';
@@ -13,6 +14,7 @@ import 'setting/notification.dart';
 import 'Privacy_Policy/privicy_policy.dart';
 import '../support/support_main.dart';
 import '../support/faq_screen.dart';
+import '../notification/notification_screen.dart';
 
 /// Model for menu items - dynamic structure for future API integration
 class ProfileMenuItem {
@@ -142,6 +144,12 @@ class _ProfileState extends State<Profile> {
         title: 'Coordonnées personnelles',
         iconAsset: 'assets/profileIcon.png',
         destination: const MyProfile(),
+      ),
+      ProfileMenuItem(
+        id: 'notifications',
+        title: 'Notifications',
+        icon: CupertinoIcons.bell_fill,
+        destination: const NotificationScreen(),
       ),
       ProfileMenuItem(
         id: 'travelers',
@@ -311,13 +319,16 @@ class _ProfileState extends State<Profile> {
       elevation: 0,
       backgroundColor: Colors.transparent,
       leadingWidth: 40,
-      leading: IconButton(
-        icon: const Icon(
-          CupertinoIcons.back,
-          color: Colors.white,
-          size: 24,
+      leading: SmallTapEffect(
+        onTap: () => Navigator.pop(context),
+        child: const Padding(
+          padding: EdgeInsets.all(12.0),
+          child: Icon(
+            CupertinoIcons.back,
+            color: Colors.white,
+            size: 24,
+          ),
         ),
-        onPressed: () => Navigator.pop(context),
       ),
       title: Text(
         _currentUser.fullName,
@@ -400,102 +411,99 @@ class _ProfileState extends State<Profile> {
 
   /// Builds a single menu item row
   Widget _buildMenuItem(ProfileMenuItem item, {bool showDivider = true}) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          if (item.destination != null) {
-            item.destination!.launch(context);
-          } else if (item.onTap != null) {
-            item.onTap!();
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  // Icon or Asset Image
-                  item.iconAsset != null
-                      ? Image.asset(
-                          item.iconAsset!,
-                          width: 28,
-                          height: 28,
-                        )
-                      : Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: kPrimaryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            item.icon,
-                            size: 18,
-                            color: kPrimaryColor,
-                          ),
+    return TappableCard(
+      onTap: () {
+        if (item.destination != null) {
+          item.destination!.launch(context);
+        } else if (item.onTap != null) {
+          item.onTap!();
+        }
+      },
+      scaleFactor: 0.98,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                // Icon or Asset Image
+                item.iconAsset != null
+                    ? Image.asset(
+                        item.iconAsset!,
+                        width: 28,
+                        height: 28,
+                      )
+                    : Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                  const SizedBox(width: 14),
+                        child: Icon(
+                          item.icon,
+                          size: 18,
+                          color: kPrimaryColor,
+                        ),
+                      ),
+                const SizedBox(width: 14),
 
-                  // Title
-                  Expanded(
+                // Title
+                Expanded(
+                  child: Text(
+                    item.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF1C1C1E),
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                ),
+
+                // Badge (if any)
+                if (item.badge != null) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: Text(
-                      item.title,
+                      item.badge!,
                       style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF1C1C1E),
-                        letterSpacing: -0.3,
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-
-                  // Badge (if any)
-                  if (item.badge != null) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        item.badge!,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-
-                  // Chevron
-                  const Icon(
-                    CupertinoIcons.chevron_right,
-                    size: 16,
-                    color: Color(0xFFC7C7CC),
-                  ),
+                  const SizedBox(width: 8),
                 ],
+
+                // Chevron
+                const Icon(
+                  CupertinoIcons.chevron_right,
+                  size: 16,
+                  color: Color(0xFFC7C7CC),
+                ),
+              ],
+            ),
+          ),
+
+          // Divider
+          if (showDivider)
+            Padding(
+              padding: const EdgeInsets.only(left: 62),
+              child: Container(
+                height: 0.5,
+                color: const Color(0xFFE5E5EA),
               ),
             ),
-
-            // Divider
-            if (showDivider)
-              Padding(
-                padding: const EdgeInsets.only(left: 62),
-                child: Container(
-                  height: 0.5,
-                  color: const Color(0xFFE5E5EA),
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -521,41 +529,33 @@ class _ProfileState extends State<Profile> {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _handleLogout,
+      child: TappableCard(
+        onTap: _handleLogout,
+        scaleFactor: 0.97,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFFFF0F0),
+              Color(0xFFFFE8E8),
+            ],
+          ),
           borderRadius: BorderRadius.circular(16),
-          splashColor: const Color(0xFFFFCDD2),
-          highlightColor: const Color(0xFFFCE4EC),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFFFFF0F0),
-                  Color(0xFFFFE8E8),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFFFFCDD2).withOpacity(0.3),
-                width: 1,
-              ),
-            ),
-            child: const Center(
-              child: Text(
-                'Se déconnecter',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFE53935),
-                  letterSpacing: 0.2,
-                ),
-              ),
+          border: Border.all(
+            color: const Color(0xFFFFCDD2).withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: const Center(
+          child: Text(
+            'Se déconnecter',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFFE53935),
+              letterSpacing: 0.2,
             ),
           ),
         ),

@@ -1,8 +1,8 @@
 import 'package:flight_booking/screen/Authentication/sign_up_screen.dart';
+import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
@@ -16,9 +16,6 @@ class WelcomeScreen extends StatefulWidget {
 }
 
 class _WelcomeScreenState extends State<WelcomeScreen> {
-  bool _isEmailPressed = false;
-  bool _isGooglePressed = false;
-
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -117,65 +114,52 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Primary Button - Email Login
-                      GestureDetector(
-                        onTapDown: (_) {
-                          setState(() => _isEmailPressed = true);
-                          HapticFeedback.lightImpact();
-                        },
-                        onTapUp: (_) {
-                          setState(() => _isEmailPressed = false);
-                          const SignUp().launch(context);
-                        },
-                        onTapCancel: () => setState(() => _isEmailPressed = false),
-                        child: AnimatedScale(
-                          scale: _isEmailPressed ? 0.97 : 1.0,
-                          duration: const Duration(milliseconds: 100),
-                          child: Container(
-                            width: double.infinity,
-                            height: buttonHeight,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFF6A00),
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.15),
-                                  blurRadius: 14,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                      TappableCard(
+                        onTap: () => const SignUp().launch(context),
+                        scaleFactor: 0.97,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF6A00),
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 14,
+                              offset: const Offset(0, 4),
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/e-mail 2.png',
-                                    width: 22,
-                                    height: 22,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Icon(
-                                        Icons.email_outlined,
-                                        color: kWhite,
-                                        size: 22,
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Flexible(
-                                    child: Text(
-                                      'Continuer via l\'adresse e-mail',
-                                      style: GoogleFonts.poppins(
-                                        color: kWhite,
-                                        fontSize: buttonTextSize,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
+                          ],
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          height: buttonHeight,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/e-mail 2.png',
+                                width: 22,
+                                height: 22,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(
+                                    Icons.email_outlined,
+                                    color: kWhite,
+                                    size: 22,
+                                  );
+                                },
                               ),
-                            ),
+                              const SizedBox(width: 10),
+                              Flexible(
+                                child: Text(
+                                  'Continuer via l\'adresse e-mail',
+                                  style: GoogleFonts.poppins(
+                                    color: kWhite,
+                                    fontSize: buttonTextSize,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -183,61 +167,48 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       SizedBox(height: isVerySmallScreen ? 10 : 14),
 
                       // Secondary Button - Google Login
-                      GestureDetector(
-                        onTapDown: (_) {
-                          setState(() => _isGooglePressed = true);
-                          HapticFeedback.lightImpact();
-                        },
-                        onTapUp: (_) {
-                          setState(() => _isGooglePressed = false);
-                          const Home().launch(context);
-                        },
-                        onTapCancel: () => setState(() => _isGooglePressed = false),
-                        child: AnimatedScale(
-                          scale: _isGooglePressed ? 0.97 : 1.0,
-                          duration: const Duration(milliseconds: 100),
-                          child: Container(
-                            width: double.infinity,
-                            height: buttonHeight,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF2F2F2),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset(
-                                    'assets/gmail 2.png',
-                                    width: 22,
-                                    height: 22,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return const Text(
-                                        'G',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Flexible(
-                                    child: Text(
-                                      'Continuer avec Google',
-                                      style: GoogleFonts.poppins(
-                                        color: const Color(0xFF333333),
-                                        fontSize: buttonTextSize,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                      TappableCard(
+                        onTap: () => const Home().launch(context),
+                        scaleFactor: 0.97,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF2F2F2),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          height: buttonHeight,
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Image.asset(
+                                'assets/gmail 2.png',
+                                width: 22,
+                                height: 22,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Text(
+                                    'G',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.red,
                                     ),
-                                  ),
-                                ],
+                                  );
+                                },
                               ),
-                            ),
+                              const SizedBox(width: 10),
+                              Flexible(
+                                child: Text(
+                                  'Continuer avec Google',
+                                  style: GoogleFonts.poppins(
+                                    color: const Color(0xFF333333),
+                                    fontSize: buttonTextSize,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

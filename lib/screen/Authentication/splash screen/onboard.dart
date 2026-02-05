@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 import '../welcome_screen.dart';
 
 class OnBoard extends StatefulWidget {
@@ -50,7 +51,7 @@ class _OnBoardState extends State<OnBoard> {
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: GestureDetector(
+                child: SmallTapEffect(
                   onTap: () => Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const WelcomeScreen()),
@@ -202,31 +203,18 @@ class _OnBoardState extends State<OnBoard> {
             // Continue button
             Padding(
               padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 50),
-              child: GestureDetector(
+              child: TappableCard(
                 onTap: () => Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => const WelcomeScreen()),
                 ),
-                // onTap: () {
-                //   // if (currentIndexPage < onboardingData.length - 1) {
-                //   //   pageController.nextPage(
-                //   //     duration: const Duration(milliseconds: 300),
-                //   //     curve: Curves.easeInOut,
-                //   //   );
-                //   // } else {
-                //   //   Navigator.pushReplacement(
-                //   //     context,
-                //   //     MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-                //   //   );
-                //   // }
-                // },
-                child: Container(
+                decoration: BoxDecoration(
+                  color: kPrimaryColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: SizedBox(
                   width: double.infinity,
                   height: 52,
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
                   child: Center(
                     child: Text(
                       'Continuer',

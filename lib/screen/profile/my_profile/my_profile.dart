@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'dart:io';
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 
 class MyProfile extends StatefulWidget {
@@ -111,18 +112,21 @@ class _MyProfileState extends State<MyProfile> {
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: kWhite),
+                  SmallTapEffect(
+                    onTap: getImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: kWhite),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_outlined,
+                        size: 17,
+                        color: kWhite,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.camera_alt_outlined,
-                      size: 17,
-                      color: kWhite,
-                    ).onTap(getImage),
                   ),
                 ],
               ),

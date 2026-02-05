@@ -115,7 +115,7 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
           backgroundColor: kPrimaryColor,
           centerTitle: true,
           title: Text(lang.S.of(context).filter),
-          leading: GestureDetector(
+          leading: SmallTapEffect(
             onTap: () => Navigator.pop(context),
             child: const Icon(
               FeatherIcons.x,
@@ -289,7 +289,7 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                             itemCount: departureTime.length,
                             physics: const NeverScrollableScrollPhysics(),
                             itemBuilder: (_, i) {
-                              return GestureDetector(
+                              return TappableCard(
                                 onTap: () {
                                   setState(() {
                                     selectedDepartureTime = departureTime[i];
@@ -302,33 +302,33 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                                         : null;
                                   });
                                 },
-                                child: Container(
-                                  width: 79,
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
+                                decoration: BoxDecoration(
+                                  color: selectedDepartureTime ==
+                                          departureTime[i]
+                                      ? kPrimaryColor
+                                      : kWhite,
+                                  border: Border.all(
                                     color: selectedDepartureTime ==
                                             departureTime[i]
                                         ? kPrimaryColor
-                                        : kWhite,
-                                    border: Border.all(
-                                      color: selectedDepartureTime ==
-                                              departureTime[i]
-                                          ? kPrimaryColor
-                                          : kBorderColorTextField,
-                                    ),
-                                    borderRadius: i == 0
-                                        ? const BorderRadius.only(
-                                            topLeft: Radius.circular(4.0),
-                                            bottomLeft: Radius.circular(4.0),
-                                          )
-                                        : i == 3
-                                            ? const BorderRadius.only(
-                                                topRight: Radius.circular(4.0),
-                                                bottomRight:
-                                                    Radius.circular(4.0),
-                                              )
-                                            : BorderRadius.circular(0.0),
+                                        : kBorderColorTextField,
                                   ),
+                                  borderRadius: i == 0
+                                      ? const BorderRadius.only(
+                                          topLeft: Radius.circular(4.0),
+                                          bottomLeft: Radius.circular(4.0),
+                                        )
+                                      : i == 3
+                                          ? const BorderRadius.only(
+                                              topRight: Radius.circular(4.0),
+                                              bottomRight:
+                                                  Radius.circular(4.0),
+                                            )
+                                          : BorderRadius.circular(0.0),
+                                ),
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 63,
                                   child: Column(
                                     children: [
                                       Icon(
@@ -390,7 +390,7 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                             itemCount: departureTime.length,
                             physics: const NeverScrollableScrollPhysics(),
                             itemBuilder: (_, i) {
-                              return GestureDetector(
+                              return TappableCard(
                                 onTap: () {
                                   setState(() {
                                     selectedArrivalTime = arrivalTime[i];
@@ -403,32 +403,32 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                                         : null;
                                   });
                                 },
-                                child: Container(
-                                  width: 79,
-                                  padding: const EdgeInsets.all(8.0),
-                                  decoration: BoxDecoration(
-                                    color: selectedArrivalTime == arrivalTime[i]
-                                        ? kPrimaryColor
-                                        : kWhite,
-                                    border: Border.all(
-                                      color:
-                                          selectedArrivalTime == arrivalTime[i]
-                                              ? kPrimaryColor
-                                              : kBorderColorTextField,
-                                    ),
-                                    borderRadius: i == 0
-                                        ? const BorderRadius.only(
-                                            topLeft: Radius.circular(4.0),
-                                            bottomLeft: Radius.circular(4.0),
-                                          )
-                                        : i == 3
-                                            ? const BorderRadius.only(
-                                                topRight: Radius.circular(4.0),
-                                                bottomRight:
-                                                    Radius.circular(4.0),
-                                              )
-                                            : BorderRadius.circular(0.0),
+                                decoration: BoxDecoration(
+                                  color: selectedArrivalTime == arrivalTime[i]
+                                      ? kPrimaryColor
+                                      : kWhite,
+                                  border: Border.all(
+                                    color:
+                                        selectedArrivalTime == arrivalTime[i]
+                                            ? kPrimaryColor
+                                            : kBorderColorTextField,
                                   ),
+                                  borderRadius: i == 0
+                                      ? const BorderRadius.only(
+                                          topLeft: Radius.circular(4.0),
+                                          bottomLeft: Radius.circular(4.0),
+                                        )
+                                      : i == 3
+                                          ? const BorderRadius.only(
+                                              topRight: Radius.circular(4.0),
+                                              bottomRight:
+                                                  Radius.circular(4.0),
+                                            )
+                                          : BorderRadius.circular(0.0),
+                                ),
+                                padding: const EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  width: 63,
                                   child: Column(
                                     children: [
                                       Icon(

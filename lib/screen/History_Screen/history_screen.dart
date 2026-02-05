@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../generated/l10n.dart' as lang;
+import '../widgets/button_global.dart';
 import '../widgets/constant.dart';
 
 class History extends StatefulWidget {
@@ -128,7 +129,7 @@ class _HistoryState extends State<History> {
                                           decoration: const BoxDecoration(shape: BoxShape.circle, color: kWhite),
                                           child: Padding(
                                             padding: const EdgeInsets.all(8.0),
-                                            child: InkWell(
+                                            child: SmallTapEffect(
                                                 onTap: () {
                                                   setState(() {
                                                     showDialog(

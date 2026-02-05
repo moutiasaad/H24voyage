@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../ticket status/ticket_status.dart';
+import '../widgets/button_global.dart';
 
 class MyBooking extends StatefulWidget {
   const MyBooking({Key? key}) : super(key: key);
@@ -173,7 +174,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
         child: Row(
           children: [
             // Back button
-            GestureDetector(
+            SmallTapEffect(
               onTap: () => Navigator.pop(context),
               child: Container(
                 width: 44,
@@ -198,7 +199,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
             ),
             const Spacer(),
             // Add button
-            GestureDetector(
+            SmallTapEffect(
               onTap: () {
                 // Navigate to add reservation
               },
@@ -237,7 +238,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: List.generate(tabs.length, (index) {
           final isSelected = _selectedTabIndex == index;
-          return GestureDetector(
+          return SmallTapEffect(
             onTap: () {
               setState(() {
                 _selectedTabIndex = index;
@@ -320,18 +321,17 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
   }
 
   Widget _buildReservationCard(Reservation reservation) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const TicketStatus(),
-          ),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        padding: const EdgeInsets.all(14),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: TappableCard(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const TicketStatus(),
+            ),
+          );
+        },
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -344,6 +344,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
             ),
           ],
         ),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -589,7 +590,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
           ),
         ),
         // Details link
-        GestureDetector(
+        SmallTapEffect(
           onTap: () {
             Navigator.push(
               context,

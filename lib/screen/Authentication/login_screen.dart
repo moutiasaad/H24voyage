@@ -53,9 +53,12 @@ class _LogInState extends State<LogIn> {
         backgroundColor: kWebsiteGreyBg,
         centerTitle: true,
         title: Text(lang.S.of(context).loginButton),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: SmallTapEffect(
+          onTap: () => Navigator.pop(context),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
+          ),
         ),
       ),
       body: GestureDetector(
@@ -177,7 +180,7 @@ class _LogInState extends State<LogIn> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        GestureDetector(
+                        SmallTapEffect(
                           onTap: () => const ForgotPassword().launch(context),
                           child: Text(
                             lang.S.of(context).forgotPassword,
@@ -268,7 +271,7 @@ class _LogInState extends State<LogIn> {
         child: SafeArea(
           child: SizedBox(
             height: isVerySmallScreen ? 44 : 50,
-            child: GestureDetector(
+            child: SmallTapEffect(
               onTap: () => const SignUp().launch(context),
               child: Center(
                 child: RichText(

@@ -97,19 +97,52 @@ class FlightService {
       final uri = Uri.parse('${ApiConfig.baseUrl}${ApiConfig.flightResults}')
           .replace(queryParameters: request.toQueryParams());
 
+      // Log request details
+      debugPrint('╔══════════════════════════════════════════════════════════');
+      debugPrint('║ API REQUEST - Flight Results (Pagination)');
+      debugPrint('╠══════════════════════════════════════════════════════════');
+      debugPrint('║ URL: $uri');
+      debugPrint('║ Method: GET');
+      debugPrint('║ Query Params: ${request.toQueryParams()}');
+      debugPrint('╚══════════════════════════════════════════════════════════');
+
       final response = await http.get(
         uri,
         headers: ApiConfig.authHeaders,
       );
 
+      // Log response details
+      debugPrint('╔══════════════════════════════════════════════════════════');
+      debugPrint('║ API RESPONSE - Flight Results (Pagination)');
+      debugPrint('╠══════════════════════════════════════════════════════════');
+      debugPrint('║ Status Code: ${response.statusCode}');
+      debugPrint('╚══════════════════════════════════════════════════════════');
+
       // Accept 200 and 201 as success status codes
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonData = json.decode(response.body);
-        return FlightResultsResponse.fromJson(jsonData);
+        final parsedResponse = FlightResultsResponse.fromJson(jsonData);
+
+        debugPrint('╔══════════════════════════════════════════════════════════');
+        debugPrint('║ PARSED - Flight Results');
+        debugPrint('╠══════════════════════════════════════════════════════════');
+        debugPrint('║ Offers count: ${parsedResponse.offers.length}');
+        debugPrint('║ Current page: ${parsedResponse.currentPage}');
+        debugPrint('║ Total pages: ${parsedResponse.totalPages}');
+        debugPrint('║ Total: ${parsedResponse.total}');
+        debugPrint('║ Per page: ${parsedResponse.perPage}');
+        debugPrint('╚══════════════════════════════════════════════════════════');
+
+        return parsedResponse;
       } else {
         throw Exception('Failed to get results: ${response.statusCode}');
       }
     } catch (e) {
+      debugPrint('╔══════════════════════════════════════════════════════════');
+      debugPrint('║ API ERROR - Flight Results');
+      debugPrint('╠══════════════════════════════════════════════════════════');
+      debugPrint('║ Error: $e');
+      debugPrint('╚══════════════════════════════════════════════════════════');
       throw Exception('Error getting results: $e');
     }
   }

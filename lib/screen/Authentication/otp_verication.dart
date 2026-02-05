@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import '../widgets/constant.dart';
+import '../widgets/button_global.dart';
 
 class OtpVerification extends StatefulWidget {
   const OtpVerification({Key? key}) : super(key: key);
@@ -48,9 +49,12 @@ class _OtpVerificationState extends State<OtpVerification> {
       appBar: AppBar(
         backgroundColor: kWhite,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: SmallTapEffect(
+          onTap: () => Navigator.pop(context),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
+          ),
         ),
       ),
       body: SafeArea(
@@ -191,7 +195,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                 SizedBox(height: isVerySmallScreen ? 24 : 32),
 
                 // Verify button
-                GestureDetector(
+                TappableCard(
                   onTap: () {
                     FocusScope.of(context).unfocus();
                     Navigator.pushReplacement(
@@ -199,13 +203,13 @@ class _OtpVerificationState extends State<OtpVerification> {
                       MaterialPageRoute(builder: (context) => const Home()),
                     );
                   },
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAEAEA),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Container(
                     width: double.infinity,
                     height: buttonHeight,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAEAEA),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                     child: Center(
                       child: Text(
                         'Vérifier l\'adresse e-mail',
@@ -222,17 +226,17 @@ class _OtpVerificationState extends State<OtpVerification> {
                 SizedBox(height: isVerySmallScreen ? 10 : 14),
 
                 // Resend code button
-                GestureDetector(
+                TappableCard(
                   onTap: () {
                     // Resend code logic
                   },
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F0F0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Container(
                     width: double.infinity,
                     height: buttonHeight,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0F0F0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                     child: Center(
                       child: Text(
                         'Recevoir un nouveau code',
