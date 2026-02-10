@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/constant.dart';
+import '../widgets/button_global.dart';
 import 'create_ticket.dart';
 import 'package:nb_utils/nb_utils.dart';
 
@@ -300,9 +301,12 @@ class _FaqScreenState extends State<FaqScreen> {
       leadingWidth: 56,
       leading: Padding(
         padding: const EdgeInsets.only(left: 8),
-        child: IconButton(
-          icon: const Icon(CupertinoIcons.back, color: Colors.white, size: 24),
-          onPressed: () => Navigator.pop(context),
+        child: SmallTapEffect(
+          onTap: () => Navigator.pop(context),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Icon(CupertinoIcons.back, color: Colors.white, size: 24),
+          ),
         ),
       ),
       title: Text(
@@ -421,39 +425,35 @@ class _FaqScreenState extends State<FaqScreen> {
   }) {
     final isSelected = _selectedCategoryId == id;
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => setState(() => _selectedCategoryId = id),
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? color : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isSelected ? color : kBorderColorTextField,
+    return SmallTapEffect(
+      onTap: () => setState(() => _selectedCategoryId = id),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? color : kBorderColorTextField,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : color,
             ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 16,
-                color: isSelected ? Colors.white : color,
+            const SizedBox(width: 6),
+            Text(
+              title,
+              style: GoogleFonts.jost(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isSelected ? Colors.white : kTitleColor,
               ),
-              const SizedBox(width: 6),
-              Text(
-                title,
-                style: GoogleFonts.jost(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isSelected ? Colors.white : kTitleColor,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

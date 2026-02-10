@@ -93,7 +93,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                 fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
-                          GestureDetector(
+                          SmallTapEffect(
                             onTap: () {
                               setState(() {
                                 Navigator.pop(context);

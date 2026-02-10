@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'button_global.dart';
 
 class SocialIcon extends StatelessWidget {
   const SocialIcon({
@@ -8,25 +9,30 @@ class SocialIcon extends StatelessWidget {
     required this.iconColor,
     required this.icon,
     required this.borderColor,
+    this.onTap,
   }) : super(key: key);
   final IconData icon;
   final Color bgColor;
   final Color iconColor;
   final Color borderColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 50,
-      width: 50,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.0),
-        border: Border.all(color: borderColor),
-        color: bgColor,
-      ),
-      child: Icon(
-        icon,
-        color: iconColor,
+    return SmallTapEffect(
+      onTap: onTap,
+      child: Container(
+        height: 50,
+        width: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.0),
+          border: Border.all(color: borderColor),
+          color: bgColor,
+        ),
+        child: Icon(
+          icon,
+          color: iconColor,
+        ),
       ),
     );
   }

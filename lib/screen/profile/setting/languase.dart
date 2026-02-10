@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/provider/providers.dart';
 
@@ -66,38 +67,39 @@ class _LanguageState extends State<Language> {
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 10.0),
-              child: Card(
-                elevation: 1.3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(
-                      color: kBorderColorTextField, width: 0.5),
-                ),
-                child: ListTile(
-                  onTap: () {
-                    setState(() {
-                      selectedCode = item["code"]!;
-                    });
+              child: TappableCard(
+                onTap: () {
+                  setState(() {
+                    selectedCode = item["code"]!;
+                  });
 
-                    languageProvider
-                        .changeLocale(item["code"]!);
-                  },
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10.0),
-                  title: Text(
-                    item["name"]!,
-                    style: kTextStyle.copyWith(
+                  languageProvider.changeLocale(item["code"]!);
+                },
+                child: Card(
+                  elevation: 1.3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(
+                        color: kBorderColorTextField, width: 0.5),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    title: Text(
+                      item["name"]!,
+                      style: kTextStyle.copyWith(
+                        color: isSelected
+                            ? kTitleColor
+                            : kSubTitleColor,
+                      ),
+                    ),
+                    trailing: Icon(
+                      isSelected
+                          ? Icons.radio_button_checked
+                          : Icons.circle_outlined,
                       color: isSelected
-                          ? kTitleColor
+                          ? kPrimaryColor
                           : kSubTitleColor,
                     ),
-                  ),
-                  trailing: Icon(
-                    isSelected
-                        ? Icons.radio_button_checked
-                        : Icons.circle_outlined,
-                    color: isSelected
-                        ? kPrimaryColor
-                        : kSubTitleColor,
                   ),
                 ),
               ),

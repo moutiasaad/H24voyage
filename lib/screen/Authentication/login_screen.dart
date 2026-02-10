@@ -1,4 +1,5 @@
-import 'package:flight_booking/screen/Authentication/sign_up_screen.dart';
+import 'package:flight_booking/screen/Authentication/register_screen.dart' as reg_scr;
+import 'package:flight_booking/screen/Authentication/sign_up_screen.dart' as sign_up_scr;
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
@@ -53,9 +54,12 @@ class _LogInState extends State<LogIn> {
         backgroundColor: kWebsiteGreyBg,
         centerTitle: true,
         title: Text(lang.S.of(context).loginButton),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: SmallTapEffect(
+          onTap: () => Navigator.pop(context),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
+          ),
         ),
       ),
       body: GestureDetector(
@@ -177,7 +181,7 @@ class _LogInState extends State<LogIn> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        GestureDetector(
+                        SmallTapEffect(
                           onTap: () => const ForgotPassword().launch(context),
                           child: Text(
                             lang.S.of(context).forgotPassword,
@@ -204,6 +208,31 @@ class _LogInState extends State<LogIn> {
                         const Home().launch(context);
                       },
                       buttonTextColor: kWhite,
+                    ),
+                    SizedBox(height: isVerySmallScreen ? 12 : 16),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Vous n’avez pas de compte ? ", // "Vous n’avez pas de compte ? "
+                          style: kTextStyle.copyWith(
+                            color: kSubTitleColor,
+                            fontSize: isVerySmallScreen ? 13.0 : 14.0,
+                          ),
+                        ),
+                        TapEffect(
+                          onTap: () => const reg_scr.RegisterScreen().launch(context),
+                          child: Text(
+                            "Inscrivez vous", // "Inscrivez vous"
+                            style: kTextStyle.copyWith(
+                              color: kPrimaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: isVerySmallScreen ? 13.0 : 14.0,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
 
                     // Flexible space
@@ -268,8 +297,8 @@ class _LogInState extends State<LogIn> {
         child: SafeArea(
           child: SizedBox(
             height: isVerySmallScreen ? 44 : 50,
-            child: GestureDetector(
-              onTap: () => const SignUp().launch(context),
+            child: SmallTapEffect(
+              onTap: () => const sign_up_scr.SignUp().launch(context),
               child: Center(
                 child: RichText(
                   text: TextSpan(

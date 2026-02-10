@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
+import 'package:flight_booking/screen/widgets/button_global.dart';
 
 class CustomDatePicker extends StatefulWidget {
   final DateTime? initialStartDate;
@@ -118,7 +119,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                 ),
                 Positioned(
                   right: 0,
-                  child: GestureDetector(
+                  child: SmallTapEffect(
                     onTap: () => Navigator.pop(context),
                     child: const Icon(Icons.close, color: kPrimaryColor),
                   ),
@@ -378,7 +379,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   final showGreyOnRight = (departureDate != null && returnDate != null) && (inRange || isDeparture) && !isReturn;
 
                   return Expanded(
-                    child: GestureDetector(
+                    child: SmallTapEffect(
                       onTap: isBeforeToday ? null : () => _onDaySelected(date),
                       child: Stack(
                         children: [

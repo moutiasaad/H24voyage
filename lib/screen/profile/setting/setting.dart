@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 
 class Setting extends StatefulWidget {
   const Setting({Key? key}) : super(key: key);
@@ -105,39 +106,41 @@ class _SettingState extends State<Setting> {
             ),
 
             // 🔔 Notification
-            Card(
-              elevation: 1.3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: const BorderSide(color: kBorderColorTextField, width: 0.5),
-              ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.only(left: 10),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const NotificationSc()),
-                  );
-                },
-                leading: Container(
-                  height: 34,
-                  width: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xffFF3B30).withOpacity(0.1),
-                  ),
-                  child: const Icon(
-                    IconlyBold.notification,
-                    color: Color(0xffFF3B30),
-                  ),
+            TappableCard(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationSc()),
+                );
+              },
+              child: Card(
+                elevation: 1.3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: kBorderColorTextField, width: 0.5),
                 ),
-                title: Text(t.notificationTitle),
-                trailing: Switch(
-                  activeColor: kPrimaryColor,
-                  value: notificationEnabled,
-                  onChanged: (val) {
-                    setState(() => notificationEnabled = val);
-                  },
+                child: ListTile(
+                  contentPadding: const EdgeInsets.only(left: 10),
+                  leading: Container(
+                    height: 34,
+                    width: 34,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xffFF3B30).withOpacity(0.1),
+                    ),
+                    child: const Icon(
+                      IconlyBold.notification,
+                      color: Color(0xffFF3B30),
+                    ),
+                  ),
+                  title: Text(t.notificationTitle),
+                  trailing: Switch(
+                    activeColor: kPrimaryColor,
+                    value: notificationEnabled,
+                    onChanged: (val) {
+                      setState(() => notificationEnabled = val);
+                    },
+                  ),
                 ),
               ),
             ),
@@ -157,32 +160,34 @@ class _SettingState extends State<Setting> {
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Card(
-        elevation: 1.3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: kBorderColorTextField, width: 0.5),
-        ),
-        child: ListTile(
-          onTap: onTap,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-          leading: Container(
-            height: 34,
-            width: 34,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
-            child: Icon(icon, color: iconColor),
+      child: TappableCard(
+        onTap: onTap,
+        child: Card(
+          elevation: 1.3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: const BorderSide(color: kBorderColorTextField, width: 0.5),
           ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(title, style: kTextStyle.copyWith(color: kTitleColor)),
-              Text(
-                value,
-                style: kTextStyle.copyWith(color: kSubTitleColor, fontSize: 12),
-              ),
-            ],
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+            leading: Container(
+              height: 34,
+              width: 34,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: bg),
+              child: Icon(icon, color: iconColor),
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(title, style: kTextStyle.copyWith(color: kTitleColor)),
+                Text(
+                  value,
+                  style: kTextStyle.copyWith(color: kSubTitleColor, fontSize: 12),
+                ),
+              ],
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: kSubTitleColor),
           ),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: kSubTitleColor),
         ),
       ),
     );

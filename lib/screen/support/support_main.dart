@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../widgets/constant.dart';
+import '../widgets/button_global.dart';
 import 'create_ticket.dart';
 import 'ticket_detail.dart';
 import 'faq_screen.dart';
@@ -167,7 +168,7 @@ class _SupportMainState extends State<SupportMain> {
       ),
       child: Row(
         children: [
-          GestureDetector(
+          SmallTapEffect(
             onTap: () => Navigator.pop(context),
             child: const Icon(
               Icons.arrow_back,
@@ -202,7 +203,7 @@ class _SupportMainState extends State<SupportMain> {
       child: Row(
         children: [
           // Helpdesk Chip (selected)
-          GestureDetector(
+          SmallTapEffect(
             onTap: () => const FaqScreen().launch(context),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
@@ -231,33 +232,35 @@ class _SupportMainState extends State<SupportMain> {
           SizedBox(width: spacing),
 
           // Filter Chip
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE0E0E0)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.tune, color: kSubTitleColor, size: iconSize),
-                SizedBox(width: isSmallScreen ? 4 : 8),
-                Text(
-                  'Filtrer',
-                  style: GoogleFonts.poppins(
-                    color: kSubTitleColor,
-                    fontSize: fontSize,
-                    fontWeight: FontWeight.w500,
+          SmallTapEffect(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE0E0E0)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.tune, color: kSubTitleColor, size: iconSize),
+                  SizedBox(width: isSmallScreen ? 4 : 8),
+                  Text(
+                    'Filtrer',
+                    style: GoogleFonts.poppins(
+                      color: kSubTitleColor,
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           SizedBox(width: spacing),
 
           // Ticket Chip
-          GestureDetector(
+          SmallTapEffect(
             onTap: () => const CreateTicket().launch(context),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
@@ -324,7 +327,7 @@ class _SupportMainState extends State<SupportMain> {
         children: List.generate(_tabs.length, (index) {
           final isSelected = _selectedTabIndex == index;
           return Expanded(
-            child: GestureDetector(
+            child: SmallTapEffect(
               onTap: () {
                 setState(() => _selectedTabIndex = index);
               },
@@ -382,22 +385,22 @@ class _SupportMainState extends State<SupportMain> {
     final avatarSize = isSmallScreen ? 28.0 : 32.0;
     final iconSize = isSmallScreen ? 14.0 : 16.0;
 
-    return GestureDetector(
+    return TappableCard(
       onTap: () => TicketDetail(ticketId: ticket.id).launch(context),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(cardPadding),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: EdgeInsets.all(cardPadding),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

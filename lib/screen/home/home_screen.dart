@@ -15,9 +15,10 @@ import '../../controllers/flight_controller.dart';
 import '../../models/models.dart';
 import '../search/search.dart';
 import '../search/search_result.dart';
-import '../widgets/button_global.dart';
+import 'package:flight_booking/screen/widgets/button_global.dart';
 import '../widgets/CustomDatePicker.dart';
 import '../widgets/flight_search_loading.dart';
+import '../notification/notification_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -247,6 +248,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     : null,
                 flightOffers: _flightController.offers,
                 isOneWay: true,
+                searchCode: _flightController.searchCode,
               ).launch(context);
             } else {
               toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
@@ -292,6 +294,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 dateRange: _selectedDateRange,
                 flightOffers: _flightController.offers,
                 isOneWay: false,
+                searchCode: _flightController.searchCode,
               ).launch(context);
             } else {
               toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
@@ -393,6 +396,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           flightOffers: _flightController.offers,
           isOneWay: false,
           isMultiDestination: true,
+          searchCode: _flightController.searchCode,
         ).launch(context);
       }
     } catch (e) {
@@ -428,7 +432,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                           ),
-                          builder: (_) => const SearchBottomSheet(),
+                          builder: (_) => const SearchBottomSheet(isDestination: false),
                         );
 
                         if (result != null) {
@@ -494,7 +498,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                           ),
-                          builder: (_) => const SearchBottomSheet(),
+                          builder: (_) => const SearchBottomSheet(isDestination: true),
                         );
 
                         if (result != null) {
@@ -802,16 +806,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           fit: BoxFit.contain,
                                         ),
                                       ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFFE14900),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.notifications,
-                                          color: Colors.white,
-                                          size: 24,
+                                      SmallTapEffect(
+                                        onTap: () => const NotificationScreen().launch(context),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10.0),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFE14900),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.notifications,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -871,7 +878,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             children: [
                               TabBar(
                                 controller: tabController,
-                                labelPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                labelPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0), // Added vertical padding for clickable area
                                 labelStyle: kTextStyle.copyWith(
                                   color: kTitleColor,
                                   fontSize: 15,
@@ -889,17 +896,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 indicatorWeight: 4.0,
                                 indicatorSize: TabBarIndicatorSize.label,
                                 dividerColor: Colors.transparent,
-                                indicator: BoxDecoration(
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(3.0),
-                                    topRight: Radius.circular(3.0),
+                                indicator: UnderlineTabIndicator(
+                                  borderSide: BorderSide(
+                                    color: kPrimaryColor,
+                                    width: 4.0,
                                   ),
-                                  border: const Border(
-                                    bottom: BorderSide(
-                                      color: kPrimaryColor,
-                                      width: 4.0,
-                                    ),
-                                  ),
+                                  borderRadius: BorderRadius.circular(3.0),
+                                  insets: const EdgeInsets.only(bottom: 8.0), // Controls space between text and indicator
                                 ),
                                 onTap: (index) {
                                   setState(() {
@@ -913,16 +916,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 },
                                 tabs: [
                                   Tab(
-                                    height: 32,
-                                    text: lang.S.of(context).tab2,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4.0), // Adjust horizontal spacing
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        lang.S.of(context).tab2,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
                                   ),
                                   Tab(
-                                    height: 32,
-                                    text: lang.S.of(context).tab1,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        lang.S.of(context).tab1,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
                                   ),
                                   Tab(
-                                    height: 32,
-                                    text: lang.S.of(context).tab3,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        lang.S.of(context).tab3,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -934,135 +955,127 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     children: [
                                   Column(
                                     children: [
-                                      Container(
+                                      TappableCard(
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFF5F5F5),
                                           borderRadius: BorderRadius.circular(8.0),
                                         ),
-                                        child: InkWell(
-                                          onTap: () async {
-                                            final result = await showModalBottomSheet<Airport>(
-                                              context: context,
-                                              isScrollControlled: true,
-                                              backgroundColor: Colors.transparent,
-                                              shape: const RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                                              ),
-                                              builder: (_) => const SearchBottomSheet(),
-                                            );
-
-                                            if (result != null) {
-                                              setState(() {
-                                                fromAirport = result;
-                                              });
-                                            }
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-                                            child: Row(
-                                              children: [
-                                                const Icon(
-                                                  Icons.flight_takeoff,
-                                                  color: kPrimaryColor,
-                                                  size: 26,
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      Text(
-                                                        'Lieu de départ',
-                                                        style: kTextStyle.copyWith(
-                                                          color: Colors.grey.shade600,
-                                                          fontSize: 13,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 2),
-                                                      Text(
-                                                        fromAirport != null
-                                                            ? '${fromAirport!.city} (${fromAirport!.code}- tous les aéroports)'
-                                                            : 'Paris (PAR- tous les aéroports)',
-                                                        style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontSize: 13,
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
+                                        onTap: () async {
+                                          final result = await showModalBottomSheet<Airport>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                                             ),
-                                          ),
+                                            builder: (_) => const SearchBottomSheet(isDestination: false),
+                                          );
+
+                                          if (result != null) {
+                                            setState(() {
+                                              fromAirport = result;
+                                            });
+                                          }
+                                        },
+                                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.flight_takeoff,
+                                              color: kPrimaryColor,
+                                              size: 26,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    'Lieu de départ',
+                                                    style: kTextStyle.copyWith(
+                                                      color: Colors.grey.shade600,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    fromAirport != null
+                                                        ? '${fromAirport!.city} (${fromAirport!.code}- tous les aéroports)'
+                                                        : 'Paris (PAR- tous les aéroports)',
+                                                    style: kTextStyle.copyWith(
+                                                      color: kTitleColor,
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                       const SizedBox(height: 12), // Space between the two inputs
-                                      Container(
+                                      TappableCard(
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFF5F5F5),
                                           borderRadius: BorderRadius.circular(8.0),
                                         ),
-                                        child: InkWell(
-                                          onTap: () async {
-                                            final result = await showModalBottomSheet<Airport>(
-                                              context: context,
-                                              isScrollControlled: true,
-                                              backgroundColor: Colors.transparent,
-                                              shape: const RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                                              ),
-                                              builder: (_) => const SearchBottomSheet(),
-                                            );
-
-                                            if (result != null) {
-                                              setState(() {
-                                                toAirport = result;
-                                              });
-                                            }
-                                          },
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-                                            child: Row(
-                                              children: [
-                                                const Icon(
-                                                  Icons.flight_land,
-                                                  color: kPrimaryColor,
-                                                  size: 26,
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    mainAxisSize: MainAxisSize.min,
-                                                    children: [
-                                                      Text(
-                                                        'Destination',
-                                                        style: kTextStyle.copyWith(
-                                                          color: Colors.grey.shade600,
-                                                          fontSize: 13,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 2),
-                                                      Text(
-                                                        toAirport != null
-                                                            ? '${toAirport!.city} (${toAirport!.code}-aéroport ..)'
-                                                            : 'Tunis (TUN-aéroport ..)',
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow.ellipsis,
-                                                        style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontSize: 13,
-                                                          fontWeight: FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
+                                        onTap: () async {
+                                          final result = await showModalBottomSheet<Airport>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                                             ),
-                                          ),
+                                            builder: (_) => const SearchBottomSheet(isDestination: true),
+                                          );
+
+                                          if (result != null) {
+                                            setState(() {
+                                              toAirport = result;
+                                            });
+                                          }
+                                        },
+                                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.flight_land,
+                                              color: kPrimaryColor,
+                                              size: 26,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    'Destination',
+                                                    style: kTextStyle.copyWith(
+                                                      color: Colors.grey.shade600,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    toAirport != null
+                                                        ? '${toAirport!.city} (${toAirport!.code}-aéroport ..)'
+                                                        : 'Tunis (TUN-aéroport ..)',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: kTextStyle.copyWith(
+                                                      color: kTitleColor,
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w500,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
@@ -1073,7 +1086,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     top: 0,
                                     bottom: 0,
                                     child: Center(
-                                      child: GestureDetector(
+                                      child: SmallTapEffect(
                                         onTap: () {
                                           setState(() {
                                             // Swap the airports
@@ -1105,109 +1118,99 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: Container(
+                                    child: TappableCard(
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF5F5F5),
                                         borderRadius: BorderRadius.circular(8.0),
                                       ),
-                                      child: InkWell(
-                                        onTap: () {
-                                          _showCustomDatePicker();
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-                                          child: Row(
-                                            children: [
-                                              const Icon(
-                                                IconlyLight.calendar,
-                                                color: kPrimaryColor,
-                                                size: 26,
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      'Départ',
-                                                      style: kTextStyle.copyWith(
-                                                        color: Colors.grey.shade600,
-                                                        fontSize: 13,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      departureDate != null
-                                                          ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
-                                                          : '14 jan. 2026',
-                                                      style: kTextStyle.copyWith(
-                                                        color: kTitleColor,
-                                                        fontSize: 13,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                      onTap: () {
+                                        _showCustomDatePicker();
+                                      },
+                                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            IconlyLight.calendar,
+                                            color: kPrimaryColor,
+                                            size: 26,
                                           ),
-                                        ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  'Départ',
+                                                  style: kTextStyle.copyWith(
+                                                    color: Colors.grey.shade600,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  departureDate != null
+                                                      ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
+                                                      : '14 jan. 2026',
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 10.0).visible(selectedIndex == 0),
                                   Expanded(
-                                    child: Container(
+                                    child: TappableCard(
                                       decoration: BoxDecoration(
                                         color: const Color(0xFFF5F5F5),
                                         borderRadius: BorderRadius.circular(8.0),
                                       ),
-                                      child: InkWell(
-                                        onTap: () {
-                                          _showCustomDatePicker();
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-                                          child: Row(
-                                            children: [
-                                              const Icon(
-                                                IconlyLight.calendar,
-                                                color: kPrimaryColor,
-                                                size: 26,
-                                              ),
-                                              const SizedBox(width: 12),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Text(
-                                                      'Retour',
-                                                      style: kTextStyle.copyWith(
-                                                        color: Colors.grey.shade600,
-                                                        fontSize: 13,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 2),
-                                                    Text(
-                                                      returnDate != null
-                                                          ? DateFormat('dd MMM yyyy', 'fr').format(returnDate!)
-                                                          : '14 jan. 2026',
-                                                      style: kTextStyle.copyWith(
-                                                        color: kTitleColor,
-                                                        fontSize: 13,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
+                                      onTap: () {
+                                        _showCustomDatePicker();
+                                      },
+                                      padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            IconlyLight.calendar,
+                                            color: kPrimaryColor,
+                                            size: 26,
                                           ),
-
-
-                                        ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  'Retour',
+                                                  style: kTextStyle.copyWith(
+                                                    color: Colors.grey.shade600,
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  returnDate != null
+                                                      ? DateFormat('dd MMM yyyy', 'fr').format(returnDate!)
+                                                      : '14 jan. 2026',
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ).visible(selectedIndex == 0),
@@ -1422,130 +1425,87 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     const Divider(thickness: 1.0, color: kBorderColorTextField),
                                                     const SizedBox(height: 30),
 
-                                                    // 🎫 Class Selection Header
-                                                    Row(
-                                                      children: [
-                                                        Column(
-                                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                                          children: [
-                                                            Text(
-                                                              'Classe de cabine',
-                                                              style: kTextStyle.copyWith(
-                                                                color: kTitleColor,
-                                                                fontWeight: FontWeight.bold,
+                                                    // 🎫 Class Selection Dropdown
+                                                    SmallTapEffect(
+                                                      child: Container(
+                                                        decoration: BoxDecoration(
+                                                          border: Border.all(color: kBorderColorTextField, width: 1.0),
+                                                          borderRadius: BorderRadius.circular(6.0),
+                                                        ),
+                                                        child: DropdownButtonFormField<String>(
+                                                          value: selectedClass,
+                                                          decoration: InputDecoration(
+                                                            labelText: 'Classe',
+                                                            labelStyle: kTextStyle.copyWith(
+                                                              color: kSubTitleColor,
+                                                              fontSize: 12,
+                                                            ),
+                                                            contentPadding: const EdgeInsets.symmetric(
+                                                              horizontal: 12,
+                                                              vertical: 12,
+                                                            ),
+                                                            border: InputBorder.none,
+                                                            enabledBorder: InputBorder.none,
+                                                            focusedBorder: InputBorder.none,
+                                                            isDense: true,
+                                                          ),
+                                                          icon: const Icon(Icons.keyboard_arrow_down, color: kSubTitleColor, size: 20),
+                                                          isExpanded: true,
+                                                          dropdownColor: kWhite,
+                                                          menuMaxHeight: 250,
+                                                          borderRadius: BorderRadius.circular(12.0),
+                                                          style: kTextStyle.copyWith(
+                                                            color: kTitleColor,
+                                                            fontSize: 14,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                          selectedItemBuilder: (context) => [
+                                                            Text('Économique', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                            Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                            Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                            Text('Première classe', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                          ],
+                                                          items: [
+                                                            DropdownMenuItem(
+                                                              value: 'economy',
+                                                              child: Container(
+                                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                child: Text('Économique', style: kTextStyle.copyWith(fontSize: 14)),
                                                               ),
                                                             ),
-                                                            Text(
-                                                              'Sélectionnez votre classe de voyage',
-                                                              style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                            DropdownMenuItem(
+                                                              value: 'premium_economy',
+                                                              child: Container(
+                                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                child: Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14)),
+                                                              ),
+                                                            ),
+                                                            DropdownMenuItem(
+                                                              value: 'business',
+                                                              child: Container(
+                                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                child: Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14)),
+                                                              ),
+                                                            ),
+                                                            DropdownMenuItem(
+                                                              value: 'first',
+                                                              child: Container(
+                                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                child: Text('Première classe', style: kTextStyle.copyWith(fontSize: 14)),
+                                                              ),
                                                             ),
                                                           ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                    const SizedBox(height: 10),
-
-                                                    // First Class (F)
-                                                    ListTile(
-                                                      contentPadding: EdgeInsets.zero,
-                                                      title: Text(
-                                                        'Première classe (F)',
-                                                        style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontWeight: FontWeight.bold,
+                                                          onChanged: (value) {
+                                                            if (value != null) {
+                                                              setStated(() {
+                                                                selectedClass = value;
+                                                              });
+                                                            }
+                                                          },
                                                         ),
                                                       ),
-                                                      subtitle: Text(
-                                                        'Luxe absolu et service personnalisé',
-                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                      ),
-                                                      trailing: selectedClass == 'first'
-                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                      onTap: () {
-                                                        setStated(() {
-                                                          selectedClass = 'first';
-                                                        });
-                                                      },
                                                     ),
-                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                    // Business Class (B)
-                                                    ListTile(
-                                                      contentPadding: EdgeInsets.zero,
-                                                      title: Text(
-                                                        'Classe Affaires (B)',
-                                                        style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      subtitle: Text(
-                                                        'Confort premium et services exclusifs',
-                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                      ),
-                                                      trailing: selectedClass == 'business'
-                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                      onTap: () {
-                                                        setStated(() {
-                                                          selectedClass = 'business';
-                                                        });
-                                                      },
-                                                    ),
-                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                    // Premium Economy (PE)
-                                                    ListTile(
-                                                      contentPadding: EdgeInsets.zero,
-                                                      title: Text(
-                                                        'Économie Premium (PE)',
-                                                        style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      subtitle: Text(
-                                                        'Plus d\'espace et de confort',
-                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                      ),
-                                                      trailing: selectedClass == 'premium_economy'
-                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                      onTap: () {
-                                                        setStated(() {
-                                                          selectedClass = 'premium_economy';
-                                                        });
-                                                      },
-                                                    ),
-                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                    // Economy Class (E)
-                                                    ListTile(
-                                                      contentPadding: EdgeInsets.zero,
-                                                      title: Text(
-                                                        'Économie (E)',
-                                                        style: kTextStyle.copyWith(
-                                                          color: kTitleColor,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      subtitle: Text(
-                                                        'Tarif standard avec bagages inclus',
-                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                      ),
-                                                      trailing: selectedClass == 'economy'
-                                                          ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                          : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                      onTap: () {
-                                                        setStated(() {
-                                                          selectedClass = 'economy';
-                                                        });
-                                                      },
-                                                    ),
-                                                    const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                    const SizedBox(height: 20),
+                                                    const SizedBox(height: 16),
                                                   ],
                                                 ),
                                               ),
@@ -1938,7 +1898,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   shape: const RoundedRectangleBorder(
                                                     borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                                                   ),
-                                                  builder: (_) => const SearchBottomSheet(),
+                                                  builder: (_) => const SearchBottomSheet(isDestination: false),
                                                 );
 
                                                 if (result != null) {
@@ -2003,7 +1963,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   shape: const RoundedRectangleBorder(
                                                     borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                                                   ),
-                                                  builder: (_) => const SearchBottomSheet(),
+                                                  builder: (_) => const SearchBottomSheet(isDestination: true),
                                                 );
 
                                                 if (result != null) {
@@ -2411,130 +2371,87 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               const Divider(thickness: 1.0, color: kBorderColorTextField),
                                                               const SizedBox(height: 30),
 
-                                                              // Class Selection Header
-                                                              Row(
-                                                                children: [
-                                                                  Column(
-                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                    children: [
-                                                                      Text(
-                                                                        'Classe de cabine',
-                                                                        style: kTextStyle.copyWith(
-                                                                          color: kTitleColor,
-                                                                          fontWeight: FontWeight.bold,
+                                                              // 🎫 Class Selection Dropdown
+                                                              SmallTapEffect(
+                                                                child: Container(
+                                                                  decoration: BoxDecoration(
+                                                                    border: Border.all(color: kBorderColorTextField, width: 1.0),
+                                                                    borderRadius: BorderRadius.circular(6.0),
+                                                                  ),
+                                                                  child: DropdownButtonFormField<String>(
+                                                                    value: selectedClass,
+                                                                    decoration: InputDecoration(
+                                                                      labelText: 'Classe',
+                                                                      labelStyle: kTextStyle.copyWith(
+                                                                        color: kSubTitleColor,
+                                                                        fontSize: 12,
+                                                                      ),
+                                                                      contentPadding: const EdgeInsets.symmetric(
+                                                                        horizontal: 12,
+                                                                        vertical: 12,
+                                                                      ),
+                                                                      border: InputBorder.none,
+                                                                      enabledBorder: InputBorder.none,
+                                                                      focusedBorder: InputBorder.none,
+                                                                      isDense: true,
+                                                                    ),
+                                                                    icon: const Icon(Icons.keyboard_arrow_down, color: kSubTitleColor, size: 20),
+                                                                    isExpanded: true,
+                                                                    dropdownColor: kWhite,
+                                                                    menuMaxHeight: 250,
+                                                                    borderRadius: BorderRadius.circular(12.0),
+                                                                    style: kTextStyle.copyWith(
+                                                                      color: kTitleColor,
+                                                                      fontSize: 14,
+                                                                      fontWeight: FontWeight.w500,
+                                                                    ),
+                                                                    selectedItemBuilder: (context) => [
+                                                                      Text('Économique', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                      Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                      Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                      Text('Première classe', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                    ],
+                                                                    items: [
+                                                                      DropdownMenuItem(
+                                                                        value: 'economy',
+                                                                        child: Container(
+                                                                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                          child: Text('Économique', style: kTextStyle.copyWith(fontSize: 14)),
                                                                         ),
                                                                       ),
-                                                                      Text(
-                                                                        'Sélectionnez votre classe de voyage',
-                                                                        style: kTextStyle.copyWith(color: kSubTitleColor),
+                                                                      DropdownMenuItem(
+                                                                        value: 'premium_economy',
+                                                                        child: Container(
+                                                                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                          child: Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                        ),
+                                                                      ),
+                                                                      DropdownMenuItem(
+                                                                        value: 'business',
+                                                                        child: Container(
+                                                                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                          child: Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                        ),
+                                                                      ),
+                                                                      DropdownMenuItem(
+                                                                        value: 'first',
+                                                                        child: Container(
+                                                                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                                                                          child: Text('Première classe', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                        ),
                                                                       ),
                                                                     ],
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                              const SizedBox(height: 10),
-
-                                                              // First Class (F)
-                                                              ListTile(
-                                                                contentPadding: EdgeInsets.zero,
-                                                                title: Text(
-                                                                  'Première classe (F)',
-                                                                  style: kTextStyle.copyWith(
-                                                                    color: kTitleColor,
-                                                                    fontWeight: FontWeight.bold,
+                                                                    onChanged: (value) {
+                                                                      if (value != null) {
+                                                                        setStated(() {
+                                                                          selectedClass = value;
+                                                                        });
+                                                                      }
+                                                                    },
                                                                   ),
                                                                 ),
-                                                                subtitle: Text(
-                                                                  'Luxe absolu et service personnalisé',
-                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                                ),
-                                                                trailing: selectedClass == 'first'
-                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                                onTap: () {
-                                                                  setStated(() {
-                                                                    selectedClass = 'first';
-                                                                  });
-                                                                },
                                                               ),
-                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                              // Business Class (B)
-                                                              ListTile(
-                                                                contentPadding: EdgeInsets.zero,
-                                                                title: Text(
-                                                                  'Classe Affaires (B)',
-                                                                  style: kTextStyle.copyWith(
-                                                                    color: kTitleColor,
-                                                                    fontWeight: FontWeight.bold,
-                                                                  ),
-                                                                ),
-                                                                subtitle: Text(
-                                                                  'Confort premium et services exclusifs',
-                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                                ),
-                                                                trailing: selectedClass == 'business'
-                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                                onTap: () {
-                                                                  setStated(() {
-                                                                    selectedClass = 'business';
-                                                                  });
-                                                                },
-                                                              ),
-                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                              // Premium Economy (PE)
-                                                              ListTile(
-                                                                contentPadding: EdgeInsets.zero,
-                                                                title: Text(
-                                                                  'Économie Premium (PE)',
-                                                                  style: kTextStyle.copyWith(
-                                                                    color: kTitleColor,
-                                                                    fontWeight: FontWeight.bold,
-                                                                  ),
-                                                                ),
-                                                                subtitle: Text(
-                                                                  'Plus d\'espace et de confort',
-                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                                ),
-                                                                trailing: selectedClass == 'premium_economy'
-                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                                onTap: () {
-                                                                  setStated(() {
-                                                                    selectedClass = 'premium_economy';
-                                                                  });
-                                                                },
-                                                              ),
-                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-
-                                                              // Economy Class (E)
-                                                              ListTile(
-                                                                contentPadding: EdgeInsets.zero,
-                                                                title: Text(
-                                                                  'Économie (E)',
-                                                                  style: kTextStyle.copyWith(
-                                                                    color: kTitleColor,
-                                                                    fontWeight: FontWeight.bold,
-                                                                  ),
-                                                                ),
-                                                                subtitle: Text(
-                                                                  'Tarif standard avec bagages inclus',
-                                                                  style: kTextStyle.copyWith(color: kSubTitleColor),
-                                                                ),
-                                                                trailing: selectedClass == 'economy'
-                                                                    ? const Icon(Icons.check_circle, color: kPrimaryColor)
-                                                                    : const Icon(Icons.radio_button_unchecked, color: kSubTitleColor),
-                                                                onTap: () {
-                                                                  setStated(() {
-                                                                    selectedClass = 'economy';
-                                                                  });
-                                                                },
-                                                              ),
-                                                              const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                              const SizedBox(height: 20),
+                                                              const SizedBox(height: 16),
                                                             ],
                                                           ),
                                                         ),

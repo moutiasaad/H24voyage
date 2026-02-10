@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/constant.dart';
+import '../widgets/button_global.dart';
 
 class CreateTicket extends StatefulWidget {
   const CreateTicket({Key? key}) : super(key: key);
@@ -214,7 +215,7 @@ class _CreateTicketState extends State<CreateTicket> {
                 ),
                 child: Row(
                   children: [
-                    GestureDetector(
+                    SmallTapEffect(
                       onTap: () => Navigator.pop(context),
                       child: Container(
                         width: 44,
@@ -639,30 +640,26 @@ class _CreateTicketState extends State<CreateTicket> {
   }
 
   Widget _buildCloseTicketButton() {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          // Handle close ticket
-          Navigator.pop(context);
-        },
+    return TappableCard(
+      onTap: () {
+        // Handle close ticket
+        Navigator.pop(context);
+      },
+      decoration: BoxDecoration(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          width: double.infinity,
-          height: 48,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFFF4D4F), width: 2),
-          ),
-          child: Center(
-            child: Text(
-              'Fermer le ticket',
-              style: GoogleFonts.poppins(
-                color: const Color(0xFFFF4D4F),
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
+        border: Border.all(color: const Color(0xFFFF4D4F), width: 2),
+      ),
+      child: Container(
+        width: double.infinity,
+        height: 48,
+        child: Center(
+          child: Text(
+            'Fermer le ticket',
+            style: GoogleFonts.poppins(
+              color: const Color(0xFFFF4D4F),
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -780,34 +777,30 @@ class _CreateTicketState extends State<CreateTicket> {
       children: [
         // Pièces jointes button
         Expanded(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                // Handle attachment
-              },
+          child: TappableCard(
+            onTap: () {
+              // Handle attachment
+            },
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F3F5),
               borderRadius: BorderRadius.circular(10),
-              child: Container(
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F3F5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.attach_file, color: Color(0xFF444444), size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Pièces jointes',
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF444444),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
+            ),
+            child: Container(
+              height: 42,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.attach_file, color: Color(0xFF444444), size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Pièces jointes',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF444444),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -815,44 +808,40 @@ class _CreateTicketState extends State<CreateTicket> {
         const SizedBox(width: 12),
         // Envoyer button
         Expanded(
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                if (_messageController.text.isNotEmpty) {
-                  setState(() {
-                    _messages.add({
-                      'name': 'Vous',
-                      'initials': 'V',
-                      'message': _messageController.text,
-                      'isAgent': false,
-                    });
-                    _messageController.clear();
+          child: TappableCard(
+            onTap: () {
+              if (_messageController.text.isNotEmpty) {
+                setState(() {
+                  _messages.add({
+                    'name': 'Vous',
+                    'initials': 'V',
+                    'message': _messageController.text,
+                    'isAgent': false,
                   });
-                }
-              },
+                  _messageController.clear();
+                });
+              }
+            },
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF7A18),
               borderRadius: BorderRadius.circular(10),
-              child: Container(
-                height: 42,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF7A18),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.send, color: Colors.white, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Envoyer',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+            ),
+            child: Container(
+              height: 42,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.send, color: Colors.white, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Envoyer',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),

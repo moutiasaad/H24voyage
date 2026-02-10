@@ -1,5 +1,6 @@
 import 'package:flag/flag_widget.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
+import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -79,24 +80,26 @@ class _CurrencyState extends State<Currency> {
 
             return Padding(
               padding: const EdgeInsets.all(10.0),
-              child: ListTile(
+              child: TappableCard(
                 onTap: () async {
                   setState(() => selected = item);
                   await _saveCurrency(item);
                   Navigator.pop(context, item); // 👈 return value
                 },
-                leading: Flag.fromString(item['flag']!, height: 25, width: 30),
-                title: Text(
-                  '${item['name']} (${item['code']}) - ${item['symbol']}',
-                  style: TextStyle(
-                    color: isSelected ? kTitleColor : kSubTitleColor,
+                child: ListTile(
+                  leading: Flag.fromString(item['flag']!, height: 25, width: 30),
+                  title: Text(
+                    '${item['name']} (${item['code']}) - ${item['symbol']}',
+                    style: TextStyle(
+                      color: isSelected ? kTitleColor : kSubTitleColor,
+                    ),
                   ),
-                ),
-                trailing: Icon(
-                  isSelected
-                      ? Icons.radio_button_checked
-                      : Icons.circle_outlined,
-                  color: isSelected ? kPrimaryColor : kSubTitleColor,
+                  trailing: Icon(
+                    isSelected
+                        ? Icons.radio_button_checked
+                        : Icons.circle_outlined,
+                    color: isSelected ? kPrimaryColor : kSubTitleColor,
+                  ),
                 ),
               ),
             );

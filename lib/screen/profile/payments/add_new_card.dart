@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 
 class AddNewCard extends StatefulWidget {
   const AddNewCard({Key? key}) : super(key: key);
@@ -104,10 +105,13 @@ class _AddNewCardState extends State<AddNewCard> {
       appBar: AppBar(
         elevation: 0.0,
         backgroundColor: Colors.transparent,
-        leading: const Icon(
-          Icons.arrow_back,
-          color: kWhite,
-        ).onTap(() => Navigator.pop(context)),
+        leading: SmallTapEffect(
+          onTap: () => Navigator.pop(context),
+          child: const Icon(
+            Icons.arrow_back,
+            color: kWhite,
+          ),
+        ),
         title:  Text(
           'Add New Card',
           style: kTextStyle.copyWith(

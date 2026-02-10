@@ -290,7 +290,7 @@ class _BookProceedState extends State<BookProceed>
                                   fontWeight: FontWeight.bold),
                             ),
                             const Spacer(),
-                            GestureDetector(
+                            SmallTapEffect(
                               onTap: () {
                                 showModalBottomSheet(
                                   isScrollControlled: true,
@@ -338,7 +338,7 @@ class _BookProceedState extends State<BookProceed>
                                                                           .bold),
                                                         ),
                                                         const Spacer(),
-                                                        GestureDetector(
+                                                        SmallTapEffect(
                                                           onTap: () {
                                                             setState(() {
                                                               finish(context);
@@ -784,7 +784,7 @@ class _BookProceedState extends State<BookProceed>
                               const SizedBox(width: 8),
 
                               // ✅ Trailing checkbox stays visible
-                              GestureDetector(
+                              SmallTapEffect(
                                 child: Icon(
                                   selectedDiscountList.contains(discountList[i])
                                       ? Icons.check_box_rounded
@@ -957,7 +957,7 @@ class _BookProceedState extends State<BookProceed>
                                                             FontWeight.bold),
                                                   ),
                                                   const Spacer(),
-                                                  GestureDetector(
+                                                  SmallTapEffect(
                                                     onTap: () {
                                                       setState(() {
                                                         finish(context);
@@ -1292,7 +1292,7 @@ class _BookProceedState extends State<BookProceed>
                                 fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
-                          GestureDetector(
+                          SmallTapEffect(
                             onTap: () {
                               setState(() {
                                 showModalBottomSheet(
@@ -1339,7 +1339,7 @@ class _BookProceedState extends State<BookProceed>
                                                                         .bold),
                                                       ),
                                                       const Spacer(),
-                                                      GestureDetector(
+                                                      SmallTapEffect(
                                                         onTap: () {
                                                           setState(() {
                                                             finish(context);

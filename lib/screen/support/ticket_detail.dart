@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/constant.dart';
+import '../widgets/button_global.dart';
 
 /// Model for ticket message
 class TicketMessage {
@@ -233,7 +234,7 @@ class _TicketDetailState extends State<TicketDetail> {
       ),
       child: Row(
         children: [
-          GestureDetector(
+          SmallTapEffect(
             onTap: () => Navigator.pop(context),
             child: const Icon(
               Icons.arrow_back,
@@ -266,7 +267,7 @@ class _TicketDetailState extends State<TicketDetail> {
             ),
           ),
           if (_ticket != null && !_ticket!.isClosed)
-            GestureDetector(
+            SmallTapEffect(
               onTap: _showCloseTicketDialog,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -483,7 +484,7 @@ class _TicketDetailState extends State<TicketDetail> {
       child: Row(
         children: [
           // Attachment button
-          GestureDetector(
+          SmallTapEffect(
             onTap: () {},
             child: Container(
               width: 44,
@@ -529,7 +530,7 @@ class _TicketDetailState extends State<TicketDetail> {
           const SizedBox(width: 10),
 
           // Send button
-          GestureDetector(
+          SmallTapEffect(
             onTap: _isSending ? null : _sendMessage,
             child: Container(
               width: 44,
@@ -575,27 +576,25 @@ class _TicketDetailState extends State<TicketDetail> {
           Row(
             children: [
               Expanded(
-                child: GestureDetector(
+                child: TappableCard(
                   onTap: () => Navigator.pop(context),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: kBorderColorTextField),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Annuler',
-                        style: GoogleFonts.poppins(color: kTitleColor, fontSize: 14),
-                      ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: kBorderColorTextField),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'Annuler',
+                      style: GoogleFonts.poppins(color: kTitleColor, fontSize: 14),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: GestureDetector(
+                child: TappableCard(
                   onTap: () {
                     Navigator.pop(context);
                     setState(() {
@@ -610,20 +609,18 @@ class _TicketDetailState extends State<TicketDetail> {
                       );
                     });
                   },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Fermer',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Center(
+                    child: Text(
+                      'Fermer',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),

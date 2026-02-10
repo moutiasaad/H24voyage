@@ -85,18 +85,16 @@ class _PaymentMethodState extends State<PaymentMethod> {
                   },
                   buttonTextColor: kTitleColor,
                 ),
-                GestureDetector(
+                SmallTapEffect(
                   onTap: (){
                     setState(() {
                       Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const Home(initialIndex: 1), // ✅ MyBooking
+                          builder: (_) => const Home(initialIndex: 1), // MyBooking
                         ),
                             (route) => false,
                       );
-                      // const Home().launch(context);
-                      // finish(context);
                     });
                   },
                   child: Row(

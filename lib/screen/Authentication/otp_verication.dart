@@ -3,9 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 import '../widgets/constant.dart';
+import '../widgets/button_global.dart';
+import '../../controllers/register_controller.dart';
+import 'sign_up_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OtpVerification extends StatefulWidget {
-  const OtpVerification({Key? key}) : super(key: key);
+  final String? email;
+  final bool isLogin;
+  final int? customerId;
+
+  const OtpVerification({Key? key, this.email, this.isLogin = false, this.customerId}) : super(key: key);
 
   @override
   State<OtpVerification> createState() => _OtpVerificationState();
@@ -48,9 +56,12 @@ class _OtpVerificationState extends State<OtpVerification> {
       appBar: AppBar(
         backgroundColor: kWhite,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
-          onPressed: () => Navigator.pop(context),
+        leading: SmallTapEffect(
+          onTap: () => Navigator.pop(context),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
+          ),
         ),
       ),
       body: SafeArea(
@@ -122,7 +133,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                             : 'Nous avons envoyé un code de vérification à :\n',
                       ),
                       TextSpan(
-                        text: 'jihen@boosterbc.com',
+                        text: widget.email ?? 'adresse e-mail',
                         style: GoogleFonts.poppins(
                           color: kTitleColor,
                           fontSize: subtitleSize,
@@ -191,21 +202,116 @@ class _OtpVerificationState extends State<OtpVerification> {
                 SizedBox(height: isVerySmallScreen ? 24 : 32),
 
                 // Verify button
-                GestureDetector(
-                  onTap: () {
+                TappableCard(
+                  onTap: () async {
                     FocusScope.of(context).unfocus();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Home()),
+
+                    final otp = _otpController.text.trim();
+                    if (otp.length < 4) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Entrez le code OTP valide')),
+                      );
+                      return;
+                    }
+
+                    final controller = RegisterController();
+
+                    // show loading
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => const Center(child: CircularProgressIndicator()),
                     );
+
+                    try {
+                      if (widget.isLogin) {
+                        // Login OTP flow requires customerId
+                        if (widget.customerId == null) {
+                          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('ID client manquant pour la vérification')),
+                          );
+                          return;
+                        }
+
+                        final response = await controller.verifyLoginOtp(
+                          customerId: widget.customerId!,
+                          otp: otp,
+                        );
+
+                        // hide loading
+                        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+
+                        if (response == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(controller.message ?? 'Erreur de vérification')),
+                          );
+                          return;
+                        }
+
+                        if (response.success) {
+
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const Home()),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(response.message ?? 'Erreur')),
+                          );
+                        }
+                      } else {
+                        final response = await controller.verifyOtp(
+                          email: widget.email ?? '',
+                          otp: otp,
+                        );
+
+                        // hide loading
+                        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+
+                        if (response == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(controller.message ?? 'Erreur de vérification')),
+                          );
+                          return;
+                        }
+
+                        if (response.success) {
+                          // Registration successful - navigate back to SignUp page to login
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Inscription réussie! Veuillez vous connecter.'),
+                              backgroundColor: Colors.green,
+                              duration: Duration(seconds: 3),
+                            ),
+                          );
+
+                          // Navigate back to SignUp/Login page
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SignUp()),
+                            (route) => false,
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(response.message ?? response.error ?? 'Erreur')),
+                          );
+                        }
+                      }
+                    } catch (e) {
+                      if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString())),
+                      );
+                    }
                   },
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEAEAEA),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Container(
                     width: double.infinity,
                     height: buttonHeight,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEAEAEA),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                     child: Center(
                       child: Text(
                         'Vérifier l\'adresse e-mail',
@@ -222,17 +328,17 @@ class _OtpVerificationState extends State<OtpVerification> {
                 SizedBox(height: isVerySmallScreen ? 10 : 14),
 
                 // Resend code button
-                GestureDetector(
+                TappableCard(
                   onTap: () {
                     // Resend code logic
                   },
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F0F0),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Container(
                     width: double.infinity,
                     height: buttonHeight,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0F0F0),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
                     child: Center(
                       child: Text(
                         'Recevoir un nouveau code',

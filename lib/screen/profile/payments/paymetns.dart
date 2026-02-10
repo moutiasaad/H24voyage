@@ -5,6 +5,7 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 
 class ProfilePayments extends StatefulWidget {
   const ProfilePayments({Key? key}) : super(key: key);
@@ -91,30 +92,31 @@ class _ProfilePaymentsState extends State<ProfilePayments> {
                             itemBuilder: (context) => [
                               // popupmenu item 1
                               PopupMenuItem(
-                                child: Row(
-                                  children: const [
-                                    Icon(
-                                      IconlyBold.edit,
-                                      color: kPrimaryColor,
-                                    ),
-                                    SizedBox(
-                                      // sized box with width 10
-                                      width: 10,
-                                    ),
-                                    Text('Edit')
-                                  ],
-                                ).onTap(
-                                  () => Navigator.push(
+                                child: SmallTapEffect(
+                                  onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => const EditPaymentsProfile(),
                                     ),
                                   ),
+                                  child: Row(
+                                    children: const [
+                                      Icon(
+                                        IconlyBold.edit,
+                                        color: kPrimaryColor,
+                                      ),
+                                      SizedBox(
+                                        // sized box with width 10
+                                        width: 10,
+                                      ),
+                                      Text('Edit')
+                                    ],
+                                  ),
                                 ),
                               ),
                               // popupmenu item 2
                               PopupMenuItem(
-                                child: InkWell(
+                                child: SmallTapEffect(
                                   onTap: () {
                                     setState(() {
                                       showDialog(
