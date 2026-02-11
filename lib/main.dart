@@ -25,23 +25,25 @@ Future<void> main() async {
 Future<Widget> _determineInitialScreen() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token') ?? '';
+    final refreshToken = prefs.getString('refreshToken') ?? '';
+    final accessToken = prefs.getString('accessToken') ?? '';
 
     debugPrint('╔══════════════════════════════════════════════════════════');
     debugPrint('║ 🚀 APP STARTUP - Authentication Check');
-    debugPrint('║ token present: ${token.isNotEmpty}');
+    debugPrint('║ accessToken present: ${accessToken.isNotEmpty}');
+    debugPrint('║ refreshToken present: ${refreshToken.isNotEmpty}');
     debugPrint('╚══════════════════════════════════════════════════════════');
 
-    // No token means user is not logged in
-    if (token.isEmpty) {
+    // No refresh token means user is not logged in
+    if (refreshToken.isEmpty && accessToken.isEmpty) {
       debugPrint('❌ No token found - redirecting to splash/welcome');
       await _clearAuthData();
       return const SplashScreen();
     }
 
-    // Try to refresh the token
+    // Try to refresh the token using the refreshToken
     debugPrint('🔄 Attempting to refresh token...');
-    final refreshResult = await AuthService.refreshToken(refreshToken: token);
+    final refreshResult = await AuthService.refreshToken(refreshToken: refreshToken);
 
     if (refreshResult['success'] == true && refreshResult['accessToken'] != null) {
       debugPrint('✅ Token refresh successful');
@@ -79,7 +81,9 @@ Future<Widget> _determineInitialScreen() async {
 Future<void> _clearAuthData() async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
+    await prefs.remove('accessToken');
+    await prefs.remove('refreshToken');
+    await prefs.remove('token'); // legacy key cleanup
     await prefs.setBool('is_logged_in', false);
     debugPrint('🧹 Cleared authentication data');
   } catch (e) {

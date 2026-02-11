@@ -138,7 +138,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   child: Column(
                     children: [
                       Text(
-                        'DÉPART',
+                        'Départ',
                         style: TextStyle(
                           color: Colors.grey.shade500,
                           fontSize: 15,
@@ -179,7 +179,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                     child: Column(
                       children: [
                         Text(
-                          'RETOUR',
+                          'Retour',
                           style: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 15,
@@ -245,39 +245,39 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               ),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Durée du voyage : ${_getDaysDifference()} jours',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Mes dates sont flexibles (-/+1 jour)',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                      Switch(
-                        value: isFlexible,
-                        onChanged: (value) {
-                          setState(() {
-                            isFlexible = value;
-                          });
-                        },
-                        activeThumbColor: Colors.white,
-                        activeTrackColor: Colors.grey,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     Text(
+                  //       'Durée du voyage : ${_getDaysDifference()} jours',
+                  //       style: const TextStyle(
+                  //         fontSize: 14,
+                  //         fontWeight: FontWeight.w600,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 4),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     const Text(
+                  //       'Mes dates sont flexibles (-/+1 jour)',
+                  //       style: TextStyle(fontSize: 14),
+                  //     ),
+                  //     Switch(
+                  //       value: isFlexible,
+                  //       onChanged: (value) {
+                  //         setState(() {
+                  //           isFlexible = value;
+                  //         });
+                  //       },
+                  //       activeThumbColor: Colors.white,
+                  //       activeTrackColor: Colors.grey,
+                  //     ),
+                  //   ],
+                  // ),
+                  // const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
                     height: 50,

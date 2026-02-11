@@ -11,6 +11,27 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_config.dart';
 
 class AuthService {
+  /// Extract refresh token from Set-Cookie response header
+  static String? _extractRefreshTokenFromCookies(http.Response response) {
+    final setCookie = response.headers['set-cookie'];
+    if (setCookie == null || setCookie.isEmpty) return null;
+
+    // Parse cookies - look for refreshToken or refresh_token cookie
+    final cookies = setCookie.split(RegExp(r',(?=[^ ])'));
+    for (final cookie in cookies) {
+      final parts = cookie.trim().split(';');
+      if (parts.isEmpty) continue;
+      final nameValue = parts[0].trim();
+      final eqIndex = nameValue.indexOf('=');
+      if (eqIndex < 0) continue;
+      final name = nameValue.substring(0, eqIndex).trim();
+      final value = nameValue.substring(eqIndex + 1).trim();
+      if ((name == 'refreshToken' || name == 'refresh_token') && value.isNotEmpty) {
+        return value;
+      }
+    }
+    return null;
+  }
   static Future<RegisterResponse> registerCustomer(
       RegisterRequest request) async {
     try {
@@ -157,23 +178,36 @@ class AuthService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final prefs = await SharedPreferences.getInstance();
 
-        // Save token (prefer refreshToken, fallback to accessToken)
-        if (jsonData['refreshToken'] != null && (jsonData['refreshToken'] as String).isNotEmpty) {
-          await prefs.setString('token', jsonData['refreshToken']);
-          await prefs.setBool('is_logged_in', true);
-          debugPrint("✔ Saved refresh token from verify login OTP");
-        } else if (jsonData['accessToken'] != null && (jsonData['accessToken'] as String).isNotEmpty) {
-          await prefs.setString('token', jsonData['accessToken']);
-          await prefs.setBool('is_logged_in', true);
-          debugPrint("✔ Saved access token from verify login OTP");
+        // Save accessToken
+        if (jsonData['accessToken'] != null && (jsonData['accessToken'] as String).isNotEmpty) {
+          await prefs.setString('accessToken', jsonData['accessToken']);
+          debugPrint('╔══════════════════════════════════════════════════════════');
+          debugPrint('║ ✅ NEW ACCESS TOKEN from VerifyLoginOtp');
+          debugPrint('║ Token: ${(jsonData['accessToken'] as String).substring(0, 20)}...');
+          debugPrint('╚══════════════════════════════════════════════════════════');
         }
+
+        // Save refreshToken: prefer from response body, then from Set-Cookie header
+        String? refreshTokenValue = jsonData['refreshToken'];
+        if (refreshTokenValue == null || refreshTokenValue.isEmpty) {
+          refreshTokenValue = _extractRefreshTokenFromCookies(response);
+        }
+        if (refreshTokenValue != null && refreshTokenValue.isNotEmpty) {
+          await prefs.setString('refreshToken', refreshTokenValue);
+          debugPrint('╔══════════════════════════════════════════════════════════');
+          debugPrint('║ ✅ NEW REFRESH TOKEN from VerifyLoginOtp');
+          debugPrint('║ Token: ${refreshTokenValue.substring(0, refreshTokenValue.length > 20 ? 20 : refreshTokenValue.length)}...');
+          debugPrint('╚══════════════════════════════════════════════════════════');
+        } else {
+          debugPrint('⚠️ No refresh token found in body or cookies from VerifyLoginOtp');
+        }
+
+        await prefs.setBool('is_logged_in', true);
+        // Also keep legacy 'token' key for backward compatibility
+        await prefs.remove('token');
 
         return VerifyLoginResponse.fromJson(jsonData);
       }
-
-      // if (jsonData is Map<String, dynamic>) {
-      //   return VerifyLoginResponse.fromJson(jsonData);
-      // }
 
       throw Exception('Unexpected response from server');
     } catch (e) {
@@ -191,7 +225,7 @@ class AuthService {
       // Attach Authorization header if access token is present in local storage
       try {
         final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('token');
+        final token = prefs.getString('accessToken');
         if (token != null && token.isNotEmpty) {
           headers['Authorization'] = 'Bearer $token';
         }
@@ -222,7 +256,7 @@ class AuthService {
         debugPrint('⚠️ Access token expired on getProfile, attempting refresh...');
         try {
           final prefs = await SharedPreferences.getInstance();
-          final refreshTokenStored = prefs.getString('token');
+          final refreshTokenStored = prefs.getString('refreshToken');
           if (refreshTokenStored == null || refreshTokenStored.isEmpty) {
             throw Exception('No refresh token available');
           }
@@ -230,7 +264,7 @@ class AuthService {
           await refreshToken(refreshToken: refreshTokenStored);
 
           final newPrefs = await SharedPreferences.getInstance();
-          final newAccess = newPrefs.getString('token');
+          final newAccess = newPrefs.getString('accessToken');
           if (newAccess != null && newAccess.isNotEmpty) {
             headers['Authorization'] = 'Bearer $newAccess';
             debugPrint('✔ Retrying Get Profile with new access token');
@@ -293,17 +327,31 @@ class AuthService {
       final jsonData = json.decode(response.body);
 
       if (jsonData is Map<String, dynamic>) {
-        // Save the new token (prefer refreshToken, fallback to accessToken)
         try {
           final prefs = await SharedPreferences.getInstance();
 
-          // Save new refresh token (one-time use, so we need the new one)
-          if (jsonData['refreshToken'] != null && (jsonData['refreshToken'] as String).isNotEmpty) {
-            await prefs.setString('token', jsonData['refreshToken']);
-            debugPrint('✔ Saved new refresh token from refresh endpoint');
-          } else if (jsonData['accessToken'] != null && (jsonData['accessToken'] as String).isNotEmpty) {
-            await prefs.setString('token', jsonData['accessToken']);
-            debugPrint('✔ Saved new access token from refresh endpoint');
+          // Save new accessToken
+          if (jsonData['accessToken'] != null && (jsonData['accessToken'] as String).isNotEmpty) {
+            await prefs.setString('accessToken', jsonData['accessToken']);
+            debugPrint('╔══════════════════════════════════════════════════════════');
+            debugPrint('║ ✅ NEW ACCESS TOKEN from RefreshToken');
+            debugPrint('║ Token: ${(jsonData['accessToken'] as String).substring(0, 20)}...');
+            debugPrint('╚══════════════════════════════════════════════════════════');
+          }
+
+          // Save new refreshToken: prefer from body, then from Set-Cookie
+          String? newRefreshToken = jsonData['refreshToken'];
+          if (newRefreshToken == null || newRefreshToken.isEmpty) {
+            newRefreshToken = _extractRefreshTokenFromCookies(response);
+          }
+          if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+            await prefs.setString('refreshToken', newRefreshToken);
+            debugPrint('╔══════════════════════════════════════════════════════════');
+            debugPrint('║ ✅ NEW REFRESH TOKEN from RefreshToken');
+            debugPrint('║ Token: ${newRefreshToken.substring(0, newRefreshToken.length > 20 ? 20 : newRefreshToken.length)}...');
+            debugPrint('╚══════════════════════════════════════════════════════════');
+          } else {
+            debugPrint('⚠️ No new refresh token found in body or cookies from RefreshToken');
           }
         } catch (e) {
           debugPrint('❌ Failed to save token from refresh endpoint: $e');
@@ -331,7 +379,7 @@ class AuthService {
       // Attach Authorization header
       try {
         final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('token');
+        final token = prefs.getString('accessToken');
         if (token != null && token.isNotEmpty) {
           headers['Authorization'] = 'Bearer $token';
         }
@@ -380,7 +428,7 @@ class AuthService {
       // Attach Authorization header
       try {
         final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('token');
+        final token = prefs.getString('accessToken');
         if (token != null && token.isNotEmpty) {
           headers['Authorization'] = 'Bearer $token';
         }
@@ -407,6 +455,8 @@ class AuthService {
       if (jsonData is Map<String, dynamic>) {
         // Clear local auth data after logout
         final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('accessToken');
+        await prefs.remove('refreshToken');
         await prefs.remove('token');
         await prefs.setBool('is_logged_in', false);
         debugPrint('✔ Cleared local auth data after logout');
@@ -421,6 +471,8 @@ class AuthService {
       // Even if API fails, clear local data for security
       try {
         final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('accessToken');
+        await prefs.remove('refreshToken');
         await prefs.remove('token');
         await prefs.setBool('is_logged_in', false);
         debugPrint('✔ Cleared local auth data (fallback)');
@@ -439,7 +491,7 @@ class AuthService {
       // Attach Authorization header
       try {
         final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('token');
+        final token = prefs.getString('accessToken');
         if (token != null && token.isNotEmpty) {
           headers['Authorization'] = 'Bearer $token';
         }
@@ -467,6 +519,8 @@ class AuthService {
         // If account disabled successfully, clear local data
         if (jsonData['success'] == true) {
           final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('accessToken');
+          await prefs.remove('refreshToken');
           await prefs.remove('token');
           await prefs.setBool('is_logged_in', false);
           debugPrint('✔ Cleared local auth data after account disable');
@@ -492,7 +546,7 @@ class AuthService {
       // Attach Authorization header if access token is present in local storage
       try {
         final prefs = await SharedPreferences.getInstance();
-        final token = prefs.getString('token');
+        final token = prefs.getString('accessToken');
         if (token != null && token.isNotEmpty) {
           headers['Authorization'] = 'Bearer $token';
         }
@@ -527,7 +581,7 @@ class AuthService {
         debugPrint('⚠️ Access token expired, attempting refresh...');
         try {
           final prefs = await SharedPreferences.getInstance();
-          final refreshTokenStored = prefs.getString('token');
+          final refreshTokenStored = prefs.getString('refreshToken');
           if (refreshTokenStored == null || refreshTokenStored.isEmpty) {
             throw Exception('No refresh token available');
           }
@@ -535,7 +589,7 @@ class AuthService {
           await refreshToken(refreshToken: refreshTokenStored);
           // After refresh, update Authorization header and retry
           final newPrefs = await SharedPreferences.getInstance();
-          final newAccess = newPrefs.getString('token');
+          final newAccess = newPrefs.getString('accessToken');
           if (newAccess != null && newAccess.isNotEmpty) {
             headers['Authorization'] = 'Bearer $newAccess';
             debugPrint('✔ Retrying Update Profile with new access token');

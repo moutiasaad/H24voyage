@@ -57,7 +57,7 @@ class ProfileController extends ChangeNotifier {
   Future<bool> _attemptRefreshAndRetry() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final refreshToken = prefs.getString('token') ?? '';
+      final refreshToken = prefs.getString('refreshToken') ?? '';
       if (refreshToken.isEmpty) return false;
 
       // Call refresh token endpoint

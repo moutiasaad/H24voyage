@@ -183,13 +183,15 @@ class RegisterController extends ChangeNotifier {
             if (pendingEmailForLogin != null) await prefs.setString('user_email', pendingEmailForLogin!);
           }
 
-          // Save token (prefer refreshToken, fallback to accessToken)
+          // Save accessToken
+          if (response.accessToken != null && response.accessToken!.isNotEmpty) {
+            await prefs.setString('accessToken', response.accessToken!);
+            debugPrint('✅ Saved accessToken from login');
+          }
+          // Save refreshToken
           if (response.refreshToken != null && response.refreshToken!.isNotEmpty) {
-            await prefs.setString('token', response.refreshToken!);
-            debugPrint('✅ Saved refresh token from login');
-          } else if (response.accessToken != null && response.accessToken!.isNotEmpty) {
-            await prefs.setString('token', response.accessToken!);
-            debugPrint('✅ Saved access token from login');
+            await prefs.setString('refreshToken', response.refreshToken!);
+            debugPrint('✅ Saved refreshToken from login');
           }
         } catch (e) {
           debugPrint('❌ Failed to save session after login OTP: $e');

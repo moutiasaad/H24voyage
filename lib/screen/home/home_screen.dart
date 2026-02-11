@@ -876,76 +876,61 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TabBar(
-                                controller: tabController,
-                                labelPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0), // Added vertical padding for clickable area
-                                labelStyle: kTextStyle.copyWith(
-                                  color: kTitleColor,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  height: 0.8,
-                                ),
-                                unselectedLabelStyle: kTextStyle.copyWith(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.normal,
-                                  height: 0.8,
-                                ),
-                                unselectedLabelColor: kTitleColor,
-                                labelColor: kTitleColor,
-                                indicatorColor: kPrimaryColor,
-                                indicatorWeight: 4.0,
-                                indicatorSize: TabBarIndicatorSize.label,
-                                dividerColor: Colors.transparent,
-                                indicator: UnderlineTabIndicator(
-                                  borderSide: BorderSide(
-                                    color: kPrimaryColor,
-                                    width: 4.0,
-                                  ),
-                                  borderRadius: BorderRadius.circular(3.0),
-                                  insets: const EdgeInsets.only(bottom: 8.0), // Controls space between text and indicator
-                                ),
-                                onTap: (index) {
-                                  setState(() {
-                                    selectedIndex = index;
-                                    // Clear return date when switching to "Aller simple" (one-way)
-                                    if (index == 1) {
-                                      returnDate = null;
-                                      _selectedDateRange = null;
-                                    }
-                                  });
+                              AnimatedBuilder(
+                                animation: tabController!,
+                                builder: (context, child) {
+                                  final labels = [
+                                    lang.S.of(context).tab2,
+                                    lang.S.of(context).tab1,
+                                    lang.S.of(context).tab3,
+                                  ];
+                                  return Row(
+                                    children: List.generate(labels.length, (index) {
+                                      final isSelected = tabController!.index == index;
+                                      return Expanded(
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: () {
+                                            tabController!.animateTo(index);
+                                            setState(() {
+                                              selectedIndex = index;
+                                              if (index == 1) {
+                                                returnDate = null;
+                                                _selectedDateRange = null;
+                                              }
+                                            });
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                                                child: Text(
+                                                  labels[index],
+                                                  textAlign: TextAlign.center,
+                                                  style: kTextStyle.copyWith(
+                                                    color: kTitleColor,
+                                                    fontSize: 15,
+                                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                                    height: 0.8,
+                                                  ),
+                                                ),
+                                              ),
+                                              AnimatedContainer(
+                                                duration: const Duration(milliseconds: 250),
+                                                height: 4.0,
+                                                margin: const EdgeInsets.symmetric(horizontal: 12.0),
+                                                decoration: BoxDecoration(
+                                                  color: isSelected ? kPrimaryColor : Colors.transparent,
+                                                  borderRadius: BorderRadius.circular(3.0),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  );
                                 },
-                                tabs: [
-                                  Tab(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4.0), // Adjust horizontal spacing
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        lang.S.of(context).tab2,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                  Tab(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        lang.S.of(context).tab1,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                  Tab(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        lang.S.of(context).tab3,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ],
                               ),
                               const SizedBox(height: 20.0),
                               Column(
