@@ -8,12 +8,15 @@ class FlightSearchLoading extends StatefulWidget {
   final String destinationCity;
   final Future<void> Function() searchFunction;
   final VoidCallback onSearchComplete;
+  /// Called after search completes to get the real total number of flights.
+  final int Function()? getTotalFlights;
 
   const FlightSearchLoading({
     Key? key,
     required this.destinationCity,
     required this.searchFunction,
     required this.onSearchComplete,
+    this.getTotalFlights,
   }) : super(key: key);
 
   @override
@@ -25,6 +28,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
   late AnimationController _rotationController;
   int _providersCount = 0;
   int _combinationsCount = 0;
+  int _targetCombinations = 0; // Real total from API
   Timer? _countTimer;
   bool _searchComplete = false;
 
@@ -49,9 +53,13 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
           _providersCount += random.nextInt(15) + 5;
           if (_providersCount > 185) _providersCount = 185;
         }
-        if (_combinationsCount < 56874) {
-          _combinationsCount += random.nextInt(3000) + 500;
-          if (_combinationsCount > 56874) _combinationsCount = 56874;
+        // Animate toward the real target (or keep incrementing if target not yet known)
+        final target = _targetCombinations > 0 ? _targetCombinations : 999;
+        if (_combinationsCount < target) {
+          // Scale increment based on target size
+          final increment = max(1, (target / 30).round()) + random.nextInt(max(1, (target / 50).round()));
+          _combinationsCount += increment;
+          if (_combinationsCount > target) _combinationsCount = target;
         }
       });
     });
@@ -60,10 +68,15 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
   Future<void> _performSearch() async {
     try {
       await widget.searchFunction();
+
+      // Get real total from API
+      final realTotal = widget.getTotalFlights?.call() ?? _combinationsCount;
+      _targetCombinations = realTotal;
+
       setState(() {
         _searchComplete = true;
         _providersCount = 185;
-        _combinationsCount = 56874;
+        _combinationsCount = realTotal;
       });
       await Future.delayed(const Duration(milliseconds: 500));
       if (mounted) {
@@ -264,9 +277,9 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                             ),
                             Expanded(
                               child: _buildStatColumn(
-                                'ET CRÉATION DE',
+                                'RÉSULTATS',
                                 _combinationsCount.toString(),
-                                'combinaisons',
+                                'vols trouvés',
                               ),
                             ),
                           ],

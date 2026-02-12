@@ -1,5 +1,6 @@
-import 'package:flight_booking/screen/widgets/button_global.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../widgets/constant.dart';
@@ -16,17 +17,18 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final RegisterController _controller = RegisterController();
-  bool _isLogin = false;
+  bool _obscurePassword = true;
+  bool _isButtonPressed = false;
 
   @override
   void dispose() {
-    _lastNameController.dispose();
     _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -35,9 +37,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final registerController = _controller;
-
-    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -45,80 +44,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     try {
-      if (_isLogin) {
-        final response = await registerController.login(
-          email: _emailController.text.trim(),
-          // password: _passwordController.text,
+      final response = await _controller.register(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+      );
+
+      if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+
+      if (response == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_controller.message ?? 'Erreur lors de l\'inscription')),
         );
-
-        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-
-        if (response == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Erreur lors de la connexion')),
-          );
-          return;
-        }
-
-        if (registerController.state == RegisterState.pendingOtp) {
-          // Navigate to OTP verification screen for login
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OtpVerification(
-                email: _emailController.text.trim(),
-                isLogin: true,
-                customerId: registerController.pendingCustomerId,
-              ),
-            ),
-          );
-          return;
-        }
-
-        if (registerController.state == RegisterState.idle) {
-          // login succeeded without OTP -> navigate to Home
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const Home()),
-          );
-          return;
-        }
-
-        // else error
-        final message = registerController.message ?? 'Erreur inconnue';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-        return;
-      } else {
-        final response = await registerController.register(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
-          firstName: _firstNameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
-        );
-
-        // Hide loading
-        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-
-        if (response == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Erreur lors de l\'inscription')),
-          );
-          return;
-        }
-
-        if (registerController.state == RegisterState.otpSent || registerController.state == RegisterState.pendingOtp) {
-          // Navigate to OTP verification screen for registration
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => OtpVerification(email: _emailController.text.trim(), isLogin: false)),
-          );
-          return;
-        }
-
-        final message = registerController.message ?? 'Erreur inconnue';
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
         return;
       }
+
+      if (_controller.state == RegisterState.otpSent ||
+          _controller.state == RegisterState.pendingOtp) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpVerification(
+              email: _emailController.text.trim(),
+              isLogin: false,
+            ),
+          ),
+        );
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(_controller.message ?? 'Erreur inconnue')),
+      );
     } catch (e) {
       if (Navigator.of(context).canPop()) Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -133,178 +91,352 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String? _emailValidator(String? v) {
-    if (v == null || v.trim().isEmpty) return 'E-mail requis';
-    final email = v.trim();
-    final emailRegex = RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+");
-    if (!emailRegex.hasMatch(email)) return 'E-mail invalide';
+    if (v == null || v.trim().isEmpty) return 'Veuillez saisir votre adresse e-mail';
+    final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w{2,}$');
+    if (!emailRegex.hasMatch(v.trim())) return 'Veuillez saisir une adresse e-mail valide';
+    return null;
+  }
+
+  String? _passwordValidator(String? v) {
+    if (v == null || v.isEmpty) return 'Mot de passe requis';
+    if (v.length < 6) return 'Au moins 6 caractères';
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = keyboardHeight > 0;
+
+    // Responsive sizes based on Figma: 377x786
+    final ratioW = screenWidth / 377;
+    final ratioH = screenHeight / 786;
+    final imageWidth = 320 * ratioW;
+    final imageHeight = isKeyboardOpen ? 0.0 : 240 * ratioH;
+    final titleSize = (22 * ratioW).clamp(18.0, 24.0);
+    final subtitleSize = (13 * ratioW).clamp(11.0, 14.0);
+    final inputSize = (14 * ratioW).clamp(12.0, 14.0);
+    final buttonHeight = (50 * ratioH).clamp(42.0, 54.0);
+    final buttonTextSize = (16 * ratioW).clamp(13.0, 16.0);
+    final horizontalPadding = screenWidth * 0.06;
+
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 24),
-
-                /// 🔹 Hero Illustration
-                Image.asset(
-                  'assets/register.png', // put your image here
-                  height: 220,
-                  fit: BoxFit.contain,
-                ),
-
-                const SizedBox(height: 24),
-
-                // Mode toggle
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      onPressed: () => setState(() => _isLogin = false),
-                      child: Text('Inscription', style: GoogleFonts.jost(color: !_isLogin ? kTitleColor : kSubTitleColor)),
-                    ),
-                    TextButton(
-                      onPressed: () => setState(() => _isLogin = true),
-                      child: Text('Connexion', style: GoogleFonts.jost(color: _isLogin ? kTitleColor : kSubTitleColor)),
-                    ),
-                  ],
-                ),
-
-                /// 🔹 Title
-                Text(
-                  _isLogin ? "Se connecter" : "S’inscrire",
-                  style: GoogleFonts.jost(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: kTitleColor,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                /// 🔹 Subtitle
-                Text(
-                  "Inscrivez-vous dès maintenant à h24voyages\net accédez à nos services.",
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.jost(
-                    fontSize: 15,
-                    color: kSubTitleColor,
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                if (!_isLogin) ...[
-                  /// 🔹 Nom
-                  TextFormField(
-                    controller: _lastNameController,
-                    decoration: kInputDecoration.copyWith(
-                      hintText: "Nom",
-                    ),
-                    validator: _notEmptyValidator,
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  /// 🔹 Prénom
-                  TextFormField(
-                    controller: _firstNameController,
-                    decoration: kInputDecoration.copyWith(
-                      hintText: "Prénom",
-                    ),
-                    validator: _notEmptyValidator,
-                  ),
-
-                  const SizedBox(height: 14),
-                ],
-
-                /// 🔹 Email
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: kInputDecoration.copyWith(
-                    hintText: "E-mail",
-                  ),
-                  validator: _emailValidator,
-                ),
-
-                const SizedBox(height: 14),
-
-                /// 🔹 Mot de passe
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: kInputDecoration.copyWith(
-                    hintText: "Mot de passe",
-                    suffixIcon: Icon(
-                      Icons.lock_outline,
-                      color: kSubTitleColor,
-                    ),
-                  ),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Mot de passe requis';
-                    if (v.length < 6) return 'Au moins 6 caractères';
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 26),
-
-                /// 🔹 Action Button
-                ButtonGlobal(
-                  buttontext: _isLogin ? "Se connecter" : "S’inscrire",
-                  buttonDecoration: kGradientButtonDecoration,
-                  onPressed: _submit,
-                ),
-
-                const SizedBox(height: 18),
-
-                /// 🔹 Footer text
-                Text.rich(
-                  TextSpan(
-                    text: "En créant ou en vous connectant un compte, vous acceptez\n",
-                    style: GoogleFonts.jost(
-                      fontSize: 13,
-                      color: kSubTitleColor,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: "nos conditions générales ",
-                        style: kLinkTextStyle,
-                      ),
-                      const TextSpan(text: "et "),
-                      TextSpan(
-                        text: "notre charte de confidentialité",
-                        style: kLinkTextStyle,
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 10),
-
-                /// 🔹 Copyright
-                Text(
-                  "Tous droits réservés. Copyright – h24voyages",
-                  style: GoogleFonts.jost(
-                    fontSize: 12,
-                    color: kSubTitleColor,
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-              ],
-            ),
+      backgroundColor: kWhite,
+      resizeToAvoidBottomInset: true,
+      appBar: AppBar(
+        backgroundColor: kWhite,
+        elevation: 0,
+        toolbarHeight: 56,
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: const Padding(
+            padding: EdgeInsets.all(12.0),
+            child: Icon(Icons.arrow_back_ios, color: kTitleColor, size: 20),
           ),
         ),
+      ),
+      body: SafeArea(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Image
+                            if (!isKeyboardOpen) ...[
+                              Center(
+                                child: Image.asset(
+                                  'assets/login.png',
+                                  width: imageWidth,
+                                  height: imageHeight,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: imageWidth,
+                                      height: imageHeight * 0.7,
+                                      color: kSecondaryColor,
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.image,
+                                          size: imageHeight * 0.3,
+                                          color: kSubTitleColor,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+
+                            SizedBox(height: 8 * ratioH),
+
+                            // Title
+                            Center(
+                              child: Text(
+                                "S'inscrire",
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.poppins(
+                                  color: kTitleColor,
+                                  fontSize: titleSize,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: 4 * ratioH),
+
+                            // Subtitle
+                            Text(
+                              'Inscrivez-vous dès maintenant à  h24voyages\net accédez à nos services.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.lato(
+                                color: kSubTitleColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 22 / 14,
+                              ),
+                            ),
+
+                            SizedBox(height: 12 * ratioH),
+
+                            // Prénom
+                            TextFormField(
+                              controller: _firstNameController,
+                              cursorColor: kTitleColor,
+                              style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
+                              decoration: _outlineDecoration('Prénom', inputSize),
+                              validator: _notEmptyValidator,
+                            ),
+
+                            SizedBox(height: 12 * ratioH),
+
+                            // Nom
+                            TextFormField(
+                              controller: _lastNameController,
+                              cursorColor: kTitleColor,
+                              style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
+                              decoration: _outlineDecoration('Nom', inputSize),
+                              validator: _notEmptyValidator,
+                            ),
+
+                            SizedBox(height: 12 * ratioH),
+
+                            // E-mail
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              cursorColor: kTitleColor,
+                              style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
+                              decoration: _outlineDecoration('E-mail', inputSize),
+                              validator: _emailValidator,
+                            ),
+
+                            SizedBox(height: 12 * ratioH),
+
+                            // Mot de passe
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              cursorColor: kTitleColor,
+                              style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
+                              decoration: _outlineDecoration('Mo de passe', inputSize).copyWith(
+                                suffixIcon: GestureDetector(
+                                  onTap: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  child: Icon(
+                                    _obscurePassword ? Icons.lock_outline : Icons.lock_open_outlined,
+                                    color: kSubTitleColor,
+                                    size: 20,
+                                  ),
+                                ),
+                                suffixIconConstraints: const BoxConstraints(minHeight: 20, minWidth: 20),
+                              ),
+                              validator: _passwordValidator,
+                            ),
+
+                            SizedBox(height: 16 * ratioH),
+
+                            // S'inscrire button
+                            GestureDetector(
+                              onTapDown: (_) {
+                                setState(() => _isButtonPressed = true);
+                                HapticFeedback.lightImpact();
+                              },
+                              onTapUp: (_) {
+                                setState(() => _isButtonPressed = false);
+                                FocusScope.of(context).unfocus();
+                                _submit();
+                              },
+                              onTapCancel: () => setState(() => _isButtonPressed = false),
+                              child: AnimatedScale(
+                                scale: _isButtonPressed ? 0.97 : 1.0,
+                                duration: const Duration(milliseconds: 100),
+                                child: Container(
+                                  width: double.infinity,
+                                  height: buttonHeight,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF6A00),
+                                    borderRadius: BorderRadius.circular(14),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color.fromRGBO(0, 0, 0, 0.15),
+                                        blurRadius: 14,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "S'inscrire",
+                                      style: GoogleFonts.poppins(
+                                        color: kWhite,
+                                        fontSize: buttonTextSize,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            // Push footer to bottom
+                            const Spacer(),
+
+                            // Footer
+                            Padding(
+                              padding: EdgeInsets.only(bottom: 12 * ratioH),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  RichText(
+                                    textAlign: TextAlign.center,
+                                    text: TextSpan(
+                                      style: GoogleFonts.poppins(
+                                        color: kTitleColor,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w400,
+                                        height: 18 / 11,
+                                      ),
+                                      children: [
+                                        const TextSpan(
+                                          text: 'En créant ou en vous connectant à un compte, vous acceptez\n',
+                                        ),
+                                        const TextSpan(text: 'nos '),
+                                        TextSpan(
+                                          text: 'conditions générales',
+                                          style: GoogleFonts.poppins(
+                                            color: kPrimaryColor,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w400,
+                                            height: 18 / 11,
+                                            decoration: TextDecoration.underline,
+                                            decorationColor: kPrimaryColor,
+                                          ),
+                                          recognizer: TapGestureRecognizer()..onTap = () {},
+                                        ),
+                                        const TextSpan(text: ' et notre '),
+                                        TextSpan(
+                                          text: 'charte de confidentialité',
+                                          style: GoogleFonts.poppins(
+                                            color: kPrimaryColor,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w400,
+                                            height: 18 / 11,
+                                            decoration: TextDecoration.underline,
+                                            decorationColor: kPrimaryColor,
+                                          ),
+                                          recognizer: TapGestureRecognizer()..onTap = () {},
+                                        ),
+                                        const TextSpan(text: '.'),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 4 * ratioH),
+                                  Text(
+                                    'Tous droits réservés. Copyright- h24voyages',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      color: kSubTitleColor,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w400,
+                                      height: 18 / 11,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _outlineDecoration(String label, double fontSize) {
+    return InputDecoration(
+      labelText: label,
+      hintText: label,
+      labelStyle: GoogleFonts.poppins(
+        color: kSubTitleColor,
+        fontSize: fontSize,
+        fontWeight: FontWeight.w400,
+      ),
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      floatingLabelStyle: GoogleFonts.poppins(
+        color: kSubTitleColor,
+        fontSize: 13,
+        fontWeight: FontWeight.w400,
+      ),
+      hintStyle: GoogleFonts.poppins(
+        color: kSubTitleColor.withOpacity(0.5),
+        fontSize: fontSize,
+        fontWeight: FontWeight.w400,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kBorderColorTextField, width: 1),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kBorderColorTextField, width: 1),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: kPrimaryColor, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 1.5),
+      ),
+      errorStyle: GoogleFonts.poppins(
+        color: Colors.red,
+        fontSize: 11,
+        fontWeight: FontWeight.w400,
       ),
     );
   }

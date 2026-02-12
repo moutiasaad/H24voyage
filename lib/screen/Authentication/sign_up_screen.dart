@@ -22,7 +22,23 @@ class _SignUpState extends State<SignUp> {
   final TextEditingController _emailController = TextEditingController();
   final FocusNode _emailFocusNode = FocusNode();
   bool _isButtonPressed = false;
+  String? _emailError;
   final RegisterController _controller = RegisterController();
+
+  bool _validateEmail() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      setState(() => _emailError = 'Veuillez saisir votre adresse e-mail');
+      return false;
+    }
+    final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w{2,}$');
+    if (!emailRegex.hasMatch(email)) {
+      setState(() => _emailError = 'Veuillez saisir une adresse e-mail valide');
+      return false;
+    }
+    setState(() => _emailError = null);
+    return true;
+  }
 
   @override
   void dispose() {
@@ -40,18 +56,17 @@ class _SignUpState extends State<SignUp> {
     final isSmallScreen = screenHeight < 700;
     final isVerySmallScreen = screenHeight < 600;
 
-    // Responsive sizes
-    final imageHeight = isKeyboardOpen
-        ? 0.0
-        : (screenHeight * 0.22).clamp(100.0, 220.0);
-    final titleSize = isVerySmallScreen ? 16.0 : (isSmallScreen ? 17.0 : 20.0);
-    final subtitleSize = isVerySmallScreen ? 11.0 : (isSmallScreen ? 12.0 : 14.0);
-    final labelSize = isVerySmallScreen ? 11.0 : (isSmallScreen ? 12.0 : 14.0);
-    final inputSize = isVerySmallScreen ? 12.0 : 14.0;
-    final buttonHeight = isVerySmallScreen ? 42.0 : (isSmallScreen ? 46.0 : 52.0);
-    final buttonTextSize = isVerySmallScreen ? 13.0 : (isSmallScreen ? 14.0 : 16.0);
-    final footerTextSize = isVerySmallScreen ? 9.0 : (isSmallScreen ? 10.0 : 12.0);
-    final copyrightSize = isVerySmallScreen ? 8.0 : (isSmallScreen ? 9.0 : 11.0);
+    // Responsive sizes based on Figma: 377x786
+    final ratioW = screenWidth / 377;
+    final ratioH = screenHeight / 786;
+    final imageWidth = 320 * ratioW;
+    final imageHeight = isKeyboardOpen ? 0.0 : 300 * ratioH;
+    final titleSize = (18 * ratioW).clamp(14.0, 20.0);
+    final subtitleSize = (13 * ratioW).clamp(11.0, 14.0);
+    final labelSize = (13 * ratioW).clamp(11.0, 14.0);
+    final inputSize = (14 * ratioW).clamp(12.0, 14.0);
+    final buttonHeight = (50 * ratioH).clamp(42.0, 54.0);
+    final buttonTextSize = (16 * ratioW).clamp(13.0, 16.0);
 
     return Scaffold(
       backgroundColor: kWhite,
@@ -77,7 +92,7 @@ class _SignUpState extends State<SignUp> {
                 physics: const ClampingScrollPhysics(),
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
+                    minHeight: isKeyboardOpen ? 0 : constraints.maxHeight,
                   ),
                   child: IntrinsicHeight(
                     child: Padding(
@@ -85,18 +100,19 @@ class _SignUpState extends State<SignUp> {
                         horizontal: screenWidth * 0.06,
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           // Top section with image
                           if (!isKeyboardOpen) ...[
-                            SizedBox(height: isVerySmallScreen ? 8 : 16),
                             Center(
                               child: Image.asset(
                                 'assets/login.png',
+                                width: imageWidth,
                                 height: imageHeight,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
+                                    width: imageWidth,
                                     height: imageHeight * 0.7,
                                     color: kSecondaryColor,
                                     child: Center(
@@ -110,36 +126,37 @@ class _SignUpState extends State<SignUp> {
                                 },
                               ),
                             ),
-                            SizedBox(height: isVerySmallScreen ? 16 : 24),
+                            SizedBox(height: 12 * ratioH),
                           ],
 
-                          // Form section
                           // Title
-                          Text(
-                            'Se connecter ou créer un compte',
-                            style: GoogleFonts.poppins(
-                              color: kTitleColor,
-                              fontSize: titleSize,
-                              fontWeight: FontWeight.w700,
+                          Center(
+                            child: Text(
+                              'Se connecter ou créer un compte',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                color: kTitleColor,
+                                fontSize: titleSize,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
 
-                          SizedBox(height: isVerySmallScreen ? 4 : 8),
+                          SizedBox(height: 6 * ratioH),
 
                           // Subtitle
                           Text(
-                            isVerySmallScreen
-                                ? 'Connectez-vous à l\'aide de votre compte h24voyages.'
-                                : 'Connectez-vous à l\'aide de votre compte h24voyages et accédez à nos services.',
+                            'Connectez-vous à l\'aide de votre compte h24voyages\net accédez à nos services.',
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: kSubTitleColor,
                               fontSize: subtitleSize,
                               fontWeight: FontWeight.w400,
-                              height: 1.3,
+                              height: 1.4,
                             ),
                           ),
 
-                          SizedBox(height: isKeyboardOpen ? 12 : (isVerySmallScreen ? 12 : 20)),
+                          SizedBox(height: 16 * ratioH),
 
                           // Email label
                           Text(
@@ -151,10 +168,11 @@ class _SignUpState extends State<SignUp> {
                             ),
                           ),
 
-                          SizedBox(height: isVerySmallScreen ? 4 : 8),
+                          SizedBox(height: 8 * ratioH),
 
                           // Email input field
                           TextFormField(
+                            key: const ValueKey('email_field'),
                             controller: _emailController,
                             focusNode: _emailFocusNode,
                             keyboardType: TextInputType.emailAddress,
@@ -177,22 +195,40 @@ class _SignUpState extends State<SignUp> {
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: kBorderColorTextField,
+                                borderSide: BorderSide(
+                                  color: _emailError != null ? Colors.red : kBorderColorTextField,
                                   width: 1,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: kPrimaryColor,
+                                borderSide: BorderSide(
+                                  color: _emailError != null ? Colors.red : kPrimaryColor,
                                   width: 1,
                                 ),
                               ),
                             ),
+                            onChanged: (_) {
+                              if (_emailError != null) {
+                                setState(() => _emailError = null);
+                              }
+                            },
                           ),
 
-                          SizedBox(height: isVerySmallScreen ? 12 : 18),
+                          if (_emailError != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6, left: 4),
+                              child: Text(
+                                _emailError!,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.red,
+                                  fontSize: isVerySmallScreen ? 10.0 : 12.0,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+
+                          SizedBox(height: 16 * ratioH),
 
                           // Continue button
                           GestureDetector(
@@ -203,6 +239,8 @@ class _SignUpState extends State<SignUp> {
                             onTapUp: (_) async {
                               setState(() => _isButtonPressed = false);
                               FocusScope.of(context).unfocus();
+
+                              if (!_validateEmail()) return;
 
                               // Show loading
                               showDialog(
@@ -286,42 +324,40 @@ class _SignUpState extends State<SignUp> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 10,),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.center,
-                          //   children: [
-                          //
-                          //   ],
-                          // ),
-                          // Footer section - centered between button and bottom
-                          if (!isKeyboardOpen) ...[
-                            // Spacer to center footer
-                            // const Spacer(),
+                          SizedBox(height: 16 * ratioH),
 
-                            // Footer - Terms & Privacy
+                          // Footer - Terms & Privacy
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  "Vous n’avez pas de compte ? ", // "Vous n’avez pas de compte ? "
-                                  style: kTextStyle.copyWith(
-                                    color: kSubTitleColor,
-                                    fontSize: isVerySmallScreen ? 13.0 : 14.0,
-                                  ),
-                                ),
-                                TapEffect(
-                                  onTap: () => const RegisterScreen().launch(context),
-                                  child: Text(
-                                    "Inscrivez vous", // "Inscrivez vous"
-                                    style: kTextStyle.copyWith(
-                                      color: kPrimaryColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: isVerySmallScreen ? 13.0 : 14.0,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Vous n'avez pas de compte ? ",
+                                      style: GoogleFonts.lato(
+                                        color: kSubTitleColor,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        height: 22 / 14,
+                                      ),
                                     ),
-                                  ),
+                                    TapEffect(
+                                      onTap: () => const RegisterScreen().launch(context),
+                                      child: Text(
+                                        "Inscrivez vous",
+                                        style: GoogleFonts.lato(
+                                          color: kPrimaryColor,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          height: 22 / 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(height: 10),
+                                SizedBox(height: 8 * ratioH),
                                 // First line
                                 Text(
                                   isVerySmallScreen
@@ -330,8 +366,9 @@ class _SignUpState extends State<SignUp> {
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.poppins(
                                     color: kSubTitleColor,
-                                    fontSize: footerTextSize,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w400,
+                                    height: 20 / 11,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
@@ -341,8 +378,9 @@ class _SignUpState extends State<SignUp> {
                                   text: TextSpan(
                                     style: GoogleFonts.poppins(
                                       color: kSubTitleColor,
-                                      fontSize: footerTextSize,
+                                      fontSize: 11,
                                       fontWeight: FontWeight.w400,
+                                      height: 20 / 11,
                                     ),
                                     children: [
                                       const TextSpan(text: 'nos '),
@@ -350,8 +388,9 @@ class _SignUpState extends State<SignUp> {
                                         text: 'conditions générales',
                                         style: GoogleFonts.poppins(
                                           color: kPrimaryColor,
-                                          fontSize: footerTextSize,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.w400,
+                                          height: 20 / 11,
                                           decoration: TextDecoration.underline,
                                         ),
                                         recognizer: TapGestureRecognizer()
@@ -364,8 +403,9 @@ class _SignUpState extends State<SignUp> {
                                         text: 'charte de confidentialité',
                                         style: GoogleFonts.poppins(
                                           color: kPrimaryColor,
-                                          fontSize: footerTextSize,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.w400,
+                                          height: 20 / 11,
                                           decoration: TextDecoration.underline,
                                         ),
                                         recognizer: TapGestureRecognizer()
@@ -378,7 +418,7 @@ class _SignUpState extends State<SignUp> {
                                   ),
                                 ),
 
-                                SizedBox(height: isVerySmallScreen ? 4 : 8),
+                                SizedBox(height: 6 * ratioH),
 
                                 // Copyright - centered
                                 Text(
@@ -386,17 +426,14 @@ class _SignUpState extends State<SignUp> {
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.poppins(
                                     color: kSubTitleColor,
-                                    fontSize: copyrightSize,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.w400,
+                                    height: 20 / 11,
                                   ),
                                 ),
                               ],
                             ),
-
-                            // Spacer to center footer
-                            const Spacer(),
                           ],
-                        ],
                       ),
                     ),
                   ),

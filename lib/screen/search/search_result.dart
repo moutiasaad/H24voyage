@@ -60,7 +60,7 @@ class _SearchResultState extends State<SearchResult> {
   String selectedSortOption = 'Le moins cher';
 
   // Filter options
-  int selectedFilterCategory = 2; // 0: Compagnies, 1: Prix, 2: Escale, 3: Aéroport
+  int selectedFilterCategory = 2; // 0: Compagnies, 1: Prix, 2: Escale, 3: Horaires, 4: Aéroport
   int selectedFilterTab = 0; // 0: Aller, 1: Retour
   String selectedEscaleOption = 'Tous';
 
@@ -71,6 +71,10 @@ class _SearchResultState extends State<SearchResult> {
   Set<String> selectedFilterAirlineCodes = {};  // Airlines selected in filter dialog
   Set<String> selectedDepartureAirportCodes = {};  // Departure airports selected in filter
   Set<String> selectedArrivalAirportCodes = {};  // Arrival airports selected in filter
+
+  // Horaires (time) filter — range 0.0 to 24.0 (hours)
+  RangeValues selectedDepTimeRange = const RangeValues(0, 24);
+  RangeValues selectedArrTimeRange = const RangeValues(0, 24);
 
   // API Pagination state
   int _currentPage = 1;
@@ -115,6 +119,37 @@ class _SearchResultState extends State<SearchResult> {
     }
   }
 
+  /// Builds a [FlightResultsRequest] with all currently active filters applied.
+  FlightResultsRequest _buildFilteredRequest({required int page}) {
+    // Determine the airline param: prefer dialog filter, fall back to quick chip
+    String? airlineParam;
+    if (selectedFilterAirlineCodes.isNotEmpty) {
+      airlineParam = selectedFilterAirlineCodes.join(',');
+    } else if (selectedAirlineCode != null) {
+      airlineParam = selectedAirlineCode;
+    }
+
+    // Map sort option to API sort param
+    String? sortParam;
+    switch (selectedSortOption) {
+      case 'Le moins cher':
+        sortParam = 'P:asc';
+        break;
+      case 'Le plus cher':
+        sortParam = 'P:desc';
+        break;
+      default:
+        sortParam = null;
+    }
+
+    return FlightResultsRequest(
+      searchCode: widget.searchCode!,
+      page: page,
+      airline: airlineParam,
+      sort: sortParam,
+    );
+  }
+
   Future<void> _loadMoreItems() async {
     // If no searchCode, can't use API pagination
     if (widget.searchCode == null || !_hasMorePages || _isLoadingMore) {
@@ -126,22 +161,18 @@ class _SearchResultState extends State<SearchResult> {
     });
 
     try {
-      final request = FlightResultsRequest(
-        searchCode: widget.searchCode!,
-        page: _currentPage + 1,
-        airline: selectedAirlineCode,
-      );
-
+      final request = _buildFilteredRequest(page: _currentPage + 1);
       final response = await FlightService.getResults(request);
 
       if (mounted) {
         setState(() {
-          // Append new offers to existing list
           apiFlights.addAll(response.offers);
           _currentPage = response.currentPage ?? (_currentPage + 1);
           _totalPages = response.totalPages;
           _hasMorePages = response.totalPages != null && _currentPage < response.totalPages!;
           _isLoadingMore = false;
+          // Re-apply sort so new items are in the correct order
+          _sortFlights(selectedSortOption);
         });
       }
     } catch (e) {
@@ -174,12 +205,7 @@ class _SearchResultState extends State<SearchResult> {
     });
 
     try {
-      final request = FlightResultsRequest(
-        searchCode: widget.searchCode!,
-        page: 1,
-        airline: selectedAirlineCode,
-      );
-
+      final request = _buildFilteredRequest(page: 1);
       final response = await FlightService.getResults(request);
 
       if (mounted) {
@@ -189,6 +215,8 @@ class _SearchResultState extends State<SearchResult> {
           _totalPages = response.totalPages;
           _hasMorePages = response.totalPages != null && _currentPage < response.totalPages!;
           _isLoadingMore = false;
+          // Apply sort to fresh results
+          _sortFlights(selectedSortOption);
         });
       }
     } catch (e) {
@@ -206,7 +234,18 @@ class _SearchResultState extends State<SearchResult> {
     final allFilteredFlights = filteredApiFlights;
 
     // Show empty state if filters return no results
-    if (allFilteredFlights.isEmpty && (selectedAirlineCode != null || isDirectOnly)) {
+    final hasActiveFilters = selectedAirlineCode != null ||
+        isDirectOnly ||
+        selectedFilterAirlineCodes.isNotEmpty ||
+        selectedEscaleOption != 'Tous' ||
+        selectedDepartureAirportCodes.isNotEmpty ||
+        selectedArrivalAirportCodes.isNotEmpty ||
+        selectedDepTimeRange.start > 0 ||
+        selectedDepTimeRange.end < 24 ||
+        selectedArrTimeRange.start > 0 ||
+        selectedArrTimeRange.end < 24;
+
+    if (allFilteredFlights.isEmpty && hasActiveFilters) {
       return [
         SliverToBoxAdapter(
           child: Padding(
@@ -214,18 +253,14 @@ class _SearchResultState extends State<SearchResult> {
             child: Center(
               child: Column(
                 children: [
-                  Icon(
-                    isDirectOnly ? Icons.flight : Icons.filter_alt_off,
+                  const Icon(
+                    Icons.filter_alt_off,
                     size: 64,
                     color: kSubTitleColor,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    isDirectOnly && selectedAirlineCode == null
-                        ? 'Aucun vol direct disponible'
-                        : isDirectOnly
-                            ? 'Aucun vol direct pour cette compagnie'
-                            : 'Aucun vol pour cette compagnie',
+                    'Aucun vol ne correspond à vos filtres',
                     style: GoogleFonts.poppins(
                       color: kTitleColor,
                       fontSize: 16,
@@ -237,13 +272,19 @@ class _SearchResultState extends State<SearchResult> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        if (isDirectOnly) isDirectOnly = false;
-                        if (selectedAirlineCode != null) selectedAirlineCode = null;
+                        isDirectOnly = false;
+                        selectedAirlineCode = null;
+                        selectedFilterAirlineCodes = {};
+                        selectedEscaleOption = 'Tous';
+                        selectedDepartureAirportCodes = {};
+                        selectedArrivalAirportCodes = {};
+                        selectedDepTimeRange = const RangeValues(0, 24);
+                        selectedArrTimeRange = const RangeValues(0, 24);
                       });
-                      _resetPagination();
+                      _reloadFlightsWithFilters();
                     },
                     child: Text(
-                      'Afficher tous les vols',
+                      'Réinitialiser les filtres',
                       style: GoogleFonts.poppins(
                         color: kPrimaryColor,
                         fontSize: 14,
@@ -898,6 +939,8 @@ class _SearchResultState extends State<SearchResult> {
     if (selectedDepartureAirportCodes.isNotEmpty) count++;
     if (selectedArrivalAirportCodes.isNotEmpty) count++;
     if (selectedEscaleOption != 'Tous') count++;
+    if (selectedDepTimeRange.start > 0 || selectedDepTimeRange.end < 24) count++;
+    if (selectedArrTimeRange.start > 0 || selectedArrTimeRange.end < 24) count++;
     return count;
   }
 
@@ -1292,8 +1335,11 @@ class _SearchResultState extends State<SearchResult> {
     final Map<String, Map<String, dynamic>> airlinesMap = {};
     double minPrice = double.infinity;
     double maxPrice = 0;
-    final Map<String, Map<String, dynamic>> departureAirportsMap = {};
-    final Map<String, Map<String, dynamic>> arrivalAirportsMap = {};
+    // Separate airports by role: outbound departure, outbound arrival,
+    // connection (layover), return departure, return arrival
+    final Map<String, Map<String, dynamic>> outDepAirportsMap = {};
+    final Map<String, Map<String, dynamic>> outArrAirportsMap = {};
+    final Map<String, Map<String, dynamic>> connectionAirportsMap = {};
     int maxStops = 0;
 
     if (hasApiFlights) {
@@ -1303,13 +1349,17 @@ class _SearchResultState extends State<SearchResult> {
         if (price < minPrice) minPrice = price;
         if (price > maxPrice) maxPrice = price;
 
-        for (final journey in offer.journey) {
+        for (int jIdx = 0; jIdx < offer.journey.length; jIdx++) {
+          final journey = offer.journey[jIdx];
+          final segments = journey.flightSegments;
+          if (segments.isEmpty) continue;
+
           // Track max stops
-          final stops = journey.flight?.stopQuantity ?? (journey.flightSegments.length - 1);
+          final stops = journey.flight?.stopQuantity ?? (segments.length - 1);
           if (stops > maxStops) maxStops = stops;
 
-          for (int i = 0; i < journey.flightSegments.length; i++) {
-            final segment = journey.flightSegments[i];
+          for (int i = 0; i < segments.length; i++) {
+            final segment = segments[i];
 
             // Extract airline info
             final airlineCode = segment.operatingAirline ?? segment.marketingAirline;
@@ -1323,31 +1373,51 @@ class _SearchResultState extends State<SearchResult> {
               };
             }
 
-            // Extract departure airports (first segment of first journey)
-            if (i == 0) {
-              final depCode = segment.departureAirportCode;
-              final depDetails = segment.departureAirportDetails;
-              if (depCode != null && !departureAirportsMap.containsKey(depCode)) {
-                departureAirportsMap[depCode] = {
-                  'name': depDetails?.name ?? depCode,
-                  'code': depCode,
-                  'city': depDetails?.city ?? '',
-                  'selected': selectedDepartureAirportCodes.contains(depCode),
-                };
+            // Outbound journey (jIdx == 0)
+            if (jIdx == 0) {
+              // First segment departure = outbound departure airport
+              if (i == 0) {
+                final depCode = segment.departureAirportCode;
+                final depDetails = segment.departureAirportDetails;
+                if (depCode != null && !outDepAirportsMap.containsKey(depCode)) {
+                  outDepAirportsMap[depCode] = {
+                    'name': depDetails?.name ?? depCode,
+                    'code': depCode,
+                    'city': depDetails?.city ?? '',
+                    'selected': selectedDepartureAirportCodes.contains(depCode),
+                  };
+                }
               }
-            }
 
-            // Extract arrival airports (last segment of last journey)
-            if (i == journey.flightSegments.length - 1) {
-              final arrCode = segment.arrivalAirportCode;
-              final arrDetails = segment.arrivalAirportDetails;
-              if (arrCode != null && !arrivalAirportsMap.containsKey(arrCode)) {
-                arrivalAirportsMap[arrCode] = {
-                  'name': arrDetails?.name ?? arrCode,
-                  'code': arrCode,
-                  'city': arrDetails?.city ?? '',
-                  'selected': selectedArrivalAirportCodes.contains(arrCode),
-                };
+              // Last segment arrival = outbound arrival airport
+              if (i == segments.length - 1) {
+                final arrCode = segment.arrivalAirportCode;
+                final arrDetails = segment.arrivalAirportDetails;
+                if (arrCode != null && !outArrAirportsMap.containsKey(arrCode)) {
+                  outArrAirportsMap[arrCode] = {
+                    'name': arrDetails?.name ?? arrCode,
+                    'code': arrCode,
+                    'city': arrDetails?.city ?? '',
+                    'selected': selectedArrivalAirportCodes.contains(arrCode),
+                  };
+                }
+              }
+
+              // Connection airports (intermediate segments)
+              if (segments.length > 1) {
+                // Arrival of non-last segments = connection point
+                if (i < segments.length - 1) {
+                  final connCode = segment.arrivalAirportCode;
+                  final connDetails = segment.arrivalAirportDetails;
+                  if (connCode != null && !connectionAirportsMap.containsKey(connCode)) {
+                    connectionAirportsMap[connCode] = {
+                      'name': connDetails?.name ?? connCode,
+                      'code': connCode,
+                      'city': connDetails?.city ?? '',
+                      'selected': false,
+                    };
+                  }
+                }
               }
             }
           }
@@ -1360,16 +1430,16 @@ class _SearchResultState extends State<SearchResult> {
     if (maxStops >= 1) escaleOptions.add('Jusqu\'à 1 escale');
     if (maxStops >= 2) escaleOptions.add('Jusqu\'à 2 escales');
 
-    // Get cities for departure/arrival sections
-    final departureCity = departureAirportsMap.isNotEmpty
-        ? (departureAirportsMap.values.first['city'] as String?) ?? widget.fromAirport.city
+    // Get cities from extracted airports or fallback to widget data
+    final departureCity = outDepAirportsMap.isNotEmpty
+        ? (outDepAirportsMap.values.first['city'] as String?) ?? widget.fromAirport.city
         : widget.fromAirport.city;
-    final arrivalCity = arrivalAirportsMap.isNotEmpty
-        ? (arrivalAirportsMap.values.first['city'] as String?) ?? widget.toAirport.city
+    final arrivalCity = outArrAirportsMap.isNotEmpty
+        ? (outArrAirportsMap.values.first['city'] as String?) ?? widget.toAirport.city
         : widget.toAirport.city;
 
     return {
-      'categories': ['Compagnies', 'Prix', 'Escale', 'Aéroport'],
+      'categories': ['Compagnies', 'Prix', 'Escale', 'Horaires', 'Aéroport'],
       'compagnies': airlinesMap.values.toList(),
       'prix': {
         'min': minPrice == double.infinity ? 0 : minPrice,
@@ -1380,11 +1450,14 @@ class _SearchResultState extends State<SearchResult> {
       'aeroports': {
         'depart': {
           'city': departureCity.split(',').first,
-          'airports': departureAirportsMap.values.toList(),
+          'airports': outDepAirportsMap.values.toList(),
         },
         'arrivee': {
           'city': arrivalCity.split(',').first,
-          'airports': arrivalAirportsMap.values.toList(),
+          'airports': outArrAirportsMap.values.toList(),
+        },
+        'connexion': {
+          'airports': connectionAirportsMap.values.toList(),
         },
       },
     };
@@ -1394,6 +1467,8 @@ class _SearchResultState extends State<SearchResult> {
     int tempSelectedCategory = selectedFilterCategory;
     int tempSelectedTab = selectedFilterTab;
     String tempEscaleOption = selectedEscaleOption;
+    RangeValues tempDepTimeRange = selectedDepTimeRange;
+    RangeValues tempArrTimeRange = selectedArrTimeRange;
 
     // Create mutable copies of filter data
     List<Map<String, dynamic>> tempCompagnies = List.from(
@@ -1610,6 +1685,10 @@ class _SearchResultState extends State<SearchResult> {
                                       (type, index, value) => setModalState(() {
                                         tempAeroports[type]['airports'][index]['selected'] = value;
                                       }),
+                                      depTimeRange: tempDepTimeRange,
+                                      arrTimeRange: tempArrTimeRange,
+                                      onDepTimeChanged: (v) => setModalState(() => tempDepTimeRange = v),
+                                      onArrTimeChanged: (v) => setModalState(() => tempArrTimeRange = v),
                                     ),
                                   ),
                                 ),
@@ -1644,32 +1723,22 @@ class _SearchResultState extends State<SearchResult> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Reset button - only resets current filter category
+                          // Reset button - resets ALL filters and closes bottom sheet
                           GestureDetector(
                             onTap: () {
-                              setModalState(() {
-                                switch (tempSelectedCategory) {
-                                  case 0: // Compagnies
-                                    for (var c in tempCompagnies) {
-                                      c['selected'] = false;
-                                    }
-                                    break;
-                                  case 1: // Prix
-                                    // Reset price range if implemented
-                                    break;
-                                  case 2: // Escale
-                                    tempEscaleOption = 'Tous';
-                                    break;
-                                  case 3: // Aéroport
-                                    for (var a in tempAeroports['depart']['airports']) {
-                                      a['selected'] = false;
-                                    }
-                                    for (var a in tempAeroports['arrivee']['airports']) {
-                                      a['selected'] = false;
-                                    }
-                                    break;
-                                }
+                              setState(() {
+                                selectedFilterCategory = 0;
+                                selectedFilterTab = 0;
+                                selectedEscaleOption = 'Tous';
+                                selectedFilterAirlineCodes = {};
+                                selectedDepartureAirportCodes = {};
+                                selectedArrivalAirportCodes = {};
+                                selectedAirlineCode = null;
+                                selectedDepTimeRange = const RangeValues(0, 24);
+                                selectedArrTimeRange = const RangeValues(0, 24);
                               });
+                              Navigator.pop(context);
+                              _reloadFlightsWithFilters();
                             },
                             child: Container(
                               height: 30,
@@ -1716,13 +1785,17 @@ class _SearchResultState extends State<SearchResult> {
                                     .map((a) => a['code'] as String)
                                     .toSet();
 
+                                // Save horaires filter
+                                selectedDepTimeRange = tempDepTimeRange;
+                                selectedArrTimeRange = tempArrTimeRange;
+
                                 // Clear the quick chip filter when applying dialog filters
                                 if (selectedFilterAirlineCodes.isNotEmpty) {
                                   selectedAirlineCode = null;
                                 }
                               });
-                              _resetPagination();
                               Navigator.pop(context);
+                              _reloadFlightsWithFilters();
                             },
                             child: Container(
                               width: 126,
@@ -1757,6 +1830,12 @@ class _SearchResultState extends State<SearchResult> {
     );
   }
 
+  String _formatHour(double h) {
+    final hours = h.floor();
+    final minutes = ((h - hours) * 60).round();
+    return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}';
+  }
+
   Widget _buildFilterContent(
     int category,
     String escaleOption,
@@ -1765,8 +1844,12 @@ class _SearchResultState extends State<SearchResult> {
     Map<String, dynamic> aeroports,
     Function(String) onEscaleChanged,
     Function(int, bool) onCompagnieChanged,
-    Function(String, int, bool) onAeroportChanged,
-  ) {
+    Function(String, int, bool) onAeroportChanged, {
+    RangeValues depTimeRange = const RangeValues(0, 24),
+    RangeValues arrTimeRange = const RangeValues(0, 24),
+    Function(RangeValues)? onDepTimeChanged,
+    Function(RangeValues)? onArrTimeChanged,
+  }) {
     switch (category) {
       case 0: // Compagnies
         return Column(
@@ -1816,7 +1899,84 @@ class _SearchResultState extends State<SearchResult> {
           }).toList(),
         );
 
-      case 3: // Aéroport
+      case 3: // Horaires
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Departure time range
+            Text(
+              'Heure de départ',
+              style: GoogleFonts.poppins(
+                color: kTitleColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_formatHour(depTimeRange.start), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
+                Text(_formatHour(depTimeRange.end), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
+              ],
+            ),
+            SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: kPrimaryColor,
+                inactiveTrackColor: kBorderColorTextField,
+                thumbColor: kPrimaryColor,
+                overlayColor: kPrimaryColor.withOpacity(0.1),
+                rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
+              ),
+              child: RangeSlider(
+                values: depTimeRange,
+                min: 0,
+                max: 24,
+                divisions: 48,
+                onChanged: (v) => onDepTimeChanged?.call(v),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Arrival time range
+            Text(
+              "Heure d'arrivée",
+              style: GoogleFonts.poppins(
+                color: kTitleColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(_formatHour(arrTimeRange.start), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
+                Text(_formatHour(arrTimeRange.end), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
+              ],
+            ),
+            SliderTheme(
+              data: SliderThemeData(
+                activeTrackColor: kPrimaryColor,
+                inactiveTrackColor: kBorderColorTextField,
+                thumbColor: kPrimaryColor,
+                overlayColor: kPrimaryColor.withOpacity(0.1),
+                rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
+              ),
+              child: RangeSlider(
+                values: arrTimeRange,
+                min: 0,
+                max: 24,
+                divisions: 48,
+                onChanged: (v) => onArrTimeChanged?.call(v),
+              ),
+            ),
+          ],
+        );
+
+      case 4: // Aéroport
+        final depAirports = aeroports['depart']['airports'] as List;
+        final arrAirports = aeroports['arrivee']['airports'] as List;
+        final connAirports = (aeroports['connexion']?['airports'] as List?) ?? [];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1830,11 +1990,11 @@ class _SearchResultState extends State<SearchResult> {
               ),
             ),
             const SizedBox(height: 8),
-            ...(aeroports['depart']['airports'] as List).asMap().entries.map((entry) {
+            ...depAirports.asMap().entries.map((entry) {
               final index = entry.key;
               final airport = entry.value;
               return _buildCheckboxOption(
-                airport['name'],
+                '${airport['code']} - ${airport['name']}',
                 airport['selected'],
                 (value) => onAeroportChanged('depart', index, value),
               );
@@ -1852,15 +2012,46 @@ class _SearchResultState extends State<SearchResult> {
               ),
             ),
             const SizedBox(height: 8),
-            ...(aeroports['arrivee']['airports'] as List).asMap().entries.map((entry) {
+            ...arrAirports.asMap().entries.map((entry) {
               final index = entry.key;
               final airport = entry.value;
               return _buildCheckboxOption(
-                airport['name'],
+                '${airport['code']} - ${airport['name']}',
                 airport['selected'],
                 (value) => onAeroportChanged('arrivee', index, value),
               );
             }).toList(),
+
+            // Connection airports (only show if there are layover airports)
+            if (connAirports.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Escales via',
+                style: GoogleFonts.poppins(
+                  color: kTitleColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...connAirports.map((airport) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Icon(Icons.connecting_airports, size: 16, color: kSubTitleColor),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${airport['code']} - ${airport['name']}',
+                          style: GoogleFonts.poppins(fontSize: 13, color: kSubTitleColor),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ],
           ],
         );
 
@@ -2168,10 +2359,9 @@ class _SearchResultState extends State<SearchResult> {
       }).toList();
     }
 
-    // Filter by departure airports (Aéroport)
+    // Filter by departure airports (outbound first segment)
     if (selectedDepartureAirportCodes.isNotEmpty) {
       result = result.where((offer) {
-        // Check the first segment of the first journey for departure
         if (offer.journey.isNotEmpty && offer.journey.first.flightSegments.isNotEmpty) {
           final depCode = offer.journey.first.flightSegments.first.departureAirportCode;
           return depCode != null && selectedDepartureAirportCodes.contains(depCode);
@@ -2180,15 +2370,46 @@ class _SearchResultState extends State<SearchResult> {
       }).toList();
     }
 
-    // Filter by arrival airports (Aéroport)
+    // Filter by arrival airports (outbound last segment)
     if (selectedArrivalAirportCodes.isNotEmpty) {
       result = result.where((offer) {
-        // Check the last segment of the last journey for arrival
-        if (offer.journey.isNotEmpty && offer.journey.last.flightSegments.isNotEmpty) {
-          final arrCode = offer.journey.last.flightSegments.last.arrivalAirportCode;
+        if (offer.journey.isNotEmpty && offer.journey.first.flightSegments.isNotEmpty) {
+          final arrCode = offer.journey.first.flightSegments.last.arrivalAirportCode;
           return arrCode != null && selectedArrivalAirportCodes.contains(arrCode);
         }
         return false;
+      }).toList();
+    }
+
+    // Filter by departure time (Horaires)
+    if (selectedDepTimeRange.start > 0 || selectedDepTimeRange.end < 24) {
+      result = result.where((offer) {
+        if (offer.journey.isEmpty || offer.journey.first.flightSegments.isEmpty) return false;
+        final depDt = offer.journey.first.flightSegments.first.departureDateTime;
+        if (depDt == null) return false;
+        try {
+          final dt = DateTime.parse(depDt);
+          final hour = dt.hour + dt.minute / 60.0;
+          return hour >= selectedDepTimeRange.start && hour <= selectedDepTimeRange.end;
+        } catch (_) {
+          return true;
+        }
+      }).toList();
+    }
+
+    // Filter by arrival time (Horaires)
+    if (selectedArrTimeRange.start > 0 || selectedArrTimeRange.end < 24) {
+      result = result.where((offer) {
+        if (offer.journey.isEmpty || offer.journey.last.flightSegments.isEmpty) return false;
+        final arrDt = offer.journey.last.flightSegments.last.arrivalDateTime;
+        if (arrDt == null) return false;
+        try {
+          final dt = DateTime.parse(arrDt);
+          final hour = dt.hour + dt.minute / 60.0;
+          return hour >= selectedArrTimeRange.start && hour <= selectedArrTimeRange.end;
+        } catch (_) {
+          return true;
+        }
       }).toList();
     }
 
@@ -2246,7 +2467,7 @@ class _SearchResultState extends State<SearchResult> {
               setState(() {
                 selectedAirlineCode = null;
               });
-              _resetPagination();
+              _reloadFlightsWithFilters();
             },
             child: Container(
               height: chipHeight,
@@ -2287,7 +2508,7 @@ class _SearchResultState extends State<SearchResult> {
                     selectedAirlineCode = airlineCode;
                   }
                 });
-                _resetPagination();
+                _reloadFlightsWithFilters();
               },
               child: Tooltip(
                 message: airlineName.isNotEmpty ? airlineName : airlineCode,
@@ -2766,15 +2987,7 @@ class _SearchResultState extends State<SearchResult> {
                   duration: outboundDuration,
                   isDirect: outboundStops == 0,
                   isExpanded: isOutboundExpanded,
-                  onToggleExpand: () {
-                    setState(() {
-                      if (isOutboundExpanded) {
-                        expandedOutbound.remove(index);
-                      } else {
-                        expandedOutbound.add(index);
-                      }
-                    });
-                  },
+                  onToggleExpand: () => _showFlightDetailsBottomSheet(offer),
                   stops: outboundStops,
                   segments: outboundSegments,
                 ),
@@ -2796,15 +3009,7 @@ class _SearchResultState extends State<SearchResult> {
                     duration: returnDuration,
                     isDirect: returnStops == 0,
                     isExpanded: isReturnExpanded,
-                    onToggleExpand: () {
-                      setState(() {
-                        if (isReturnExpanded) {
-                          expandedReturn.remove(index);
-                        } else {
-                          expandedReturn.add(index);
-                        }
-                      });
-                    },
+                    onToggleExpand: () => _showFlightDetailsBottomSheet(offer),
                     stops: returnStops,
                     segments: returnSegments,
                   ),
@@ -3690,6 +3895,458 @@ class _SearchResultState extends State<SearchResult> {
     );
   }
 
+  // ── Flight Details Bottom Sheet ──
+  void _showFlightDetailsBottomSheet(FlightOffer offer) {
+    final price = offer.totalPrice;
+    final currency = offer.currency;
+    final journeyList = offer.journey;
+    final isRoundTrip = !widget.isOneWay && journeyList.length > 1;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final screenHeight = MediaQuery.of(ctx).size.height;
+        final bottomPadding = MediaQuery.of(ctx).padding.bottom;
+        final maxSheetHeight = screenHeight * 0.85;
+
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxSheetHeight),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: kWhite,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Handle bar (drag to dismiss)
+                GestureDetector(
+                  onTap: () => Navigator.pop(ctx),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10, bottom: 6),
+                    child: Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                ),
+                // Title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Informations sur le vol',
+                      style: GoogleFonts.poppins(
+                        color: kTitleColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                // Journey list
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    itemCount: journeyList.length,
+                    separatorBuilder: (_, __) => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(height: 1),
+                    ),
+                    itemBuilder: (_, jIdx) {
+                      final journey = journeyList[jIdx];
+                      final segments = journey.flightSegments;
+                      if (segments.isEmpty) return const SizedBox.shrink();
+
+                      final firstSeg = segments.first;
+                      final lastSeg = segments.last;
+                      final depCity = firstSeg.departureAirportDetails?.city ?? firstSeg.departureAirportCode ?? '';
+                      final arrCity = lastSeg.arrivalAirportDetails?.city ?? lastSeg.arrivalAirportCode ?? '';
+                      final journeyDuration = journey.flight?.flightInfo?.duration ?? '--';
+                      final stops = journey.flight?.stopQuantity ?? (segments.length - 1);
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Journey header: City - City  Duration
+                          Row(
+                            children: [
+                              Icon(Icons.flight_takeoff, color: kPrimaryColor, size: 16),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  '$depCity \u2013 $arrCity',
+                                  style: GoogleFonts.poppins(
+                                    color: kPrimaryColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                journeyDuration,
+                                style: GoogleFonts.poppins(
+                                  color: kTitleColor,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // Each segment
+                          ...segments.asMap().entries.map((entry) {
+                            final sIdx = entry.key;
+                            final seg = entry.value;
+                            return _buildBottomSheetSegment(seg, sIdx < segments.length - 1 ? segments[sIdx + 1] : null);
+                          }),
+                          // Stops info
+                          if (stops > 0) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Icon(Icons.info_outline, size: 14, color: kSubTitleColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$stops escale${stops > 1 ? 's' : ''}',
+                                  style: GoogleFonts.poppins(
+                                    color: kSubTitleColor,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                // Bottom bar with price + Continuer
+                Container(
+                  padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomPadding),
+                decoration: BoxDecoration(
+                  color: kWhite,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${price.toStringAsFixed(0)} $currency/ per',
+                            style: GoogleFonts.poppins(
+                              color: kTitleColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            isRoundTrip ? 'Vol aller retour' : 'Vol aller simple',
+                            style: GoogleFonts.poppins(
+                              color: kSubTitleColor,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const FlightDetails(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: kPrimaryColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Continuer',
+                          style: GoogleFonts.poppins(
+                            color: kWhite,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Format full date with day name (e.g., "Sam. 17 Janv.") ──
+  String _formatDateDayFull(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(dateTime);
+      final locale = Localizations.localeOf(context).languageCode;
+      return DateFormat('E. d MMM.', locale).format(dt);
+    } catch (_) {
+      return '';
+    }
+  }
+
+  /// Builds a single segment inside the bottom sheet
+  Widget _buildBottomSheetSegment(FlightSegmentDetail seg, FlightSegmentDetail? nextSeg) {
+    final depTime = _formatTimeFromDateTime(seg.departureDateTime);
+    final arrTime = _formatTimeFromDateTime(seg.arrivalDateTime);
+    final depDateFull = _formatDateDayFull(seg.departureDateTime);
+    final arrDateFull = _formatDateDayFull(seg.arrivalDateTime);
+    final depCode = seg.departureAirportCode ?? '';
+    final arrCode = seg.arrivalAirportCode ?? '';
+    final depAirportName = seg.departureAirportDetails?.name ?? 'Aéroport $depCode';
+    final arrAirportName = seg.arrivalAirportDetails?.name ?? 'Aéroport $arrCode';
+    final depTerminal = seg.departureTerminal;
+    final arrTerminal = seg.arrivalTerminal;
+    final airlineCode = seg.marketingAirline ?? seg.operatingAirline ?? '';
+    final flightNum = seg.flightNumber?.toString() ?? '';
+    final seats = seg.seatsAvailable;
+    final cabinClass = seg.cabinClass ?? 'Économique';
+    final duration = seg.duration ?? '--';
+    final airlineLogoUrl = _getAirlineLogoUrl(airlineCode);
+
+    // Baggage
+    String checkedBag = '--';
+    String cabinBag = '--';
+    final bag = seg.baggageAllowance;
+    if (bag != null) {
+      if (bag.checkedInBaggage.isNotEmpty) {
+        final cb = bag.checkedInBaggage.first;
+        final unit = cb.unit ?? 'Kg';
+        if (unit.toUpperCase().contains('PC') || unit.toUpperCase().contains('PIECE')) {
+          checkedBag = 'Adulte: ${cb.value ?? 1} pièces';
+        } else {
+          checkedBag = 'Adulte: ${cb.value ?? 24}$unit';
+        }
+      }
+      if (bag.cabinBaggage.isNotEmpty) {
+        final hb = bag.cabinBaggage.first;
+        cabinBag = 'Adulte: ${hb.value ?? 7}${hb.unit ?? 'Kg'}';
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: kWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE8E8E8), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Departure / Timeline / Arrival (single continuous column) ──
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Left column: times + duration ──
+                SizedBox(
+                  width: 90,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(depTime, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: kTitleColor)),
+                      Text(depDateFull, style: GoogleFonts.poppins(fontSize: 10, color: kSubTitleColor)),
+                      const Spacer(),
+                      Text(duration, style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500, color: kSubTitleColor)),
+                      const Spacer(),
+                      Text(arrTime, style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700, color: kTitleColor)),
+                      Text(arrDateFull, style: GoogleFonts.poppins(fontSize: 10, color: kSubTitleColor)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // ── Timeline column: dot → line → avion → line → dot ──
+                Column(
+                  children: [
+                    const SizedBox(height: 4),
+                    Container(width: 12, height: 12, decoration: const BoxDecoration(shape: BoxShape.circle, color: kPrimaryColor)),
+                    Expanded(child: Container(width: 1, color: kBorderColorTextField)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Image.asset('assets/avion.png', width: 18, height: 18, color: kPrimaryColor),
+                    ),
+                    Expanded(child: Container(width: 1, color: kBorderColorTextField)),
+                    Container(width: 12, height: 12, decoration: const BoxDecoration(shape: BoxShape.circle, color: kPrimaryColor)),
+                    const SizedBox(height: 4),
+                  ],
+                ),
+                const SizedBox(width: 12),
+                // ── Right column: airports + flight info ──
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Departure airport
+                      Text(
+                        '$depCode .${depTerminal != null ? ' T$depTerminal' : ''}',
+                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: kTitleColor),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(depAirportName, style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor)),
+                      const Spacer(),
+                      // Flight info bordered container
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Airline logo
+                            ClipOval(
+                              child: Image.network(
+                                airlineLogoUrl,
+                                width: 20,
+                                height: 20,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: 20, height: 20,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: kPrimaryColor.withOpacity(0.1),
+                                  ),
+                                  child: Center(
+                                    child: Text(airlineCode, style: GoogleFonts.poppins(fontSize: 7, fontWeight: FontWeight.bold, color: kPrimaryColor)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            // Flight number
+                            Text(
+                              '$airlineCode $flightNum',
+                              style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500, color: kTitleColor),
+                            ),
+                            const SizedBox(width: 8),
+                            // Aircraft icon (grey avion)
+                            Image.asset('assets/siege-davion.png', width: 16, height: 16, color: const Color(0xFF9A9A9A)),
+                            const SizedBox(width: 4),
+                            // Seats
+                            if (seats != null) ...[
+                              Text('${seats}N', style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.w500, color: kTitleColor)),
+                              const SizedBox(width: 8),
+                            ],
+                            // Seat icon
+                            Image.asset('assets/siege-davion1.png', width: 16, height: 16),
+                            const SizedBox(width: 4),
+                            // Cabin class
+                            Flexible(
+                              child: Text(
+                                cabinClass,
+                                style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      // Arrival airport
+                      Text(
+                        '$arrCode .${arrTerminal != null ? ' T$arrTerminal' : ''}',
+                        style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: kTitleColor),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(arrAirportName, style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // ── Baggage info ──
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.luggage, size: 14, color: kSubTitleColor),
+                    const SizedBox(width: 6),
+                    Text('Bagages en soute: $checkedBag', style: GoogleFonts.poppins(fontSize: 11, color: kTitleColor)),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Image.asset('assets/siege-davion.png', width: 14, height: 14),
+                    const SizedBox(width: 6),
+                    Text('Bagages à main/ $cabinBag', style: GoogleFonts.poppins(fontSize: 11, color: kTitleColor)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Layover if there's a next segment
+          if (nextSeg != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border.all(color: kBorderColorTextField),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.access_time, size: 14, color: kSubTitleColor),
+                  const SizedBox(width: 4),
+                  Text(
+                    '1 escale à l\'aéroport ${seg.arrivalAirportCode ?? ''}',
+                    style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildFlightSegment({
     required String airlineLogo,
     required String airlineName,
@@ -3972,50 +4629,54 @@ class _SearchResultState extends State<SearchResult> {
             // Baggage icons - clickable to show details
             Expanded(
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: () => _showBaggageDetailsBottomSheet(context, baggage),
-                child: Row(
-                  children: [
-                    Image.asset(
-                      'assets/cabin_bag.png',
-                      width: baggageIconSize,
-                      height: baggageIconSize,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.work_outline, color: textGray, size: baggageIconSize - 2);
-                      },
-                    ),
-                    SizedBox(width: isSmallScreen ? 2 : 3),
-                    Text(
-                      cabinWeight,
-                      style: GoogleFonts.poppins(
-                        color: textGray,
-                        fontSize: baggageFontSize,
-                        fontWeight: FontWeight.w400,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/cabin_bag.png',
+                        width: baggageIconSize,
+                        height: baggageIconSize,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.work_outline, color: textGray, size: baggageIconSize - 2);
+                        },
                       ),
-                    ),
-                    SizedBox(width: isSmallScreen ? 4 : 8),
-                    Image.asset(
-                      'assets/luggage.png',
-                      width: baggageIconSize,
-                      height: baggageIconSize,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.luggage_outlined, color: textGray, size: baggageIconSize - 2);
-                      },
-                    ),
-                    SizedBox(width: isSmallScreen ? 2 : 3),
-                    Flexible(
-                      child: Text(
-                        checkedWeight,
+                      SizedBox(width: isSmallScreen ? 2 : 3),
+                      Text(
+                        cabinWeight,
                         style: GoogleFonts.poppins(
                           color: textGray,
                           fontSize: baggageFontSize,
                           fontWeight: FontWeight.w400,
                         ),
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    const SizedBox(width: 2),
-                    Icon(Icons.keyboard_arrow_down, color: textGray, size: isSmallScreen ? 12 : 14),
-                  ],
+                      SizedBox(width: isSmallScreen ? 4 : 8),
+                      Image.asset(
+                        'assets/luggage.png',
+                        width: baggageIconSize,
+                        height: baggageIconSize,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.luggage_outlined, color: textGray, size: baggageIconSize - 2);
+                        },
+                      ),
+                      SizedBox(width: isSmallScreen ? 2 : 3),
+                      Flexible(
+                        child: Text(
+                          checkedWeight,
+                          style: GoogleFonts.poppins(
+                            color: textGray,
+                            fontSize: baggageFontSize,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(Icons.keyboard_arrow_down, color: textGray, size: isSmallScreen ? 12 : 14),
+                    ],
+                  ),
                 ),
               ),
             ),

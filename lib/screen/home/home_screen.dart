@@ -234,6 +234,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         builder: (context) => FlightSearchLoading(
           destinationCity: toAirport?.city ?? 'Destination',
           searchFunction: () => _performOneWaySearch(),
+          getTotalFlights: () => _flightController.totalOffers,
           onSearchComplete: () {
             Navigator.pop(context); // Pop loading screen
             if (!_flightController.hasError) {
@@ -282,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         builder: (context) => FlightSearchLoading(
           destinationCity: toAirport?.city ?? 'Destination',
           searchFunction: () => _performRoundTripSearch(),
+          getTotalFlights: () => _flightController.totalOffers,
           onSearchComplete: () {
             Navigator.pop(context); // Pop loading screen
             if (!_flightController.hasError) {
@@ -742,48 +744,57 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Header that scrolls with content
-                    Container(
-                      height: 200,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          bottomRight: Radius.circular(30.0),
-                          bottomLeft: Radius.circular(30.0),
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          bottomRight: Radius.circular(30.0),
-                          bottomLeft: Radius.circular(30.0),
-                        ),
-                        child: Stack(
-                          children: [
-                            // Solid orange background
-                            Positioned.fill(
-                              child: Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Color(0xFFFF5100),
-                                      Color(0xFFFF5100),
-                                    ],
+                    // Header + Search card with overlap
+                    Stack(
+                      children: [
+                        // Orange header background
+                        Container(
+                          height: 200,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.only(
+                              bottomRight: Radius.circular(30.0),
+                              bottomLeft: Radius.circular(30.0),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              bottomRight: Radius.circular(30.0),
+                              bottomLeft: Radius.circular(30.0),
+                            ),
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Container(
+                                    decoration: const BoxDecoration(
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [
+                                          Color(0xFFFF5100),
+                                          Color(0xFFFF5100),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            // Background image on top
-                            Positioned.fill(
-                              child: Opacity(
-                                opacity: 0.8,
-                                child: Image.asset(
-                                  'images/background-home.png',
-                                  fit: BoxFit.cover,
+                                Positioned.fill(
+                                  child: Opacity(
+                                    opacity: 0.8,
+                                    child: Image.asset(
+                                      'images/background-home.png',
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                            // Content
+                          ),
+                        ),
+                        // Header content + Card in a Column (determines Stack height)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header content
                             Padding(
                               padding: EdgeInsets.only(
                                 top: MediaQuery.of(context).padding.top + 10,
@@ -794,7 +805,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Header with logo and notification
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
@@ -824,7 +834,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   const SizedBox(height: 20),
-                                  // Flight icon with text
                                   Row(
                                     children: [
                                       Container(
@@ -854,16 +863,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    // Search form card
-                    Padding(
-                      padding: const EdgeInsets.only(top: 0, left: 15.0, right: 15),
-                      child: Transform.translate(
-                        offset: const Offset(0, -30),
-                        child: Material(
+                            // Search form card (overlaps orange header visually)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 15.0, right: 15),
+                              child: Material(
                         borderRadius: BorderRadius.circular(30.0),
                         elevation: 2,
                         shadowColor: kDarkWhite,
@@ -877,58 +880,74 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               AnimatedBuilder(
-                                animation: tabController!,
+                                animation: tabController!.animation!,
                                 builder: (context, child) {
                                   final labels = [
                                     lang.S.of(context).tab2,
                                     lang.S.of(context).tab1,
                                     lang.S.of(context).tab3,
                                   ];
-                                  return Row(
-                                    children: List.generate(labels.length, (index) {
-                                      final isSelected = tabController!.index == index;
-                                      return Expanded(
-                                        child: GestureDetector(
-                                          behavior: HitTestBehavior.opaque,
-                                          onTap: () {
-                                            tabController!.animateTo(index);
-                                            setState(() {
-                                              selectedIndex = index;
-                                              if (index == 1) {
-                                                returnDate = null;
-                                                _selectedDateRange = null;
-                                              }
-                                            });
-                                          },
-                                          child: Column(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                                                child: Text(
-                                                  labels[index],
-                                                  textAlign: TextAlign.center,
-                                                  style: kTextStyle.copyWith(
-                                                    color: kTitleColor,
-                                                    fontSize: 15,
-                                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                                    height: 0.8,
+                                  final animValue = tabController!.animation!.value;
+                                  return LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final tabWidth = constraints.maxWidth / labels.length;
+                                      return Stack(
+                                        children: [
+                                          // Tab buttons
+                                          Row(
+                                            children: List.generate(labels.length, (index) {
+                                              final isSelected = tabController!.index == index;
+                                              return Expanded(
+                                                child: ElevatedButton(
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.transparent,
+                                                    shadowColor: Colors.transparent,
+                                                    surfaceTintColor: Colors.transparent,
+                                                    padding: const EdgeInsets.only(top: 16.0, bottom: 22.0),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(8.0),
+                                                    ),
+                                                    elevation: 0,
+                                                  ),
+                                                  onPressed: () {
+                                                    tabController!.animateTo(index);
+                                                    setState(() {
+                                                      selectedIndex = index;
+                                                      if (index == 1) {
+                                                        returnDate = null;
+                                                        _selectedDateRange = null;
+                                                      }
+                                                    });
+                                                  },
+                                                  child: Text(
+                                                    labels[index],
+                                                    textAlign: TextAlign.center,
+                                                    style: kTextStyle.copyWith(
+                                                      color: kTitleColor,
+                                                      fontSize: 15,
+                                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              AnimatedContainer(
-                                                duration: const Duration(milliseconds: 250),
-                                                height: 4.0,
-                                                margin: const EdgeInsets.symmetric(horizontal: 12.0),
-                                                decoration: BoxDecoration(
-                                                  color: isSelected ? kPrimaryColor : Colors.transparent,
-                                                  borderRadius: BorderRadius.circular(3.0),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
                                       );
                                     }),
+                                  ),
+                                          // Sliding indicator at bottom of buttons
+                                          Positioned(
+                                            bottom: 4,
+                                            left: animValue * tabWidth + 12,
+                                            child: Container(
+                                              width: tabWidth - 24,
+                                              height: 4.0,
+                                              decoration: BoxDecoration(
+                                                color: kPrimaryColor,
+                                                borderRadius: BorderRadius.circular(3.0),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 },
                               ),
@@ -1741,40 +1760,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   // Toggle switches for direct flights and baggage
                                   Row(
                                     children: [
-                                      Expanded(
-                                        child: Row(
-                                          children: [
-                                            SizedBox(
-                                              height: 24,
-                                              child: Switch(
-                                                value: isDirectFlight,
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    isDirectFlight = value;
-                                                  });
-                                                },
-                                                activeColor: kPrimaryColor,
-                                                activeTrackColor: kPrimaryColor.withOpacity(0.3),
-                                                inactiveThumbColor: kWhite,
-                                                inactiveTrackColor: const Color(0xFFE0E0E0),
-                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Flexible(
-                                              child: Text(
-                                                'Vols directs',
-                                                style: kTextStyle.copyWith(
-                                                  color: kTitleColor,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      // Expanded(
+                                      //   child: Row(
+                                      //     children: [
+                                      //       SizedBox(
+                                      //         height: 24,
+                                      //         child: Switch(
+                                      //           value: isDirectFlight,
+                                      //           onChanged: (value) {
+                                      //             setState(() {
+                                      //               isDirectFlight = value;
+                                      //             });
+                                      //           },
+                                      //           activeColor: kPrimaryColor,
+                                      //           activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                                      //           inactiveThumbColor: kWhite,
+                                      //           inactiveTrackColor: const Color(0xFFE0E0E0),
+                                      //           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      //           trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                                      //         ),
+                                      //       ),
+                                      //       const SizedBox(width: 8),
+                                      //       Flexible(
+                                      //         child: Text(
+                                      //           'Vols directs',
+                                      //           style: kTextStyle.copyWith(
+                                      //             color: kTitleColor,
+                                      //             fontSize: 14,
+                                      //             fontWeight: FontWeight.w500,
+                                      //           ),
+                                      //         ),
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // ),
                                       const SizedBox(width: 10),
                                       Expanded(
                                         child: Row(
@@ -2732,7 +2751,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
+                    ],
                   ),
+                  ],
+                ),
                     const SizedBox(height: 20.0),
                     // Nos avantages section - Dynamic Slider
                     Padding(

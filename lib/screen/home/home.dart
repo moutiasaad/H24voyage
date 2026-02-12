@@ -82,7 +82,6 @@ class _HomeState extends State<Home> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(
                   index: 0,
@@ -117,27 +116,30 @@ class _HomeState extends State<Home> {
     required String label,
   }) {
     final bool isSelected = _currentPage == index;
-    return SmallTapEffect(
-      onTap: () => setState(() => _currentPage = index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            iconPath,
-            width: 24,
-            height: 24,
-            color: isSelected ? kPrimaryColor : kSubTitleColor,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _currentPage = index),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              iconPath,
+              width: 24,
+              height: 24,
               color: isSelected ? kPrimaryColor : kSubTitleColor,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: isSelected ? kPrimaryColor : kSubTitleColor,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -147,48 +149,51 @@ class _HomeState extends State<Home> {
     required String label,
   }) {
     final bool isSelected = _currentPage == index;
-    return SmallTapEffect(
-      onTap: () => setState(() => _currentPage = index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Profile avatar with orange background
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF6B35), // Orange color
-              shape: BoxShape.circle,
-              image: _userProfileImage != null
-                  ? DecorationImage(
-                      image: NetworkImage(_userProfileImage!),
-                      fit: BoxFit.cover,
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => setState(() => _currentPage = index),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Profile avatar with orange background
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B35), // Orange color
+                shape: BoxShape.circle,
+                image: _userProfileImage != null
+                    ? DecorationImage(
+                        image: NetworkImage(_userProfileImage!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: _userProfileImage == null
+                  ? Center(
+                      child: Text(
+                        _getUserInitial(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     )
                   : null,
             ),
-            child: _userProfileImage == null
-                ? Center(
-                    child: Text(
-                      _getUserInitial(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                : null,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isSelected ? kPrimaryColor : kSubTitleColor,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: isSelected ? kPrimaryColor : kSubTitleColor,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
