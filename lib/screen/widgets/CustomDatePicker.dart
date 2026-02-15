@@ -22,8 +22,6 @@ class CustomDatePicker extends StatefulWidget {
 class _CustomDatePickerState extends State<CustomDatePicker> {
   DateTime? departureDate;
   DateTime? returnDate;
-  DateTime focusedDate = DateTime.now();
-  bool isFlexible = false;
 
   @override
   void initState() {
@@ -41,13 +39,6 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     return DateFormat('EEEE', 'fr_FR').format(date);
   }
 
-  int _getDaysDifference() {
-    if (departureDate != null && returnDate != null) {
-      return returnDate!.difference(departureDate!).inDays;
-    }
-    return 0;
-  }
-
   void _onDaySelected(DateTime day) {
     setState(() {
       if (!widget.isRoundTrip) {
@@ -59,7 +50,6 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
           Navigator.pop(context, {
             'departure': departureDate,
             'return': null,
-            'flexible': false,
           });
         });
       } else {
@@ -243,70 +233,31 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   top: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
-              child: Column(
-                children: [
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text(
-                  //       'Durée du voyage : ${_getDaysDifference()} jours',
-                  //       style: const TextStyle(
-                  //         fontSize: 14,
-                  //         fontWeight: FontWeight.w600,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(height: 4),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     const Text(
-                  //       'Mes dates sont flexibles (-/+1 jour)',
-                  //       style: TextStyle(fontSize: 14),
-                  //     ),
-                  //     Switch(
-                  //       value: isFlexible,
-                  //       onChanged: (value) {
-                  //         setState(() {
-                  //           isFlexible = value;
-                  //         });
-                  //       },
-                  //       activeThumbColor: Colors.white,
-                  //       activeTrackColor: Colors.grey,
-                  //     ),
-                  //   ],
-                  // ),
-                  // const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context, {
-                          'departure': departureDate,
-                          'return': returnDate,
-                          'flexible': isFlexible,
-                        });
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kPrimaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Confirmer',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, {
+                      'departure': departureDate,
+                      'return': returnDate,
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: kPrimaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
+                  child: const Text(
+                    'Confirmer',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
         ],

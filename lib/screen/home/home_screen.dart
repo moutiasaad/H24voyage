@@ -197,7 +197,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   DateTime? departureDate;
   DateTime? returnDate;
-  bool isFlexibleDates = false;
   DateTimeRange? _selectedDateRange;
 
   DateTime selectedDate = DateTime.now();
@@ -679,11 +678,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         // Only set return date for round-trip (Aller-retour)
         if (selectedIndex == 0) {
           returnDate = result['return'] as DateTime?;
-          isFlexibleDates = result['flexible'] as bool? ?? false;
         } else {
           // For one-way (Aller simple), always clear return date
           returnDate = null;
-          isFlexibleDates = false;
         }
 
         // Update the DateTimeRange for compatibility with SearchResult
