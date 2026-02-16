@@ -277,9 +277,10 @@ class _SignUpState extends State<SignUp> {
                                   );
                                 } else if (response.success && !response.requiresOTP) {
                                   // login succeeded without OTP -> navigate to Home
-                                  Navigator.pushReplacement(
+                                  Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(builder: (context) => const Home()),
+                                    (route) => false,
                                   );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(

@@ -882,6 +882,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                     unselectedLabelColor: kSubTitleColor,
                     labelStyle: kTextStyle.copyWith(fontWeight: FontWeight.bold),
                     unselectedLabelStyle: kTextStyle,
+                    dividerColor: const Color(0xFFE2E2E2),
                     indicator: UnderlineTabIndicator(
                       borderSide: BorderSide(
                         color: kPrimaryColor,
@@ -1193,7 +1194,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
         const SizedBox(height: 15.0),
 
         // Baggage toggle
-        _buildBaggageToggle(),
+        // _buildBaggageToggle(),
         const SizedBox(height: 15.0),
 
         // Search button
@@ -1479,7 +1480,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
         const SizedBox(height: 15.0),
 
         // Baggage toggle
-        _buildBaggageToggle(),
+        // _buildBaggageToggle(),
         const SizedBox(height: 15.0),
 
         // Search button
@@ -1547,36 +1548,36 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
   }
 
   // Baggage toggle
-  Widget _buildBaggageToggle() {
-    return Row(
-      children: [
-        SizedBox(
-          height: 24,
-          child: Switch(
-            value: withBaggage,
-            onChanged: (value) {
-              setState(() {
-                withBaggage = value;
-              });
-            },
-            activeColor: kPrimaryColor,
-            activeTrackColor: kPrimaryColor.withOpacity(0.3),
-            inactiveThumbColor: kWhite,
-            inactiveTrackColor: const Color(0xFFE0E0E0),
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          'Avec bagages',
-          style: kTextStyle.copyWith(
-            color: kTitleColor,
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildBaggageToggle() {
+  //   return Row(
+  //     children: [
+  //       SizedBox(
+  //         height: 24,
+  //         child: Switch(
+  //           value: withBaggage,
+  //           onChanged: (value) {
+  //             setState(() {
+  //               withBaggage = value;
+  //             });
+  //           },
+  //           activeColor: kPrimaryColor,
+  //           activeTrackColor: kPrimaryColor.withOpacity(0.3),
+  //           inactiveThumbColor: kWhite,
+  //           inactiveTrackColor: const Color(0xFFE0E0E0),
+  //           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  //           trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+  //         ),
+  //       ),
+  //       const SizedBox(width: 8),
+  //       Text(
+  //         'Avec bagages',
+  //         style: kTextStyle.copyWith(
+  //           color: kTitleColor,
+  //           fontSize: 14,
+  //           fontWeight: FontWeight.w500,
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 }

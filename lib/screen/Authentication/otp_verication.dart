@@ -251,9 +251,10 @@ class _OtpVerificationState extends State<OtpVerification> {
 
                         if (response.success) {
 
-                          Navigator.pushReplacement(
+                          Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(builder: (context) => const Home()),
+                            (route) => false,
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

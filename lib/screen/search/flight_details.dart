@@ -202,7 +202,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                     Divider(
                                       height: 0,
                                       thickness: 1.0,
-                                      color: kPrimaryColor.withOpacity(0.2),
+                                      color: const Color(0xFFE2E2E2),
                                     ),
                                     Container(
                                       width: context.width(),
@@ -270,9 +270,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           width: 2,
                                                           decoration:
                                                           BoxDecoration(
-                                                            color: kPrimaryColor
-                                                                .withOpacity(
-                                                                0.5),
+                                                            color: const Color(0xFFE2E2E2),
                                                           ),
                                                         ),
                                                         const Padding(
@@ -304,9 +302,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           shape:
                                                           BoxShape.circle,
                                                           border: Border.all(
-                                                              color: kPrimaryColor
-                                                                  .withOpacity(
-                                                                  0.5),
+                                                              color: const Color(0xFFE2E2E2),
                                                               width: 3),
                                                         ),
                                                       ),
@@ -434,9 +430,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           shape:
                                                           BoxShape.circle,
                                                           border: Border.all(
-                                                              color: kPrimaryColor
-                                                                  .withOpacity(
-                                                                  0.5),
+                                                              color: const Color(0xFFE2E2E2),
                                                               width: 3),
                                                         ),
                                                       ),
@@ -450,9 +444,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           width: 2,
                                                           decoration:
                                                           BoxDecoration(
-                                                            color: kPrimaryColor
-                                                                .withOpacity(
-                                                                0.5),
+                                                            color: const Color(0xFFE2E2E2),
                                                           ),
                                                         ),
                                                         const Padding(
@@ -575,7 +567,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                 Divider(
                                   height: 0,
                                   thickness: 1.0,
-                                  color: kPrimaryColor.withOpacity(0.2),
+                                  color: const Color(0xFFE2E2E2),
                                 ),
                                 Container(
                                   width: context.width(),
@@ -643,8 +635,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                       color: kWhite,
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                          color: kPrimaryColor
-                                                              .withOpacity(0.5),
+                                                          color: const Color(0xFFE2E2E2),
                                                           width: 3),
                                                     ),
                                                   ),
@@ -656,9 +647,8 @@ class _FlightDetailsState extends State<FlightDetails>
                                                     Container(
                                                       height: 100.0,
                                                       width: 2,
-                                                      decoration: BoxDecoration(
-                                                        color: kPrimaryColor
-                                                            .withOpacity(0.5),
+                                                      decoration: const BoxDecoration(
+                                                        color: Color(0xFFE2E2E2),
                                                       ),
                                                     ),
                                                     const Padding(

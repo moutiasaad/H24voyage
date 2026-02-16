@@ -249,6 +249,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 flightOffers: _flightController.offers,
                 isOneWay: true,
                 searchCode: _flightController.searchCode,
+                totalOffers: _flightController.totalOffers,
               ).launch(context);
             } else {
               toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
@@ -296,6 +297,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 flightOffers: _flightController.offers,
                 isOneWay: false,
                 searchCode: _flightController.searchCode,
+                totalOffers: _flightController.totalOffers,
               ).launch(context);
             } else {
               toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
@@ -398,6 +400,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           isOneWay: false,
           isMultiDestination: true,
           searchCode: _flightController.searchCode,
+          totalOffers: _flightController.totalOffers,
         ).launch(context);
       }
     } catch (e) {
@@ -1792,40 +1795,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       //   ),
                                       // ),
                                       const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Row(
-                                          children: [
-                                            SizedBox(
-                                              height: 24,
-                                              child: Switch(
-                                                value: withBaggage,
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    withBaggage = value;
-                                                  });
-                                                },
-                                                activeColor: kPrimaryColor,
-                                                activeTrackColor: kPrimaryColor.withOpacity(0.3),
-                                                inactiveThumbColor: kWhite,
-                                                inactiveTrackColor: const Color(0xFFE0E0E0),
-                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Flexible(
-                                              child: Text(
-                                                'Avec bagages',
-                                                style: kTextStyle.copyWith(
-                                                  color: kTitleColor,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
+                                      // Expanded(
+                                      //   child: Row(
+                                      //     children: [
+                                      //       SizedBox(
+                                      //         height: 24,
+                                      //         child: Switch(
+                                      //           value: withBaggage,
+                                      //           onChanged: (value) {
+                                      //             setState(() {
+                                      //               withBaggage = value;
+                                      //             });
+                                      //           },
+                                      //           activeColor: kPrimaryColor,
+                                      //           activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                                      //           inactiveThumbColor: kWhite,
+                                      //           inactiveTrackColor: const Color(0xFFE0E0E0),
+                                      //           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      //           trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                                      //         ),
+                                      //       ),
+                                      //       const SizedBox(width: 8),
+                                      //       Flexible(
+                                      //         child: Text(
+                                      //           'Avec bagages',
+                                      //           style: kTextStyle.copyWith(
+                                      //             color: kTitleColor,
+                                      //             fontSize: 14,
+                                      //             fontWeight: FontWeight.w500,
+                                      //           ),
+                                      //         ),
+                                      //       ),
+                                      //     ],
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                   const SizedBox(height: 15.0),

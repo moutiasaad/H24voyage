@@ -27,8 +27,8 @@ class FlightResultsRequest {
       'searchCode': searchCode,
       'page': page.toString(),
     };
-    if (minPrice != null) params['minP'] = minPrice.toString();
-    if (maxPrice != null) params['maxP'] = maxPrice.toString();
+    if (minPrice != null) params['minP'] = minPrice!.round().toString();
+    if (maxPrice != null) params['maxP'] = maxPrice!.round().toString();
     if (isRefundable != null) params['isRefundable'] = isRefundable.toString();
     if (sort != null) params['sort'] = sort!;
     if (includedBaggageOnly != null) {
