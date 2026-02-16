@@ -22,12 +22,124 @@ class OtpVerification extends StatefulWidget {
 class _OtpVerificationState extends State<OtpVerification> {
   final TextEditingController _otpController = TextEditingController();
   final FocusNode _otpFocusNode = FocusNode();
+  bool _isLoading = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
     _otpController.dispose();
     _otpFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _verifyOtp(String otp) async {
+    if (otp.length < 6) return;
+    if (_isLoading) return;
+
+    FocusScope.of(context).unfocus();
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final controller = RegisterController();
+
+    try {
+      if (widget.isLogin) {
+        if (widget.customerId == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = 'ID client manquant pour la vérification';
+          });
+          return;
+        }
+
+        final response = await controller.verifyLoginOtp(
+          customerId: widget.customerId!,
+          otp: otp,
+        );
+
+        if (!mounted) return;
+
+        if (response == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = controller.message ?? 'Code incorrect. Veuillez réessayer.';
+          });
+          _clearOtpAfterError();
+          return;
+        }
+
+        if (response.success) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const Home()),
+            (route) => false,
+          );
+        } else {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = response.message ?? 'Code incorrect. Veuillez réessayer.';
+          });
+          _clearOtpAfterError();
+        }
+      } else {
+        final response = await controller.verifyOtp(
+          email: widget.email ?? '',
+          otp: otp,
+        );
+
+        if (!mounted) return;
+
+        if (response == null) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = controller.message ?? 'Code incorrect. Veuillez réessayer.';
+          });
+          _clearOtpAfterError();
+          return;
+        }
+
+        if (response.success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Inscription réussie! Veuillez vous connecter.'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 3),
+            ),
+          );
+
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const SignUp()),
+            (route) => false,
+          );
+        } else {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = response.message ?? response.error ?? 'Code incorrect. Veuillez réessayer.';
+          });
+          _clearOtpAfterError();
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+      });
+      _clearOtpAfterError();
+    }
+  }
+
+  void _clearOtpAfterError() {
+    Future.delayed(const Duration(seconds: 1), () {
+      if (mounted) {
+        _otpController.clear();
+        _otpFocusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -49,6 +161,53 @@ class _OtpVerificationState extends State<OtpVerification> {
     final pinFontSize = isVerySmallScreen ? 16.0 : 18.0;
     final buttonHeight = isVerySmallScreen ? 46.0 : (isSmallScreen ? 48.0 : 52.0);
     final buttonTextSize = isVerySmallScreen ? 13.0 : (isSmallScreen ? 14.0 : 15.0);
+
+    final hasError = _errorMessage != null;
+
+    final defaultTheme = PinTheme(
+      height: pinSize,
+      width: pinSize,
+      textStyle: GoogleFonts.poppins(
+        color: kTitleColor,
+        fontSize: pinFontSize,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        color: kWhite,
+        border: Border.all(color: hasError ? Colors.red : kBorderColorTextField, width: 1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+    );
+
+    final focusedTheme = PinTheme(
+      height: pinSize,
+      width: pinSize,
+      textStyle: GoogleFonts.poppins(
+        color: kTitleColor,
+        fontSize: pinFontSize,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        color: kWhite,
+        border: Border.all(color: hasError ? Colors.red : kPrimaryColor, width: 1.5),
+        borderRadius: BorderRadius.circular(10),
+      ),
+    );
+
+    final submittedTheme = PinTheme(
+      height: pinSize,
+      width: pinSize,
+      textStyle: GoogleFonts.poppins(
+        color: hasError ? Colors.red : kTitleColor,
+        fontSize: pinFontSize,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        color: hasError ? Colors.red.withOpacity(0.05) : kWhite,
+        border: Border.all(color: hasError ? Colors.red : kBorderColorTextField, width: 1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+    );
 
     return Scaffold(
       backgroundColor: kWhite,
@@ -155,159 +314,80 @@ class _OtpVerificationState extends State<OtpVerification> {
                   length: 6,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  defaultPinTheme: PinTheme(
-                    height: pinSize,
-                    width: pinSize,
-                    textStyle: GoogleFonts.poppins(
-                      color: kTitleColor,
-                      fontSize: pinFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    decoration: BoxDecoration(
-                      color: kWhite,
-                      border: Border.all(color: kBorderColorTextField, width: 1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  focusedPinTheme: PinTheme(
-                    height: pinSize,
-                    width: pinSize,
-                    textStyle: GoogleFonts.poppins(
-                      color: kTitleColor,
-                      fontSize: pinFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    decoration: BoxDecoration(
-                      color: kWhite,
-                      border: Border.all(color: kPrimaryColor, width: 1.5),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  submittedPinTheme: PinTheme(
-                    height: pinSize,
-                    width: pinSize,
-                    textStyle: GoogleFonts.poppins(
-                      color: kTitleColor,
-                      fontSize: pinFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    decoration: BoxDecoration(
-                      color: kWhite,
-                      border: Border.all(color: kBorderColorTextField, width: 1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
+                  defaultPinTheme: defaultTheme,
+                  focusedPinTheme: focusedTheme,
+                  submittedPinTheme: submittedTheme,
+                  onChanged: (_) {
+                    if (_errorMessage != null) {
+                      setState(() => _errorMessage = null);
+                    }
+                  },
+                  onCompleted: (pin) => _verifyOtp(pin),
                 ),
+
+                // Error message
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  child: hasError
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline, color: Colors.red, size: 18),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  _errorMessage!,
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.red,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+
+                // Loading indicator
+                if (_isLoading)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          height: 18,
+                          width: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: kPrimaryColor,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Vérification en cours...',
+                          style: GoogleFonts.poppins(
+                            color: kSubTitleColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                 SizedBox(height: isVerySmallScreen ? 24 : 32),
 
                 // Verify button
                 TappableCard(
-                  onTap: () async {
-                    FocusScope.of(context).unfocus();
-
-                    final otp = _otpController.text.trim();
-                    if (otp.length < 4) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Entrez le code OTP valide')),
-                      );
-                      return;
-                    }
-
-                    final controller = RegisterController();
-
-                    // show loading
-                    showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) => const Center(child: CircularProgressIndicator()),
-                    );
-
-                    try {
-                      if (widget.isLogin) {
-                        // Login OTP flow requires customerId
-                        if (widget.customerId == null) {
-                          if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('ID client manquant pour la vérification')),
-                          );
-                          return;
-                        }
-
-                        final response = await controller.verifyLoginOtp(
-                          customerId: widget.customerId!,
-                          otp: otp,
-                        );
-
-                        // hide loading
-                        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-
-                        if (response == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(controller.message ?? 'Erreur de vérification')),
-                          );
-                          return;
-                        }
-
-                        if (response.success) {
-
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const Home()),
-                            (route) => false,
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(response.message ?? 'Erreur')),
-                          );
-                        }
-                      } else {
-                        final response = await controller.verifyOtp(
-                          email: widget.email ?? '',
-                          otp: otp,
-                        );
-
-                        // hide loading
-                        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-
-                        if (response == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(controller.message ?? 'Erreur de vérification')),
-                          );
-                          return;
-                        }
-
-                        if (response.success) {
-                          // Registration successful - navigate back to SignUp page to login
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Inscription réussie! Veuillez vous connecter.'),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-
-                          // Navigate back to SignUp/Login page
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const SignUp()),
-                            (route) => false,
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(response.message ?? response.error ?? 'Erreur')),
-                          );
-                        }
-                      }
-                    } catch (e) {
-                      if (Navigator.of(context).canPop()) Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(e.toString())),
-                      );
-                    }
-                  },
+                  onTap: _isLoading ? null : () => _verifyOtp(_otpController.text.trim()),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEAEAEA),
+                    color: _isLoading ? const Color(0xFFD5D5D5) : const Color(0xFFEAEAEA),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Container(
@@ -317,7 +397,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                       child: Text(
                         'Vérifier l\'adresse e-mail',
                         style: GoogleFonts.poppins(
-                          color: kTitleColor,
+                          color: _isLoading ? kSubTitleColor : kTitleColor,
                           fontSize: buttonTextSize,
                           fontWeight: FontWeight.w500,
                         ),

@@ -1,6 +1,7 @@
 import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nb_utils/nb_utils.dart';
 import '../widgets/constant.dart';
@@ -15,36 +16,31 @@ class Filter extends StatefulWidget {
 
 class _FilterState extends State<Filter> with TickerProviderStateMixin {
   double price = 0.00;
+  double priceAller = 0.00;
+  double priceRetour = 0.00;
+  int selectedPriceTab = 0; // 0 = Aller, 1 = Retour
 
   List<String> titleList = ['Non Stop', 'Up to 1 Stop', 'Any'];
   String gValue = 'Non Stop';
 
-  List<String> departureTime = [
-    'Before 6AM',
-    '6AM-12PM',
-    '12PM-6PM',
-    '6AM-12AM',
+  // Time slot model: label, time range, SVG asset
+  final List<Map<String, String>> _timeSlots = [
+    {'label': 'Tôt le matin', 'range': '(00:00 - 07:59)', 'asset': 'assets/matin_tot.svg'},
+    {'label': 'Matin', 'range': '(08:00 - 15:59)', 'asset': 'assets/matin.svg'},
+    {'label': 'Soir', 'range': '(16:00 - 23:59)', 'asset': 'assets/soir.svg'},
   ];
 
-  String selectedDepartureTime = 'Before 6AM';
+  // Selected time slots per airport per journey (Aller / Retour)
+  // Aller: departure airport time slots, arrival airport time slots
+  // Retour: departure airport time slots, arrival airport time slots
+  Set<int> selectedAllerDepartureSlots = {};
+  Set<int> selectedAllerArrivalSlots = {};
+  Set<int> selectedRetourDepartureSlots = {};
+  Set<int> selectedRetourArrivalSlots = {};
 
-  List<String> arrivalTime = [
-    'Before 6AM',
-    '6AM-12PM',
-    '12PM-6PM',
-    '6AM-12AM',
-  ];
-
-  String selectedArrivalTime = 'Before 6AM';
+  int selectedHoraireTab = 0; // 0 = Aller, 1 = Retour
 
   TabController? tabController;
-
-  List<IconData> iconList = [
-    Icons.sunny,
-    Icons.sunny,
-    FontAwesomeIcons.cloudMoon,
-    FontAwesomeIcons.cloudSun,
-  ];
 
   @override
   void initState() {
@@ -195,6 +191,7 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(height: 20.0),
+                // Horaires section with Aller / Retour tabs
                 Container(
                   decoration: BoxDecoration(
                     color: kWhite,
@@ -212,262 +209,137 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TabBar(
-                        labelStyle: kTextStyle.copyWith(
-                            color: kPrimaryColor, fontWeight: FontWeight.bold),
-                        unselectedLabelColor: kSubTitleColor,
-                        indicatorColor: kPrimaryColor,
-                        labelColor: kPrimaryColor,
-                        indicator: const BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topRight: Radius.circular(8.0),
-                            topLeft: Radius.circular(8.0),
-                          ),
-                          color: Color(0xFFEDF0FF),
-                        ),
-                        onTap: (index) {
-                          setState(() {
-                            selectedIndex = index;
-                          });
-                        },
-                        tabs: [
-                          Row(
-                            children: [
-                              Transform.rotate(
-                                angle: 45,
-                                child: const Icon(
-                                  Icons.flight,
+                      // Aller / Retour tabs
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => selectedHoraireTab = 0),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: selectedHoraireTab == 0
+                                      ? const Color(0xFFEDF0FF)
+                                      : Colors.transparent,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(8.0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Transform.rotate(
+                                      angle: 45,
+                                      child: Icon(
+                                        Icons.flight,
+                                        color: selectedHoraireTab == 0
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5.0),
+                                    Text(
+                                      lang.S.of(context).departure,
+                                      style: kTextStyle.copyWith(
+                                        color: selectedHoraireTab == 0
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 5.0),
-                              Tab(
-                                text: lang.S.of(context).departure,
-                              ),
-                            ],
+                            ),
                           ),
-                          Row(
-                            children: [
-                              Transform.rotate(
-                                angle: 90,
-                                child: const Icon(
-                                  Icons.flight,
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => selectedHoraireTab = 1),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: selectedHoraireTab == 1
+                                      ? const Color(0xFFEDF0FF)
+                                      : Colors.transparent,
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(8.0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Transform.rotate(
+                                      angle: 90,
+                                      child: Icon(
+                                        Icons.flight,
+                                        color: selectedHoraireTab == 1
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5.0),
+                                    Text(
+                                      lang.S.of(context).arrival,
+                                      style: kTextStyle.copyWith(
+                                        color: selectedHoraireTab == 1
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(width: 5.0),
-                              Tab(
-                                text: lang.S.of(context).arrival,
-                              ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
-                      const SizedBox(
-                        height: 15.0,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Column(
+                      Container(
+                        height: 2,
+                        child: Row(
                           children: [
-                            Text(
-                              'Departure from Dhaka',
-                              style: kTextStyle.copyWith(
-                                  color: kTitleColor,
-                                  fontWeight: FontWeight.bold),
+                            Expanded(
+                              child: Container(
+                                color: selectedHoraireTab == 0
+                                    ? kPrimaryColor
+                                    : kBorderColorTextField,
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                color: selectedHoraireTab == 1
+                                    ? kPrimaryColor
+                                    : kBorderColorTextField,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4.0),
-                          ),
-                          child: HorizontalList(
-                            padding: EdgeInsets.zero,
-                            spacing: 0,
-                            itemCount: departureTime.length,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (_, i) {
-                              return TappableCard(
-                                onTap: () {
-                                  setState(() {
-                                    selectedDepartureTime = departureTime[i];
-                                    i == 0
-                                        ? Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const Filter()))
-                                        : null;
-                                  });
-                                },
-                                decoration: BoxDecoration(
-                                  color: selectedDepartureTime ==
-                                          departureTime[i]
-                                      ? kPrimaryColor
-                                      : kWhite,
-                                  border: Border.all(
-                                    color: selectedDepartureTime ==
-                                            departureTime[i]
-                                        ? kPrimaryColor
-                                        : kBorderColorTextField,
-                                  ),
-                                  borderRadius: i == 0
-                                      ? const BorderRadius.only(
-                                          topLeft: Radius.circular(4.0),
-                                          bottomLeft: Radius.circular(4.0),
-                                        )
-                                      : i == 3
-                                          ? const BorderRadius.only(
-                                              topRight: Radius.circular(4.0),
-                                              bottomRight:
-                                                  Radius.circular(4.0),
-                                            )
-                                          : BorderRadius.circular(0.0),
-                                ),
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  width: 63,
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        iconList[i],
-                                        color: selectedDepartureTime ==
-                                                departureTime[i]
-                                            ? kWhite
-                                            : kSubTitleColor,
-                                      ),
-                                      Divider(
-                                        thickness: 1.0,
-                                        color: selectedDepartureTime ==
-                                                departureTime[i]
-                                            ? kWhite
-                                            : kBorderColorTextField,
-                                      ),
-                                      Text(
-                                        departureTime[i],
-                                        style: kTextStyle.copyWith(
-                                            color: selectedDepartureTime ==
-                                                    departureTime[i]
-                                                ? kWhite
-                                                : kSubTitleColor,
-                                            fontSize: 10.0),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+
+                      // Content for selected tab
+                      if (selectedHoraireTab == 0)
+                        _buildHoraireContent(
+                          key: const ValueKey('horaire_aller'),
+                          departureAirportName: 'Houari Boumediene',
+                          arrivalAirportName: 'Aéroport d\'arrivée',
+                          selectedDepartureSlots: selectedAllerDepartureSlots,
+                          selectedArrivalSlots: selectedAllerArrivalSlots,
                         ),
-                      ),
-                      const SizedBox(
-                        height: 10.0,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Arrive in New Delhi',
-                              style: kTextStyle.copyWith(
-                                  color: kTitleColor,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                      if (selectedHoraireTab == 1)
+                        _buildHoraireContent(
+                          key: const ValueKey('horaire_retour'),
+                          departureAirportName: 'Aéroport d\'arrivée',
+                          arrivalAirportName: 'Houari Boumediene',
+                          selectedDepartureSlots: selectedRetourDepartureSlots,
+                          selectedArrivalSlots: selectedRetourArrivalSlots,
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4.0),
-                          ),
-                          child: HorizontalList(
-                            padding: EdgeInsets.zero,
-                            spacing: 0,
-                            itemCount: departureTime.length,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemBuilder: (_, i) {
-                              return TappableCard(
-                                onTap: () {
-                                  setState(() {
-                                    selectedArrivalTime = arrivalTime[i];
-                                    i == 0
-                                        ? Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const Filter()))
-                                        : null;
-                                  });
-                                },
-                                decoration: BoxDecoration(
-                                  color: selectedArrivalTime == arrivalTime[i]
-                                      ? kPrimaryColor
-                                      : kWhite,
-                                  border: Border.all(
-                                    color:
-                                        selectedArrivalTime == arrivalTime[i]
-                                            ? kPrimaryColor
-                                            : kBorderColorTextField,
-                                  ),
-                                  borderRadius: i == 0
-                                      ? const BorderRadius.only(
-                                          topLeft: Radius.circular(4.0),
-                                          bottomLeft: Radius.circular(4.0),
-                                        )
-                                      : i == 3
-                                          ? const BorderRadius.only(
-                                              topRight: Radius.circular(4.0),
-                                              bottomRight:
-                                                  Radius.circular(4.0),
-                                            )
-                                          : BorderRadius.circular(0.0),
-                                ),
-                                padding: const EdgeInsets.all(8.0),
-                                child: SizedBox(
-                                  width: 63,
-                                  child: Column(
-                                    children: [
-                                      Icon(
-                                        iconList[i],
-                                        color: selectedArrivalTime ==
-                                                arrivalTime[i]
-                                            ? kWhite
-                                            : kSubTitleColor,
-                                      ),
-                                      Divider(
-                                        thickness: 1.0,
-                                        color: selectedArrivalTime ==
-                                                arrivalTime[i]
-                                            ? kWhite
-                                            : kBorderColorTextField,
-                                      ),
-                                      Text(
-                                        arrivalTime[i],
-                                        style: kTextStyle.copyWith(
-                                            color: selectedArrivalTime ==
-                                                    arrivalTime[i]
-                                                ? kWhite
-                                                : kSubTitleColor,
-                                            fontSize: 10.0),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 10.0),
                 Container(
-                  padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
                     color: kWhite,
                     borderRadius: BorderRadius.circular(8.0),
@@ -484,53 +356,228 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Price',
-                        style: kTextStyle.copyWith(
-                            color: kTitleColor, fontWeight: FontWeight.bold),
+                      // Aller / Retour tabs for price
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => selectedPriceTab = 0),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: selectedPriceTab == 0
+                                      ? const Color(0xFFEDF0FF)
+                                      : Colors.transparent,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(8.0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Transform.rotate(
+                                      angle: 45,
+                                      child: Icon(
+                                        Icons.flight,
+                                        color: selectedPriceTab == 0
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5.0),
+                                    Text(
+                                      lang.S.of(context).departure,
+                                      style: kTextStyle.copyWith(
+                                        color: selectedPriceTab == 0
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() => selectedPriceTab = 1),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: selectedPriceTab == 1
+                                      ? const Color(0xFFEDF0FF)
+                                      : Colors.transparent,
+                                  borderRadius: const BorderRadius.only(
+                                    topRight: Radius.circular(8.0),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Transform.rotate(
+                                      angle: 90,
+                                      child: Icon(
+                                        Icons.flight,
+                                        color: selectedPriceTab == 1
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5.0),
+                                    Text(
+                                      lang.S.of(context).arrival,
+                                      style: kTextStyle.copyWith(
+                                        color: selectedPriceTab == 1
+                                            ? kPrimaryColor
+                                            : kSubTitleColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Center(
-                        child: RichText(
-                          text: TextSpan(
-                            text: 'Up to USD ',
-                            style: kTextStyle.copyWith(color: kSubTitleColor),
+                      Container(
+                        height: 2,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                color: selectedPriceTab == 0
+                                    ? kPrimaryColor
+                                    : kBorderColorTextField,
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                color: selectedPriceTab == 1
+                                    ? kPrimaryColor
+                                    : kBorderColorTextField,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Aller price slider
+                      if (selectedPriceTab == 0)
+                        Padding(
+                          key: const ValueKey('price_aller'),
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              TextSpan(
-                                text: '${150000} $currencySign',
-                                style: kTextStyle.copyWith(color: kTitleColor),
+                              Text(
+                                'Prix Aller',
+                                style: kTextStyle.copyWith(
+                                    color: kTitleColor, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Center(
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'Jusqu\'à ',
+                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                    children: [
+                                      TextSpan(
+                                        text: '${priceAller.toStringAsFixed(0)} $currencySign',
+                                        style: kTextStyle.copyWith(color: kTitleColor),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Slider(
+                                activeColor: kPrimaryColor,
+                                inactiveColor: kPrimaryColor.withOpacity(0.1),
+                                max: 1500000.00,
+                                value: priceAller,
+                                onChanged: (double newVal) {
+                                  setState(() {
+                                    priceAller = newVal > 0.00 && newVal < 1499999.00
+                                        ? newVal
+                                        : 10.00;
+                                  });
+                                },
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${priceAller.toStringAsFixed(0)} $currencySign',
+                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '1 500 000 $currencySign',
+                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
-                      ),
-                      Slider(
-                        activeColor: kPrimaryColor,
-                        inactiveColor: kPrimaryColor.withOpacity(0.1),
-                        max: 1500000.00,
-                        value: price,
-                        onChanged: (double newVal) {
-                          setState(
-                            () {
-                              newVal > 0.00 && newVal < 1499999.00
-                                  ? price = newVal
-                                  : price = 10.00;
-                            },
-                          );
-                        },
-                      ),
-                      Row(
-                        children: [
-                          Text(
-                            ' ${price.toString()} $currencySign',
-                            style: kTextStyle.copyWith(color: kSubTitleColor),
+                      // Retour price slider
+                      if (selectedPriceTab == 1)
+                        Padding(
+                          key: const ValueKey('price_retour'),
+                          padding: const EdgeInsets.all(10.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Prix Retour',
+                                style: kTextStyle.copyWith(
+                                    color: kTitleColor, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 4),
+                              Center(
+                                child: RichText(
+                                  text: TextSpan(
+                                    text: 'Jusqu\'à ',
+                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                    children: [
+                                      TextSpan(
+                                        text: '${priceRetour.toStringAsFixed(0)} $currencySign',
+                                        style: kTextStyle.copyWith(color: kTitleColor),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Slider(
+                                activeColor: kPrimaryColor,
+                                inactiveColor: kPrimaryColor.withOpacity(0.1),
+                                max: 1500000.00,
+                                value: priceRetour,
+                                onChanged: (double newVal) {
+                                  setState(() {
+                                    priceRetour = newVal > 0.00 && newVal < 1499999.00
+                                        ? newVal
+                                        : 10.00;
+                                  });
+                                },
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${priceRetour.toStringAsFixed(0)} $currencySign',
+                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '1 500 000 $currencySign',
+                                    style: kTextStyle.copyWith(color: kSubTitleColor),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          const Spacer(),
-                          Text(
-                            'USD \$1500000.00',
-                            style: kTextStyle.copyWith(color: kSubTitleColor),
-                          ),
-                        ],
-                      ),
+                        ),
                     ],
                   ),
                 ),
@@ -691,6 +738,125 @@ class _FilterState extends State<Filter> with TickerProviderStateMixin {
                 )
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHoraireContent({
+    required Key key,
+    required String departureAirportName,
+    required String arrivalAirportName,
+    required Set<int> selectedDepartureSlots,
+    required Set<int> selectedArrivalSlots,
+  }) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Departure airport
+          Text(
+            departureAirportName,
+            style: kTextStyle.copyWith(
+              color: kTitleColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...List.generate(_timeSlots.length, (i) {
+            final isSelected = selectedDepartureSlots.contains(i);
+            return _buildTimeSlotCard(
+              slot: _timeSlots[i],
+              isSelected: isSelected,
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    selectedDepartureSlots.remove(i);
+                  } else {
+                    selectedDepartureSlots.add(i);
+                  }
+                });
+              },
+            );
+          }),
+          const SizedBox(height: 16),
+          // Arrival airport
+          Text(
+            arrivalAirportName,
+            style: kTextStyle.copyWith(
+              color: kTitleColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...List.generate(_timeSlots.length, (i) {
+            final isSelected = selectedArrivalSlots.contains(i);
+            return _buildTimeSlotCard(
+              slot: _timeSlots[i],
+              isSelected: isSelected,
+              onTap: () {
+                setState(() {
+                  if (isSelected) {
+                    selectedArrivalSlots.remove(i);
+                  } else {
+                    selectedArrivalSlots.add(i);
+                  }
+                });
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeSlotCard({
+    required Map<String, String> slot,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? kPrimaryColor.withOpacity(0.08) : kWhite,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? kPrimaryColor : kBorderColorTextField,
+              width: isSelected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              SvgPicture.asset(
+                slot['asset']!,
+                width: 32,
+                height: 32,
+              ),
+              const SizedBox(width: 16),
+              Text(
+                slot['label']!,
+                style: kTextStyle.copyWith(
+                  color: isSelected ? kPrimaryColor : kTitleColor,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                slot['range']!,
+                style: kTextStyle.copyWith(
+                  color: kSubTitleColor,
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
         ),
       ),

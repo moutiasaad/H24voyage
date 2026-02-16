@@ -128,6 +128,7 @@ class _SearchResultState extends State<SearchResult> {
       final returnDate = result['returnDate'] as DateTime?;
       final isOneWay = result['isOneWay'] as bool;
       final isMultiDestination = result['isMultiDestination'] as bool? ?? false;
+      final isDirectFlight = result['isDirectFlight'] as bool? ?? false;
       final multiDestinationLegs = result['multiDestinationLegs'] as List<MultiDestinationLeg>? ?? [];
 
       // Navigate to loading screen and perform search
@@ -164,6 +165,7 @@ class _SearchResultState extends State<SearchResult> {
                   adultCount: adultCount,
                   childCount: childCount,
                   infantCount: infantCount,
+                  directOnly: isDirectFlight,
                 );
               } else if (isOneWay) {
                 await _flightController.searchOneWay(
@@ -173,6 +175,7 @@ class _SearchResultState extends State<SearchResult> {
                   adultCount: adultCount,
                   childCount: childCount,
                   infantCount: infantCount,
+                  directOnly: isDirectFlight,
                 );
               } else {
                 await _flightController.searchRoundTrip(
@@ -183,6 +186,7 @@ class _SearchResultState extends State<SearchResult> {
                   adultCount: adultCount,
                   childCount: childCount,
                   infantCount: infantCount,
+                  directOnly: isDirectFlight,
                 );
               }
             },

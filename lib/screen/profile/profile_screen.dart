@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:flutter_iconly/flutter_iconly.dart';
 
 import '../../controllers/profile_controller.dart';
+import '../../services/auth_service.dart';
 import '../widgets/constant.dart';
 import '../widgets/button_global.dart';
 import '../Authentication/welcome_screen.dart';
 import 'my_profile/my_profile.dart';
 import 'my_profile/edit_profile.dart';
 import 'setting/setting.dart';
+import 'setting/change_password.dart';
 import 'setting/currency.dart';
 import 'setting/languase.dart';
 import 'setting/notification.dart';
@@ -127,14 +130,9 @@ class _ProfileState extends State<Profile> {
         id: 'personal_info',
         title: 'Coordonnées personnelles',
         iconAsset: 'assets/profileIcon.png',
-        destination: const MyProfile(),
+        destination: const EditProfile(),
       ),
-      ProfileMenuItem(
-        id: 'notifications',
-        title: 'Notifications',
-        icon: CupertinoIcons.bell_fill,
-        destination: const NotificationScreen(),
-      ),
+
       ProfileMenuItem(
         id: 'travelers',
         title: 'Voyageurs enregistrés',
@@ -151,7 +149,7 @@ class _ProfileState extends State<Profile> {
         id: 'security',
         title: 'Paramètre de sécurité',
         iconAsset: 'assets/paramIcon.png',
-        destination: const Setting(),
+        destination: const ChangePassword(),
       ),
     ];
 
@@ -167,6 +165,12 @@ class _ProfileState extends State<Profile> {
         title: 'Langues',
         iconAsset: 'assets/langIcon.png',
         destination: const Language(),
+      ),
+      ProfileMenuItem(
+        id: 'notifications',
+        title: 'Notifications',
+        iconAsset: 'assets/notif.png',
+        destination: const NotificationScreen(),
       ),
       ProfileMenuItem(
         id: 'terms',
@@ -208,6 +212,142 @@ class _ProfileState extends State<Profile> {
             child: const Text('Fermer'),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _showDisableAccountDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Row(
+            children: [
+              Icon(IconlyBold.danger, color: Colors.red, size: 28),
+              const SizedBox(width: 10),
+              const Text('Désactiver le compte'),
+            ],
+          ),
+          content: const Text(
+            'Êtes-vous sûr de vouloir désactiver votre compte ? Cette action est irréversible et vous serez déconnecté.',
+            style: TextStyle(fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Annuler',
+                style: kTextStyle.copyWith(color: kSubTitleColor),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Désactiver'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      _disableAccount();
+    }
+  }
+
+  Future<void> _disableAccount() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final result = await AuthService.disableAccount();
+
+      if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+
+      if (result['success'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Compte désactivé avec succès'),
+              backgroundColor: kSuccessGreen,
+            ),
+          );
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+            (route) => false,
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Échec de la désactivation du compte'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _actionButton({
+    required IconData icon,
+    required Color iconColor,
+    required Color iconBg,
+    required String title,
+    Color? titleColor,
+    required VoidCallback onTap,
+  }) {
+    return TappableCard(
+      onTap: onTap,
+      child: Card(
+        elevation: 1.3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: kBorderColorTextField, width: 0.5),
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          leading: Container(
+            height: 40,
+            width: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: iconBg,
+            ),
+            child: Icon(icon, color: iconColor, size: 22),
+          ),
+          title: Text(
+            title,
+            style: kTextStyle.copyWith(
+              color: titleColor ?? kTitleColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          trailing: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: titleColor ?? kSubTitleColor,
+          ),
+        ),
       ),
     );
   }
@@ -310,6 +450,18 @@ class _ProfileState extends State<Profile> {
 
                         // Logout Button
                         _buildLogoutButton(),
+
+                        const SizedBox(height: 16),
+
+                        // Disable account button
+                        _actionButton(
+                          icon: IconlyLight.delete,
+                          iconColor: Colors.red,
+                          iconBg: Colors.red.withOpacity(0.1),
+                          title: 'Désactiver le compte',
+                          titleColor: Colors.red,
+                          onTap: () => _showDisableAccountDialog(),
+                        ),
 
                         const SizedBox(height: 40),
                       ],

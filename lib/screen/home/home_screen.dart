@@ -109,9 +109,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.initState();
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
 
-    // Default airports (Algeria -> Tunisia)
+    // Default departure airport (Algeria), destination starts empty
     fromAirport = airports.firstWhere((a) => a.code == "ALG", orElse: () => airports.first);
-    toAirport = airports.firstWhere((a) => a.code == "TUN", orElse: () => airports.first);
+    toAirport = null;
 
     // Default dates - today for departure, tomorrow for return
     departureDate = DateTime.now();
@@ -1005,8 +1005,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     fromAirport != null
-                                                        ? '${fromAirport!.city} (${fromAirport!.code}- tous les aéroports)'
-                                                        : 'Paris (PAR- tous les aéroports)',
+                                                        ? '${fromAirport!.city} (${fromAirport!.code})'
+                                                        : 'Sélectionner un aéroport',
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                     style: kTextStyle.copyWith(
                                                       color: kTitleColor,
                                                       fontSize: 13,
@@ -1066,8 +1068,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   const SizedBox(height: 2),
                                                   Text(
                                                     toAirport != null
-                                                        ? '${toAirport!.city} (${toAirport!.code}-aéroport ..)'
-                                                        : 'Tunis (TUN-aéroport ..)',
+                                                        ? '${toAirport!.city} (${toAirport!.code})'
+                                                        : 'Sélectionner un aéroport',
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                     style: kTextStyle.copyWith(
@@ -1757,78 +1759,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 //   ),
                                 // ),
                                   const SizedBox(height: 15.0),
-                                  // Toggle switches for direct flights and baggage
+                                  // Toggle switch for direct flights
                                   Row(
                                     children: [
-                                      // Expanded(
-                                      //   child: Row(
-                                      //     children: [
-                                      //       SizedBox(
-                                      //         height: 24,
-                                      //         child: Switch(
-                                      //           value: isDirectFlight,
-                                      //           onChanged: (value) {
-                                      //             setState(() {
-                                      //               isDirectFlight = value;
-                                      //             });
-                                      //           },
-                                      //           activeColor: kPrimaryColor,
-                                      //           activeTrackColor: kPrimaryColor.withOpacity(0.3),
-                                      //           inactiveThumbColor: kWhite,
-                                      //           inactiveTrackColor: const Color(0xFFE0E0E0),
-                                      //           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      //           trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                                      //         ),
-                                      //       ),
-                                      //       const SizedBox(width: 8),
-                                      //       Flexible(
-                                      //         child: Text(
-                                      //           'Vols directs',
-                                      //           style: kTextStyle.copyWith(
-                                      //             color: kTitleColor,
-                                      //             fontSize: 14,
-                                      //             fontWeight: FontWeight.w500,
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                      //     ],
-                                      //   ),
-                                      // ),
-                                      const SizedBox(width: 10),
-                                      // Expanded(
-                                      //   child: Row(
-                                      //     children: [
-                                      //       SizedBox(
-                                      //         height: 24,
-                                      //         child: Switch(
-                                      //           value: withBaggage,
-                                      //           onChanged: (value) {
-                                      //             setState(() {
-                                      //               withBaggage = value;
-                                      //             });
-                                      //           },
-                                      //           activeColor: kPrimaryColor,
-                                      //           activeTrackColor: kPrimaryColor.withOpacity(0.3),
-                                      //           inactiveThumbColor: kWhite,
-                                      //           inactiveTrackColor: const Color(0xFFE0E0E0),
-                                      //           materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                      //           trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                                      //         ),
-                                      //       ),
-                                      //       const SizedBox(width: 8),
-                                      //       Flexible(
-                                      //         child: Text(
-                                      //           'Avec bagages',
-                                      //           style: kTextStyle.copyWith(
-                                      //             color: kTitleColor,
-                                      //             fontSize: 14,
-                                      //             fontWeight: FontWeight.w500,
-                                      //           ),
-                                      //         ),
-                                      //       ),
-                                      //     ],
-                                      //   ),
-                                      // ),
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              height: 24,
+                                              child: Switch(
+                                                value: isDirectFlight,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    isDirectFlight = value;
+                                                  });
+                                                },
+                                                activeColor: kPrimaryColor,
+                                                activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                                                inactiveThumbColor: kWhite,
+                                                inactiveTrackColor: const Color(0xFFE0E0E0),
+                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Flexible(
+                                              child: Text(
+                                                'Vols directs',
+                                                style: kTextStyle.copyWith(
+                                                  color: kTitleColor,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 15.0),

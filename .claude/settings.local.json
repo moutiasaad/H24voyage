@@ -24,7 +24,9 @@
       "Bash(flutter pub cache:*)",
       "Bash(git pull:*)",
       "Bash(git add:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(ls \"C:\\\\Users\\\\mouti\\\\AndroidStudioProjects\\\\flight-booking-flutter-app-ui-kit-master\\\\lib\\\\screen\\\\search\\\\widgets\"\" 2>nul || echo \"DIRECTORY_NOT_FOUND \")",
+      "Bash(git commit:*)"
     ]
   }
 }

@@ -59,6 +59,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
   late int infantCount;
   DateTime? departureDate;
   DateTime? returnDate;
+  bool isDirectFlight = false;
   bool withBaggage = false;
   String selectedClass = 'economy';
 
@@ -808,6 +809,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
       'isOneWay': selectedIndex == 1,
       'isMultiDestination': selectedIndex == 2,
       'multiDestinationLegs': multiDestinationLegs,
+      'isDirectFlight': isDirectFlight,
       'withBaggage': withBaggage,
       'cabinClass': selectedClass,
     });
@@ -1193,8 +1195,45 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
         _buildPassengerClassField(),
         const SizedBox(height: 15.0),
 
-        // Baggage toggle
-        // _buildBaggageToggle(),
+        // Direct flight toggle
+        Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  SizedBox(
+                    height: 24,
+                    child: Switch(
+                      value: isDirectFlight,
+                      onChanged: (value) {
+                        setState(() {
+                          isDirectFlight = value;
+                        });
+                      },
+                      activeColor: kPrimaryColor,
+                      activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                      inactiveThumbColor: kWhite,
+                      inactiveTrackColor: const Color(0xFFE0E0E0),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Vols directs',
+                      style: kTextStyle.copyWith(
+                        color: kTitleColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 15.0),
 
         // Search button
@@ -1479,8 +1518,45 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
         _buildPassengerClassField(),
         const SizedBox(height: 15.0),
 
-        // Baggage toggle
-        // _buildBaggageToggle(),
+        // Direct flight toggle
+        Row(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  SizedBox(
+                    height: 24,
+                    child: Switch(
+                      value: isDirectFlight,
+                      onChanged: (value) {
+                        setState(() {
+                          isDirectFlight = value;
+                        });
+                      },
+                      activeColor: kPrimaryColor,
+                      activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                      inactiveThumbColor: kWhite,
+                      inactiveTrackColor: const Color(0xFFE0E0E0),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Vols directs',
+                      style: kTextStyle.copyWith(
+                        color: kTitleColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 15.0),
 
         // Search button

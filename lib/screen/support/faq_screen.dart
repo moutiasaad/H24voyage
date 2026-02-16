@@ -293,28 +293,25 @@ class _FaqScreenState extends State<FaqScreen> {
 
   Widget _buildAppBar() {
     return SliverAppBar(
-      expandedHeight: 80,
+      expandedHeight: 60,
       floating: false,
       pinned: true,
       elevation: 0,
       backgroundColor: Colors.transparent,
-      leadingWidth: 56,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 8),
-        child: SmallTapEffect(
-          onTap: () => Navigator.pop(context),
-          child: const Padding(
-            padding: EdgeInsets.all(12.0),
-            child: Icon(CupertinoIcons.back, color: Colors.white, size: 24),
-          ),
+      leadingWidth: 40,
+      leading: SmallTapEffect(
+        onTap: () => Navigator.pop(context),
+        child: const Padding(
+          padding: EdgeInsets.all(12.0),
+          child: Icon(CupertinoIcons.back, color: Colors.white, size: 24),
         ),
       ),
-      title: Text(
+      title: const Text(
         'FAQ',
-        style: GoogleFonts.jost(
+        style: TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,
-          fontSize: 18,
+          fontSize: 16,
         ),
       ),
       centerTitle: true,
@@ -325,22 +322,22 @@ class _FaqScreenState extends State<FaqScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFF2196F3),
-                Color(0xFF1976D2),
-                Color(0xFF1565C0),
+                Color(0xFFFF8C42),
+                Color(0xFFFF6B35),
+                kPrimaryColor,
               ],
             ),
             borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(24),
-              bottomRight: Radius.circular(24),
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
             ),
           ),
         ),
       ),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
     );

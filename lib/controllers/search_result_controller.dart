@@ -95,6 +95,9 @@ class SearchResultController extends ChangeNotifier {
   RangeValues? _selectedPriceRange;
   RangeValues? get selectedPriceRange => _selectedPriceRange;
 
+  RangeValues? _retourPriceRange;
+  RangeValues? get retourPriceRange => _retourPriceRange;
+
   // ── Retour journey filter state ──
   String _retourEscaleOption = 'Tous';
   String get retourEscaleOption => _retourEscaleOption;
@@ -195,6 +198,11 @@ class SearchResultController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setRetourPriceRange(RangeValues? range) {
+    _retourPriceRange = range;
+    notifyListeners();
+  }
+
   void toggleExpandedOutbound(int index) {
     if (_expandedOutbound.contains(index)) {
       _expandedOutbound.remove(index);
@@ -236,6 +244,7 @@ class SearchResultController extends ChangeNotifier {
     _selectedDepTimeRange = const RangeValues(0, 24);
     _selectedArrTimeRange = const RangeValues(0, 24);
     _selectedPriceRange = null;
+    _retourPriceRange = null;
     // Retour filters
     _retourEscaleOption = 'Tous';
     _retourAirlineCodes = {};
@@ -264,6 +273,7 @@ class SearchResultController extends ChangeNotifier {
     Set<String>? retourArrivalAirportCodes,
     RangeValues? retourDepTimeRange,
     RangeValues? retourArrTimeRange,
+    RangeValues? retourPriceRange,
   }) {
     _selectedFilterCategory = filterCategory;
     _selectedFilterTab = filterTab;
@@ -276,6 +286,7 @@ class SearchResultController extends ChangeNotifier {
     _selectedDepTimeRange = depTimeRange;
     _selectedArrTimeRange = arrTimeRange;
     _selectedPriceRange = priceRange;
+    _retourPriceRange = retourPriceRange;
 
     // Retour filters
     _retourEscaleOption = retourEscaleOption ?? 'Tous';
@@ -570,6 +581,7 @@ class SearchResultController extends ChangeNotifier {
       _retourAirlineCodes.isNotEmpty ||
       _retourDepAirportCodes.isNotEmpty ||
       _retourArrAirportCodes.isNotEmpty ||
+      _retourPriceRange != null ||
       _retourDepTimeRange.start > 0 ||
       _retourDepTimeRange.end < 24 ||
       _retourArrTimeRange.start > 0 ||
@@ -585,6 +597,7 @@ class SearchResultController extends ChangeNotifier {
     if (_selectedDepTimeRange.start > 0 || _selectedDepTimeRange.end < 24) count++;
     if (_selectedArrTimeRange.start > 0 || _selectedArrTimeRange.end < 24) count++;
     // Retour filters
+    if (_retourPriceRange != null) count++;
     if (_retourAirlineCodes.isNotEmpty) count++;
     if (_retourDepAirportCodes.isNotEmpty) count++;
     if (_retourArrAirportCodes.isNotEmpty) count++;

@@ -3,6 +3,7 @@ import 'package:flight_booking/models/flight_offer.dart';
 import 'package:flight_booking/screen/search/flight_details.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../controllers/search_result_controller.dart';
@@ -207,13 +208,14 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
   int tempSelectedTab = ctrl.selectedFilterTab;
   final bool showRetourTab = ctrl.isRoundTrip;
 
-  // Prix filter: global (shared between tabs)
+  // Prix filter: per journey (Aller / Retour)
   final fData = ctrl.filterData;
   final prixData = fData['prix'] as Map<String, dynamic>;
   final double prixMin = (prixData['min'] as num).toDouble();
   final double prixMax = (prixData['max'] as num).toDouble();
   final String currency = prixData['currency'] as String? ?? 'DZD';
-  RangeValues tempPriceRange = ctrl.selectedPriceRange ?? RangeValues(prixMin, prixMax);
+  RangeValues allerPriceRange = ctrl.selectedPriceRange ?? RangeValues(prixMin, prixMax);
+  RangeValues retourPriceRange = ctrl.retourPriceRange ?? RangeValues(prixMin, prixMax);
 
   final List<String> filterCategories = List<String>.from(fData['categories']);
 
@@ -242,6 +244,8 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
   RangeValues allerDepTimeRange = ctrl.selectedDepTimeRange;
   RangeValues allerArrTimeRange = ctrl.selectedArrTimeRange;
   List<String> allerEscaleOptions = List<String>.from(allerData['escale']);
+  Set<int> allerDepartureSlots = {};
+  Set<int> allerArrivalSlots = {};
 
   // ── Retour tab state (journey 1) ──
   final retourData = showRetourTab ? ctrl.filterDataForJourney(1) : null;
@@ -271,6 +275,8 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
   String retourEscaleOption = ctrl.retourEscaleOption;
   RangeValues retourDepTimeRange = ctrl.retourDepTimeRange;
   RangeValues retourArrTimeRange = ctrl.retourArrTimeRange;
+  Set<int> retourDepartureSlots = {};
+  Set<int> retourArrivalSlots = {};
   List<String> retourEscaleOptions = retourData != null
       ? List<String>.from(retourData['escale'])
       : ['Tous'];
@@ -301,6 +307,9 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
           final currentAeroports = isAllerTab ? allerAeroports : retourAeroports;
           final currentDepTimeRange = isAllerTab ? allerDepTimeRange : retourDepTimeRange;
           final currentArrTimeRange = isAllerTab ? allerArrTimeRange : retourArrTimeRange;
+          final currentPriceRange = isAllerTab ? allerPriceRange : retourPriceRange;
+          final currentDepartureSlots = isAllerTab ? allerDepartureSlots : retourDepartureSlots;
+          final currentArrivalSlots = isAllerTab ? allerArrivalSlots : retourArrivalSlots;
 
           return Container(
             height: MediaQuery.of(context).size.height * 0.55,
@@ -498,11 +507,35 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                         retourArrTimeRange = v;
                                       }
                                     }),
-                                    priceRange: tempPriceRange,
+                                    priceRange: currentPriceRange,
                                     priceMin: prixMin,
                                     priceMax: prixMax,
                                     priceCurrency: currency,
-                                    onPriceRangeChanged: (v) => setModalState(() => tempPriceRange = v),
+                                    onPriceRangeChanged: (v) => setModalState(() {
+                                      if (isAllerTab) {
+                                        allerPriceRange = v;
+                                      } else {
+                                        retourPriceRange = v;
+                                      }
+                                    }),
+                                    departureAirportName: currentAeroports['depart']['city'] as String? ?? '',
+                                    arrivalAirportName: currentAeroports['arrivee']['city'] as String? ?? '',
+                                    selectedDepartureSlots: currentDepartureSlots,
+                                    selectedArrivalSlots: currentArrivalSlots,
+                                    onDepartureSlotsChanged: (slots) => setModalState(() {
+                                      if (isAllerTab) {
+                                        allerDepartureSlots = slots;
+                                      } else {
+                                        retourDepartureSlots = slots;
+                                      }
+                                    }),
+                                    onArrivalSlotsChanged: (slots) => setModalState(() {
+                                      if (isAllerTab) {
+                                        allerArrivalSlots = slots;
+                                      } else {
+                                        retourArrivalSlots = slots;
+                                      }
+                                    }),
                                   ),
                                 ),
                               ),
@@ -594,10 +627,40 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                 .map((a) => a['code'] as String)
                                 .toSet();
 
-                            // Price range: null if full range (no filter)
-                            final priceRangeToApply = (tempPriceRange.start > prixMin || tempPriceRange.end < prixMax)
-                                ? tempPriceRange
+                            // Price range per journey: null if full range (no filter)
+                            final allerPriceToApply = (allerPriceRange.start > prixMin || allerPriceRange.end < prixMax)
+                                ? allerPriceRange
                                 : null;
+                            final retourPriceToApply = (retourPriceRange.start > prixMin || retourPriceRange.end < prixMax)
+                                ? retourPriceRange
+                                : null;
+
+                            // Convert time slot selections to RangeValues
+                            // Slot 0: 0-8, Slot 1: 8-16, Slot 2: 16-24
+                            RangeValues slotsToRange(Set<int> slots) {
+                              if (slots.isEmpty) return const RangeValues(0, 24);
+                              const starts = [0.0, 8.0, 16.0];
+                              const ends = [8.0, 16.0, 24.0];
+                              double min = 24;
+                              double max = 0;
+                              for (final s in slots) {
+                                if (starts[s] < min) min = starts[s];
+                                if (ends[s] > max) max = ends[s];
+                              }
+                              return RangeValues(min, max);
+                            }
+                            final allerDepTime = allerDepartureSlots.isNotEmpty
+                                ? slotsToRange(allerDepartureSlots)
+                                : allerDepTimeRange;
+                            final allerArrTime = allerArrivalSlots.isNotEmpty
+                                ? slotsToRange(allerArrivalSlots)
+                                : allerArrTimeRange;
+                            final retourDepTime = retourDepartureSlots.isNotEmpty
+                                ? slotsToRange(retourDepartureSlots)
+                                : retourDepTimeRange;
+                            final retourArrTime = retourArrivalSlots.isNotEmpty
+                                ? slotsToRange(retourArrivalSlots)
+                                : retourArrTimeRange;
 
                             Navigator.pop(context);
                             ctrl.applyFilters(
@@ -608,16 +671,17 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                               airlineCodes: allerAirlineCodes,
                               departureAirportCodes: allerDepAirportCodes,
                               arrivalAirportCodes: allerArrAirportCodes,
-                              depTimeRange: allerDepTimeRange,
-                              arrTimeRange: allerArrTimeRange,
-                              priceRange: priceRangeToApply,
+                              depTimeRange: allerDepTime,
+                              arrTimeRange: allerArrTime,
+                              priceRange: allerPriceToApply,
                               // Retour
                               retourEscaleOption: retourEscaleOption,
                               retourAirlineCodes: retourAirlineCodes,
                               retourDepartureAirportCodes: retourDepAirportCodesSet,
                               retourArrivalAirportCodes: retourArrAirportCodesSet,
-                              retourDepTimeRange: retourDepTimeRange,
-                              retourArrTimeRange: retourArrTimeRange,
+                              retourDepTimeRange: retourDepTime,
+                              retourArrTimeRange: retourArrTime,
+                              retourPriceRange: retourPriceToApply,
                             );
                           },
                           child: Container(
@@ -673,6 +737,12 @@ Widget _buildFilterContent(
   double priceMax = 50000,
   String priceCurrency = 'DZD',
   Function(RangeValues)? onPriceRangeChanged,
+  String departureAirportName = '',
+  String arrivalAirportName = '',
+  Set<int> selectedDepartureSlots = const {},
+  Set<int> selectedArrivalSlots = const {},
+  Function(Set<int>)? onDepartureSlotsChanged,
+  Function(Set<int>)? onArrivalSlotsChanged,
 }) {
   switch (category) {
     case 0: // Compagnies
@@ -778,76 +848,67 @@ Widget _buildFilterContent(
       );
 
     case 3: // Horaires
+      final timeSlots = [
+        {'label': 'Tôt le matin', 'range': '(00:00 - 07:59)', 'asset': 'assets/matin_tot.svg'},
+        {'label': 'Matin', 'range': '(08:00 - 15:59)', 'asset': 'assets/matin.svg'},
+        {'label': 'Soir', 'range': '(16:00 - 23:59)', 'asset': 'assets/soir.svg'},
+      ];
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Departure time range
+          // Departure airport time slots
           Text(
-            'Heure de départ',
+            departureAirportName.isNotEmpty ? departureAirportName : 'Départ',
             style: GoogleFonts.poppins(
               color: kTitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(SearchResultController.formatHour(depTimeRange.start), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
-              Text(SearchResultController.formatHour(depTimeRange.end), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
-            ],
-          ),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: kPrimaryColor,
-              inactiveTrackColor: kBorderColorTextField,
-              thumbColor: kPrimaryColor,
-              overlayColor: kPrimaryColor.withOpacity(0.1),
-              rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
-            ),
-            child: RangeSlider(
-              values: depTimeRange,
-              min: 0,
-              max: 24,
-              divisions: 48,
-              onChanged: (v) => onDepTimeChanged?.call(v),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Arrival time range
+          const SizedBox(height: 8),
+          ...List.generate(timeSlots.length, (i) {
+            final isSelected = selectedDepartureSlots.contains(i);
+            return _buildTimeSlotCard(
+              slot: timeSlots[i],
+              isSelected: isSelected,
+              onTap: () {
+                final newSlots = Set<int>.from(selectedDepartureSlots);
+                if (isSelected) {
+                  newSlots.remove(i);
+                } else {
+                  newSlots.add(i);
+                }
+                onDepartureSlotsChanged?.call(newSlots);
+              },
+            );
+          }),
+          const SizedBox(height: 16),
+          // Arrival airport time slots
           Text(
-            "Heure d'arrivée",
+            arrivalAirportName.isNotEmpty ? arrivalAirportName : 'Arrivée',
             style: GoogleFonts.poppins(
               color: kTitleColor,
               fontSize: 13,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(SearchResultController.formatHour(arrTimeRange.start), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
-              Text(SearchResultController.formatHour(arrTimeRange.end), style: GoogleFonts.poppins(fontSize: 12, color: kSubTitleColor)),
-            ],
-          ),
-          SliderTheme(
-            data: SliderThemeData(
-              activeTrackColor: kPrimaryColor,
-              inactiveTrackColor: kBorderColorTextField,
-              thumbColor: kPrimaryColor,
-              overlayColor: kPrimaryColor.withOpacity(0.1),
-              rangeThumbShape: const RoundRangeSliderThumbShape(enabledThumbRadius: 8),
-            ),
-            child: RangeSlider(
-              values: arrTimeRange,
-              min: 0,
-              max: 24,
-              divisions: 48,
-              onChanged: (v) => onArrTimeChanged?.call(v),
-            ),
-          ),
+          const SizedBox(height: 8),
+          ...List.generate(timeSlots.length, (i) {
+            final isSelected = selectedArrivalSlots.contains(i);
+            return _buildTimeSlotCard(
+              slot: timeSlots[i],
+              isSelected: isSelected,
+              onTap: () {
+                final newSlots = Set<int>.from(selectedArrivalSlots);
+                if (isSelected) {
+                  newSlots.remove(i);
+                } else {
+                  newSlots.add(i);
+                }
+                onArrivalSlotsChanged?.call(newSlots);
+              },
+            );
+          }),
         ],
       );
 
@@ -1117,6 +1178,63 @@ Widget _buildCompagnieOption(String name, String logo, bool isSelected, Function
                 : null,
           ),
         ],
+      ),
+    ),
+  );
+}
+
+Widget _buildTimeSlotCard({
+  required Map<String, String> slot,
+  required bool isSelected,
+  required VoidCallback onTap,
+}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? kPrimaryColor.withOpacity(0.08) : kWhite,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? kPrimaryColor : kBorderColorTextField,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            SvgPicture.asset(
+              slot['asset']!,
+              width: 28,
+              height: 28,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    slot['label']!,
+                    style: GoogleFonts.poppins(
+                      color: isSelected ? kPrimaryColor : kTitleColor,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    slot['range']!,
+                    style: GoogleFonts.poppins(
+                      color: kSubTitleColor,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     ),
   );

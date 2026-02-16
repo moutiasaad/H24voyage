@@ -182,7 +182,7 @@ class _SignUpState extends State<SignUp> {
                               fontSize: inputSize,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'jihen@boosterbc.com',
+                              hintText: 'email@email.com',
                               hintStyle: GoogleFonts.poppins(
                                 color: kSubTitleColor,
                                 fontSize: inputSize,
