@@ -237,31 +237,25 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Duration display
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    margin: const EdgeInsets.only(bottom: 12.0),
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.access_time_rounded,
-                          size: 18,
-                          color: kPrimaryColor,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Durée : ${returnDate!.difference(departureDate!).inDays} jour${returnDate!.difference(departureDate!).inDays > 1 ? 's' : ''}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: kPrimaryColor,
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: RichText(
+                        text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.black,
                           ),
+                          children: [
+                            const TextSpan(text: 'Durée du voyage : '),
+                            TextSpan(
+                              text: '${returnDate!.difference(departureDate!).inDays} jour${returnDate!.difference(departureDate!).inDays > 1 ? 's' : ''}',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                   // Confirm button
