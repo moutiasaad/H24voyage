@@ -10,6 +10,7 @@ import 'package:nb_utils/nb_utils.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:intl/intl.dart';
 
+import '../../controllers/profile_controller.dart';
 import '../../controllers/airport_controller.dart';
 import '../../controllers/flight_controller.dart';
 import '../../models/models.dart';
@@ -236,24 +237,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           getTotalFlights: () => _flightController.totalOffers,
           onSearchComplete: () {
             Navigator.pop(context); // Pop loading screen
-            if (!_flightController.hasError) {
-              SearchResult(
-                fromAirport: fromAirport!,
-                toAirport: toAirport!,
-                adultCount: adultCount,
-                childCount: childCount,
-                infantCount: infantCount,
-                dateRange: departureDate != null
-                    ? DateTimeRange(start: departureDate!, end: departureDate!)
-                    : null,
-                flightOffers: _flightController.offers,
-                isOneWay: true,
-                searchCode: _flightController.searchCode,
-                totalOffers: _flightController.totalOffers,
-              ).launch(context);
-            } else {
-              toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
-            }
+            SearchResult(
+              fromAirport: fromAirport!,
+              toAirport: toAirport!,
+              adultCount: adultCount,
+              childCount: childCount,
+              infantCount: infantCount,
+              dateRange: departureDate != null
+                  ? DateTimeRange(start: departureDate!, end: departureDate!)
+                  : null,
+              flightOffers: _flightController.hasError ? [] : _flightController.offers,
+              isOneWay: true,
+              searchCode: _flightController.searchCode,
+              totalOffers: _flightController.totalOffers,
+              errorMessage: _flightController.hasError
+                  ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+                  : null,
+            ).launch(context);
           },
         ),
       ),
@@ -286,22 +286,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           getTotalFlights: () => _flightController.totalOffers,
           onSearchComplete: () {
             Navigator.pop(context); // Pop loading screen
-            if (!_flightController.hasError) {
-              SearchResult(
-                fromAirport: fromAirport!,
-                toAirport: toAirport!,
-                adultCount: adultCount,
-                childCount: childCount,
-                infantCount: infantCount,
-                dateRange: _selectedDateRange,
-                flightOffers: _flightController.offers,
-                isOneWay: false,
-                searchCode: _flightController.searchCode,
-                totalOffers: _flightController.totalOffers,
-              ).launch(context);
-            } else {
-              toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
-            }
+            SearchResult(
+              fromAirport: fromAirport!,
+              toAirport: toAirport!,
+              adultCount: adultCount,
+              childCount: childCount,
+              infantCount: infantCount,
+              dateRange: _selectedDateRange,
+              flightOffers: _flightController.hasError ? [] : _flightController.offers,
+              isOneWay: false,
+              searchCode: _flightController.searchCode,
+              totalOffers: _flightController.totalOffers,
+              errorMessage: _flightController.hasError
+                  ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+                  : null,
+            ).launch(context);
           },
         ),
       ),
@@ -383,28 +382,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         withBaggage: withBaggage,
       );
 
-      if (_flightController.hasError) {
-        toast(_flightController.errorMessage ?? 'Erreur lors de la recherche');
-      } else {
-        // Navigate to SearchResult with the flight offers
-        SearchResult(
-          fromAirport: fromAirport!,
-          toAirport: toAirport!,
-          adultCount: adultCount,
-          childCount: childCount,
-          infantCount: infantCount,
-          dateRange: departureDate != null
-              ? DateTimeRange(start: departureDate!, end: departureDate!)
-              : null,
-          flightOffers: _flightController.offers,
-          isOneWay: false,
-          isMultiDestination: true,
-          searchCode: _flightController.searchCode,
-          totalOffers: _flightController.totalOffers,
-        ).launch(context);
-      }
+      // Navigate to SearchResult with the flight offers (or error)
+      SearchResult(
+        fromAirport: fromAirport!,
+        toAirport: toAirport!,
+        adultCount: adultCount,
+        childCount: childCount,
+        infantCount: infantCount,
+        dateRange: departureDate != null
+            ? DateTimeRange(start: departureDate!, end: departureDate!)
+            : null,
+        flightOffers: _flightController.hasError ? [] : _flightController.offers,
+        isOneWay: false,
+        isMultiDestination: true,
+        searchCode: _flightController.searchCode,
+        totalOffers: _flightController.totalOffers,
+        errorMessage: _flightController.hasError
+            ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+            : null,
+      ).launch(context);
     } catch (e) {
-      toast('Erreur: $e');
+      SearchResult(
+        fromAirport: fromAirport!,
+        toAirport: toAirport!,
+        adultCount: adultCount,
+        childCount: childCount,
+        infantCount: infantCount,
+        dateRange: departureDate != null
+            ? DateTimeRange(start: departureDate!, end: departureDate!)
+            : null,
+        flightOffers: [],
+        isOneWay: false,
+        isMultiDestination: true,
+        errorMessage: 'Erreur: $e',
+      ).launch(context);
     } finally {
       setState(() => _isSearching = false);
     }
@@ -623,7 +634,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           Text(
                             leg.departureDate != null
                                 ? DateFormat('dd MMM yyyy', 'fr').format(leg.departureDate!)
-                                : 'Sélectionner une date',
+                                : DateFormat('dd MMM yyyy', 'fr').format(DateTime.now()),
                             style: kTextStyle.copyWith(
                               color: kTitleColor,
                               fontSize: 13,
@@ -664,6 +675,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _showCustomDatePicker() async {
+    final isRoundTrip = selectedIndex == 0 || selectedIndex == 2;
     final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
@@ -671,15 +683,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       builder: (context) => CustomDatePicker(
         initialStartDate: departureDate,
         initialEndDate: returnDate,
-        isRoundTrip: selectedIndex == 0,
+        isRoundTrip: isRoundTrip,
       ),
     );
 
     if (result != null) {
       setState(() {
         departureDate = result['departure'] as DateTime?;
-        // Only set return date for round-trip (Aller-retour)
-        if (selectedIndex == 0) {
+        // Set return date for round-trip and multi-destination
+        if (isRoundTrip) {
           returnDate = result['return'] as DateTime?;
         } else {
           // For one-way (Aller simple), always clear return date
@@ -749,7 +761,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       children: [
                         // Orange header background
                         Container(
-                          height: 200,
+                          height: 220,
                           decoration: const BoxDecoration(
                             borderRadius: BorderRadius.only(
                               bottomRight: Radius.circular(30.0),
@@ -834,31 +846,86 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   const SizedBox(height: 20),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        decoration: const BoxDecoration(
-                                          color: Color(0xFFE14900),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Image.asset(
-                                          'images/avion.png',
-                                          width: 24,
-                                          height: 14,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        'Réserver votre vol',
-                                        style: kTextStyle.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 18.0,
-                                        ),
-                                      ),
-                                    ],
+                                  Builder(
+                                    builder: (context) {
+                                      final profile = ProfileController.instance;
+                                      final isLoggedIn = profile.customer != null;
+                                      final firstName = profile.firstName;
+                                      final profileImage = profile.customer?['profileImage']
+                                          ?? profile.customer?['profileImageUrl']
+                                          ?? profile.customer?['avatar'];
+                                      final hasImage = profileImage is String && profileImage.isNotEmpty;
+
+                                      return Row(
+                                        children: [
+                                          // Avatar circle
+                                          Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFE14900),
+                                              shape: BoxShape.circle,
+                                              image: hasImage
+                                                  ? DecorationImage(
+                                                      image: NetworkImage(profileImage),
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : null,
+                                            ),
+                                            child: !hasImage
+                                                ? Center(
+                                                    child: isLoggedIn && firstName.isNotEmpty
+                                                        ? Text(
+                                                            firstName[0].toUpperCase(),
+                                                            style: kTextStyle.copyWith(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.bold,
+                                                              fontSize: 18,
+                                                            ),
+                                                          )
+                                                        : Image.asset(
+                                                            'images/avion.png',
+                                                            width: 24,
+                                                            height: 14,
+                                                            color: Colors.white,
+                                                          ),
+                                                  )
+                                                : null,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              if (isLoggedIn && firstName.isNotEmpty)
+                                                Text(
+                                                  'Bonjour, $firstName',
+                                                  style: kTextStyle.copyWith(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 18.0,
+                                                  ),
+                                                )
+                                              else
+                                                Text(
+                                                  'Bienvenue',
+                                                  style: kTextStyle.copyWith(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 18.0,
+                                                  ),
+                                                ),
+                                              Text(
+                                                'Réserver votre vol',
+                                                style: kTextStyle.copyWith(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  fontSize: 13.0,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
@@ -1157,7 +1224,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 Text(
                                                   departureDate != null
                                                       ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
-                                                      : '14 jan. 2026',
+                                                      : DateFormat('dd MMM yyyy', 'fr').format(DateTime.now()),
                                                   style: kTextStyle.copyWith(
                                                     color: kTitleColor,
                                                     fontSize: 13,
@@ -1206,7 +1273,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 Text(
                                                   returnDate != null
                                                       ? DateFormat('dd MMM yyyy', 'fr').format(returnDate!)
-                                                      : '14 jan. 2026',
+                                                      : DateFormat('dd MMM yyyy', 'fr').format(DateTime.now().add(const Duration(days: 1))),
                                                   style: kTextStyle.copyWith(
                                                     color: kTitleColor,
                                                     fontSize: 13,
@@ -1239,14 +1306,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 builder: (BuildContext context) {
                                   return StatefulBuilder(
                                     builder: (BuildContext context, setStated) {
-                                    return Container(
-                                      constraints: BoxConstraints(
-                                        maxHeight: MediaQuery.of(context).size.height * 0.85,
-                                      ),
+                                    return SingleChildScrollView(
                                       child: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          // Header (fixed)
+                                          // Header
                                           Padding(
                                             padding: const EdgeInsets.all(20.0),
                                             child: Column(
@@ -1271,36 +1335,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ],
                                                 ),
                                                 Text(
-                                                  'Algerie a Tunisie, Jeu. 8 janv. 2026',
+                                                  '${fromAirport?.city ?? 'Départ'} à ${toAirport?.city ?? 'Destination'}${departureDate != null ? ', ${DateFormat('EEE. d MMM yyyy', 'fr').format(departureDate!)}' : ''}',
                                                   style: kTextStyle.copyWith(color: kSubTitleColor),
                                                 ),
                                               ],
                                             ),
                                           ),
-                                          // Scrollable content
-                                          Expanded(
-                                            child: SingleChildScrollView(
-                                              child: Container(
-                                                padding: const EdgeInsets.all(20.0),
-                                                decoration: const BoxDecoration(
-                                                  borderRadius: BorderRadius.only(
-                                                    topRight: Radius.circular(30.0),
-                                                    topLeft: Radius.circular(30.0),
-                                                  ),
-                                                  color: kWhite,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: kDarkWhite,
-                                                      spreadRadius: 5.0,
-                                                      blurRadius: 7.0,
-                                                      offset: Offset(0, -5),
-                                                    ),
-                                                  ],
+                                          // Content
+                                          Container(
+                                            padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 10.0),
+                                            decoration: const BoxDecoration(
+                                              borderRadius: BorderRadius.only(
+                                                topRight: Radius.circular(30.0),
+                                                topLeft: Radius.circular(30.0),
+                                              ),
+                                              color: kWhite,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: kDarkWhite,
+                                                  spreadRadius: 5.0,
+                                                  blurRadius: 7.0,
+                                                  offset: Offset(0, -5),
                                                 ),
-                                                child: Column(
-                                                  children: [
-                                                    // 👨 Adults
-                                                    Row(
+                                              ],
+                                            ),
+                                            child: Column(
+                                              children: [
+                                                // Adults
+                                                Row(
                                                       children: [
                                                         Column(
                                                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1429,9 +1491,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                       ],
                                                     ),
                                                     const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                    const SizedBox(height: 30),
+                                                    const SizedBox(height: 16),
 
-                                                    // 🎫 Class Selection Dropdown
+                                                    // Class Selection Dropdown
                                                     SmallTapEffect(
                                                       child: Container(
                                                         decoration: BoxDecoration(
@@ -1511,40 +1573,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         ),
                                                       ),
                                                     ),
+                                                    // Done Button
                                                     const SizedBox(height: 16),
+                                                    ButtonGlobal(
+                                                      buttontext: 'Terminé',
+                                                      buttonDecoration: kButtonDecoration.copyWith(
+                                                        color: kPrimaryColor,
+                                                      ),
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          finish(context);
+                                                        });
+                                                      },
+                                                    ),
                                                   ],
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                          // ✅ Fixed Done Button at bottom
-                                          Container(
-                                            padding: const EdgeInsets.all(20.0),
-                                            decoration: const BoxDecoration(
-                                              color: kWhite,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: kDarkWhite,
-                                                  spreadRadius: 2.0,
-                                                  blurRadius: 5.0,
-                                                  offset: Offset(0, -2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: SafeArea(
-                                              child: ButtonGlobal(
-                                                buttontext: 'Terminé',
-                                                buttonDecoration: kButtonDecoration.copyWith(
-                                                  color: kPrimaryColor,
-                                                ),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    finish(context);
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ),
                                         ],
                                       ),
                                     );
@@ -2021,56 +2065,107 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ],
                                   ),
                                   const SizedBox(height: 5.0),
-                                  // Vol 1 - Date picker
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF5F5F5),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {
-                                        _showCustomDatePicker();
-                                      },
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              IconlyLight.calendar,
-                                              color: kPrimaryColor,
-                                              size: 26,
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                    'Départ',
-                                                    style: kTextStyle.copyWith(
-                                                      color: Colors.grey.shade600,
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 2),
-                                                  Text(
-                                                    departureDate != null
-                                                        ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
-                                                        : 'Sélectionner une date',
-                                                    style: kTextStyle.copyWith(
-                                                      color: kTitleColor,
-                                                      fontSize: 13,
-                                                      fontWeight: FontWeight.w500,
-                                                    ),
-                                                  ),
-                                                ],
+                                  // Vol 1 - Date pickers (Départ + Retour)
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TappableCard(
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF5F5F5),
+                                            borderRadius: BorderRadius.circular(8.0),
+                                          ),
+                                          onTap: () {
+                                            _showCustomDatePicker();
+                                          },
+                                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                IconlyLight.calendar,
+                                                color: kPrimaryColor,
+                                                size: 26,
                                               ),
-                                            ),
-                                          ],
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      'Départ',
+                                                      style: kTextStyle.copyWith(
+                                                        color: Colors.grey.shade600,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      departureDate != null
+                                                          ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
+                                                          : DateFormat('dd MMM yyyy', 'fr').format(DateTime.now()),
+                                                      style: kTextStyle.copyWith(
+                                                        color: kTitleColor,
+                                                        fontSize: 13,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
+                                      const SizedBox(width: 10.0),
+                                      Expanded(
+                                        child: TappableCard(
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFF5F5F5),
+                                            borderRadius: BorderRadius.circular(8.0),
+                                          ),
+                                          onTap: () {
+                                            _showCustomDatePicker();
+                                          },
+                                          padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                                          child: Row(
+                                            children: [
+                                              const Icon(
+                                                IconlyLight.calendar,
+                                                color: kPrimaryColor,
+                                                size: 26,
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      'Retour',
+                                                      style: kTextStyle.copyWith(
+                                                        color: Colors.grey.shade600,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      returnDate != null
+                                                          ? DateFormat('dd MMM yyyy', 'fr').format(returnDate!)
+                                                          : DateFormat('dd MMM yyyy', 'fr').format(DateTime.now().add(const Duration(days: 1))),
+                                                      style: kTextStyle.copyWith(
+                                                        color: kTitleColor,
+                                                        fontSize: 13,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   // Multi-destination legs list
                                   ListView.builder(
@@ -2150,10 +2245,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                           builder: (BuildContext context) {
                                             return StatefulBuilder(
                                               builder: (BuildContext context, setStated) {
-                                              return Container(
-                                                constraints: BoxConstraints(
-                                                  maxHeight: MediaQuery.of(context).size.height * 0.85,
-                                                ),
+                                              return SingleChildScrollView(
                                                 child: Column(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
@@ -2188,28 +2280,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         ],
                                                       ),
                                                     ),
-                                                    // Scrollable content
-                                                    Expanded(
-                                                      child: SingleChildScrollView(
-                                                        child: Container(
-                                                          padding: const EdgeInsets.all(20.0),
-                                                          decoration: const BoxDecoration(
-                                                            borderRadius: BorderRadius.only(
-                                                              topRight: Radius.circular(30.0),
-                                                              topLeft: Radius.circular(30.0),
-                                                            ),
-                                                            color: kWhite,
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: kDarkWhite,
-                                                                spreadRadius: 5.0,
-                                                                blurRadius: 7.0,
-                                                                offset: Offset(0, -5),
-                                                              ),
-                                                            ],
+                                                    // Content
+                                                    Container(
+                                                      padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 10.0),
+                                                      decoration: const BoxDecoration(
+                                                        borderRadius: BorderRadius.only(
+                                                          topRight: Radius.circular(30.0),
+                                                          topLeft: Radius.circular(30.0),
+                                                        ),
+                                                        color: kWhite,
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: kDarkWhite,
+                                                            spreadRadius: 5.0,
+                                                            blurRadius: 7.0,
+                                                            offset: Offset(0, -5),
                                                           ),
-                                                          child: Column(
-                                                            children: [
+                                                        ],
+                                                      ),
+                                                      child: Column(
+                                                        children: [
                                                               // Adults
                                                               Row(
                                                                 children: [
@@ -2340,7 +2430,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 ],
                                                               ),
                                                               const Divider(thickness: 1.0, color: kBorderColorTextField),
-                                                              const SizedBox(height: 30),
+                                                              const SizedBox(height: 16),
 
                                                               // 🎫 Class Selection Dropdown
                                                               SmallTapEffect(
@@ -2422,40 +2512,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                   ),
                                                                 ),
                                                               ),
+                                                              // Done Button
                                                               const SizedBox(height: 16),
+                                                              ButtonGlobal(
+                                                                buttontext: 'Terminé',
+                                                                buttonDecoration: kButtonDecoration.copyWith(
+                                                                  color: kPrimaryColor,
+                                                                ),
+                                                                onPressed: () {
+                                                                  setState(() {
+                                                                    finish(context);
+                                                                  });
+                                                                },
+                                                              ),
                                                             ],
                                                           ),
                                                         ),
-                                                      ),
-                                                    ),
-                                                    // Fixed Done Button at bottom
-                                                    Container(
-                                                      padding: const EdgeInsets.all(20.0),
-                                                      decoration: const BoxDecoration(
-                                                        color: kWhite,
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: kDarkWhite,
-                                                            spreadRadius: 2.0,
-                                                            blurRadius: 5.0,
-                                                            offset: Offset(0, -2),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      child: SafeArea(
-                                                        child: ButtonGlobal(
-                                                          buttontext: 'Terminé',
-                                                          buttonDecoration: kButtonDecoration.copyWith(
-                                                            color: kPrimaryColor,
-                                                          ),
-                                                          onPressed: () {
-                                                            setState(() {
-                                                              finish(context);
-                                                            });
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
                                                   ],
                                                 ),
                                               );

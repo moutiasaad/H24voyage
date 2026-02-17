@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:nb_utils/nb_utils.dart';
 
-import '../book proceed/book_proceed.dart';
 import '../widgets/constant.dart';
+import 'booking_webview.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 
 class FlightDetails extends StatefulWidget {
@@ -57,9 +57,15 @@ class _FlightDetailsState extends State<FlightDetails>
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                   onPressed: () {
-                    setState(() {
-                      const BookProceed().launch(context);
-                    });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const BookingWebView(
+                          url: 'https://www.google.com',
+                          title: 'Réservation',
+                        ),
+                      ),
+                    );
                   },
                   buttonTextColor: kWhite,
                 ),

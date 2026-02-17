@@ -226,38 +226,72 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
           // Bottom Section
           if (departureDate != null && returnDate != null)
             Container(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 20.0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border(
                   top: BorderSide(color: Colors.grey.shade300),
                 ),
               ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, {
-                      'departure': departureDate,
-                      'return': returnDate,
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: kPrimaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Duration display
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    margin: const EdgeInsets.only(bottom: 12.0),
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 18,
+                          color: kPrimaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Durée : ${returnDate!.difference(departureDate!).inDays} jour${returnDate!.difference(departureDate!).inDays > 1 ? 's' : ''}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: kPrimaryColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: const Text(
-                    'Confirmer',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                  // Confirm button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context, {
+                          'departure': departureDate,
+                          'return': returnDate,
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Confirmer',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
         ],

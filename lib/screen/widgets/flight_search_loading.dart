@@ -53,13 +53,11 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
           _providersCount += random.nextInt(15) + 5;
           if (_providersCount > 185) _providersCount = 185;
         }
-        // Animate toward the real target (or keep incrementing if target not yet known)
-        final target = _targetCombinations > 0 ? _targetCombinations : 999;
-        if (_combinationsCount < target) {
-          // Scale increment based on target size
-          final increment = max(1, (target / 30).round()) + random.nextInt(max(1, (target / 50).round()));
+        // Only animate combinations once real total is known from API
+        if (_targetCombinations > 0 && _combinationsCount < _targetCombinations) {
+          final increment = max(1, (_targetCombinations / 20).round()) + random.nextInt(max(1, (_targetCombinations / 40).round()));
           _combinationsCount += increment;
-          if (_combinationsCount > target) _combinationsCount = target;
+          if (_combinationsCount > _targetCombinations) _combinationsCount = _targetCombinations;
         }
       });
     });
@@ -69,16 +67,24 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
     try {
       await widget.searchFunction();
 
-      // Get real total from API
-      final realTotal = widget.getTotalFlights?.call() ?? _combinationsCount;
-      _targetCombinations = realTotal;
-
+      // Get real total from API and let the timer animate toward it
+      final realTotal = widget.getTotalFlights?.call() ?? 0;
       setState(() {
-        _searchComplete = true;
+        _targetCombinations = realTotal;
         _providersCount = 185;
-        _combinationsCount = realTotal;
       });
-      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Wait for the counter animation to finish
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      // Ensure final value is exact
+      if (mounted) {
+        setState(() {
+          _searchComplete = true;
+          _combinationsCount = realTotal;
+        });
+      }
+      await Future.delayed(const Duration(milliseconds: 300));
       if (mounted) {
         widget.onSearchComplete();
       }

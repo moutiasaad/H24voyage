@@ -2,6 +2,7 @@ import 'package:flag/flag_widget.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Currency extends StatefulWidget {
@@ -56,23 +57,55 @@ class _CurrencyState extends State<Currency> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kWebsiteGreyBg,
-      appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: kWhite),
-        title: const Text('Currency', style: TextStyle(color: kTitleColor)),
-        centerTitle: true,
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: kWhite,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(30),
-            topLeft: Radius.circular(30),
+      backgroundColor: kWhite,
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 16,
+              right: 16,
+              bottom: 16,
+            ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFF8C42),
+                  Color(0xFFFF6B35),
+                  kPrimaryColor,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                SmallTapEffect(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Devises',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: ListView.builder(
+          Expanded(
+            child: ListView.builder(
           itemCount: currencies.length,
           itemBuilder: (_, index) {
             final item = currencies[index];
@@ -105,6 +138,8 @@ class _CurrencyState extends State<Currency> {
             );
           },
         ),
+          ),
+        ],
       ),
     );
   }

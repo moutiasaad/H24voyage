@@ -1,10 +1,12 @@
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'dart:io';
 import '../../../controllers/profile_controller.dart';
 import '../../widgets/constant.dart';
+import '../../widgets/button_global.dart';
 import 'my_profile.dart';
 
 class EditProfile extends StatefulWidget {
@@ -32,6 +34,16 @@ class _EditProfileState extends State<EditProfile> {
 
   String? _selectedTitle;
 
+  /// Formats an ISO date string like "1990-01-15T00:00:00.000Z" to "1990-01-15"
+  String _formatBirthDate(String raw) {
+    if (raw.isEmpty) return '';
+    final parsed = DateTime.tryParse(raw);
+    if (parsed != null) {
+      return '${parsed.year.toString().padLeft(4, "0")}-${parsed.month.toString().padLeft(2, "0")}-${parsed.day.toString().padLeft(2, "0")}';
+    }
+    return raw;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -57,7 +69,7 @@ class _EditProfileState extends State<EditProfile> {
     _cityController = TextEditingController(text: city);
     _countryController = TextEditingController(text: country);
     _postCodeController = TextEditingController(text: postCode);
-    _birthDateController = TextEditingController(text: birthDate);
+    _birthDateController = TextEditingController(text: _formatBirthDate(birthDate));
     _photoController = TextEditingController(text: photo);
 
     _profileController.addListener(_onProfileChanged);
@@ -71,17 +83,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kPrimaryColor,
-      appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: kWhite),
-        title: Text(
-          'Modifier le profil',
-          style: kTextStyle.copyWith(color: kWhite),
-        ),
-        centerTitle: true,
-      ),
+      backgroundColor: kWhite,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(color: kWhite),
         child: SafeArea(
@@ -169,15 +171,61 @@ class _EditProfileState extends State<EditProfile> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Container(
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            color: kWhite,
-            borderRadius: BorderRadius.only(topRight: Radius.circular(30), topLeft: Radius.circular(30)),
+      body: Column(
+        children: [
+          // Header
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 16,
+              right: 16,
+              bottom: 16,
+            ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFF8C42),
+                  Color(0xFFFF6B35),
+                  kPrimaryColor,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                SmallTapEffect(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Modifier le profil',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
-          child: Column(
+          // Content
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Container(
+                width: double.infinity,
+                color: kWhite,
+                child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Container(
@@ -370,6 +418,9 @@ class _EditProfileState extends State<EditProfile> {
           ),
         ),
       ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -388,7 +439,7 @@ class _EditProfileState extends State<EditProfile> {
       _cityController.text = customer['city'] ?? '';
       _countryController.text = customer['country'] ?? '';
       _postCodeController.text = customer['postCode'] ?? '';
-      _birthDateController.text = customer['birthDate'] ?? '';
+      _birthDateController.text = _formatBirthDate(customer['birthDate'] ?? '');
       _photoController.text = customer['photo'] ?? '';
       setState(() {});
     }

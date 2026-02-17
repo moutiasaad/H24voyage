@@ -2,6 +2,7 @@ import 'package:flight_booking/screen/home/home.dart';
 import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -19,31 +20,66 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: kWhite,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 30.0, 20.0, 24.0),
-              child: Text(
-                'Boîte de réception',
-                style: kTextStyle.copyWith(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: kTitleColor,
-                ),
-              ),
-            ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          _buildHeader(),
 
-            // Content
-            Expanded(
-              child: _notifications.isEmpty
-                  ? _buildEmptyState()
-                  : _buildNotificationList(),
-            ),
+          // Content
+          Expanded(
+            child: _notifications.isEmpty
+                ? _buildEmptyState()
+                : _buildNotificationList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 12,
+        left: 16,
+        right: 16,
+        bottom: 16,
+      ),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFF8C42),
+            Color(0xFFFF6B35),
+            kPrimaryColor,
           ],
         ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        children: [
+          SmallTapEffect(
+            onTap: () => Navigator.pop(context),
+            child: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Boîte de réception',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

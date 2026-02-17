@@ -216,6 +216,33 @@ class AuthService {
     }
   }
 
+  static Future<bool> resendLoginOtp({required String email}) async {
+    try {
+      final uri = Uri.parse('${ApiConfig.AuthbaseUrl}/auth/b2c/resend-login-otp');
+      final headers = ApiConfig.authHeaders;
+      final body = jsonEncode({'email': email});
+
+      debugPrint('╔══════════════════════════════════════════════════════════');
+      debugPrint('║ API REQUEST - Resend Login OTP');
+      debugPrint('║ URL: $uri');
+      debugPrint('║ BODY: $body');
+      debugPrint('╚══════════════════════════════════════════════════════════');
+
+      final response = await http.post(uri, headers: headers, body: body);
+
+      debugPrint('╔══════════════════════════════════════════════════════════');
+      debugPrint('║ API RESPONSE - Resend Login OTP');
+      debugPrint('║ Status Code: ${response.statusCode}');
+      debugPrint('║ Body: ${response.body}');
+      debugPrint('╚══════════════════════════════════════════════════════════');
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      debugPrint('❌ Resend Login OTP API Error: $e');
+      return false;
+    }
+  }
+
   // Unified getProfile that retries once when token expired
   static Future<Map<String, dynamic>> getProfile() async {
     try {

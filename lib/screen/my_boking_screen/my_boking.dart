@@ -163,10 +163,10 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
   Widget _buildHeader(double statusBarHeight) {
     return Container(
       padding: EdgeInsets.only(
-        top: statusBarHeight + 12,
+        top: statusBarHeight + 16,
         left: 16,
         right: 16,
-        bottom: 16,
+        bottom: 20,
       ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -177,6 +177,10 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
             Color(0xFFFF6B35),
             kPrimaryColor,
           ],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
       child: Row(
@@ -207,23 +211,23 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
             ),
           ),
           const Spacer(),
-          // Add button
+          // Add button in circle
           SmallTapEffect(
             onTap: () {
               // Navigate to add reservation
             },
-            child: Image.asset(
-              'assets/plus 1.png',
-              width: 22,
-              height: 22,
-              color: Colors.white,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(
-                  Icons.add,
-                  size: 22,
-                  color: Colors.white,
-                );
-              },
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
+              ),
+              child: const Icon(
+                Icons.add,
+                size: 18,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
@@ -237,8 +241,13 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
     return Container(
       margin: const EdgeInsets.only(top: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFF1F1F1), width: 1),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: List.generate(tabs.length, (index) {
           final isSelected = _selectedTabIndex == index;
           return SmallTapEffect(
@@ -248,29 +257,32 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
                 _tabController.animateTo(index);
               });
             },
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  child: Text(
-                    tabs[index],
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? const Color(0xFFFF6A00) : const Color(0xFF999999),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    child: Text(
+                      tabs[index],
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? const Color(0xFFFF6A00) : const Color(0xFF999999),
+                      ),
                     ),
                   ),
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: 3,
-                  width: 32,
-                  decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFFFF6A00) : Colors.transparent,
-                    borderRadius: BorderRadius.circular(3),
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 3,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFFFF6A00) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         }),
@@ -337,15 +349,8 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
         },
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF1F1F1)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE8E8E8)),
         ),
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -378,12 +383,13 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Booking ID Badge
+        // Booking ID Badge with border
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             color: const Color(0xFFEAF3FF),
             borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFF1D6FFF).withOpacity(0.3)),
           ),
           child: Text(
             reservation.id,
@@ -394,20 +400,13 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
             ),
           ),
         ),
-        // Status Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: reservation.status.backgroundColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            reservation.status.label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: reservation.status.textColor,
-            ),
+        // Status as plain text
+        Text(
+          reservation.status.label,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: reservation.status.textColor,
           ),
         ),
       ],
@@ -614,7 +613,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
               ),
               const SizedBox(width: 4),
               const Icon(
-                Icons.keyboard_arrow_down,
+                Icons.keyboard_arrow_right,
                 size: 18,
                 color: Color(0xFF1D6FFF),
               ),

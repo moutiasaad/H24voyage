@@ -91,6 +91,13 @@ class ProfileController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clear all customer data (used on logout)
+  void clearCustomer() {
+    _customer = null;
+    _error = null;
+    notifyListeners();
+  }
+
   /// Update profile on server using provided body data.
   /// Returns the server response map (contains 'success' and 'message').
   Future<Map<String, dynamic>?> updateProfile(Map<String, dynamic> body) async {

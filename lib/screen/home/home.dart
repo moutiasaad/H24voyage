@@ -1,15 +1,14 @@
-import 'package:flight_booking/screen/History_Screen/history_screen.dart';
 import 'package:flight_booking/screen/support/support.dart';
-import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
+import '../../controllers/profile_controller.dart';
+import '../Authentication/sign_up_screen.dart';
 import '../my_boking_screen/my_boking.dart';
 import '../profile/profile_screen.dart';
 import 'home_screen.dart';
 
 class Home extends StatefulWidget {
   final int initialIndex;
-  // User data - can be updated from API
   final String? userName;
   final String? userProfileImage;
 
@@ -27,41 +26,74 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late int _currentPage;
 
-  // Dynamic user data - can be updated from API
-  String? _userName;
-  String? _userProfileImage;
-
   late final List<Widget> _widgetOptions;
 
   @override
   void initState() {
     super.initState();
     _currentPage = widget.initialIndex;
-    _userName = widget.userName;
-    _userProfileImage = widget.userProfileImage;
+
+    // Listen to profile changes to update UI
+    ProfileController.instance.addListener(_onProfileChanged);
 
     _widgetOptions = <Widget>[
       const HomeScreen(),
       MyBooking(onBack: () => setState(() => _currentPage = 0)),
-      const SupportMain(),
+      SupportMain(onBack: () => setState(() => _currentPage = 0)),
       const Profile(),
     ];
   }
 
-  // Method to update user data from API
-  void updateUserData({String? userName, String? profileImage}) {
-    setState(() {
-      _userName = userName;
-      _userProfileImage = profileImage;
-    });
+  @override
+  void dispose() {
+    ProfileController.instance.removeListener(_onProfileChanged);
+    super.dispose();
   }
 
-  // Get user initial for avatar
-  String _getUserInitial() {
-    if (_userName != null && _userName!.isNotEmpty) {
-      return _userName![0].toUpperCase();
+  void _onProfileChanged() {
+    if (mounted) setState(() {});
+  }
+
+  String get _userName {
+    final profile = ProfileController.instance;
+    if (profile.customer != null) {
+      final first = profile.firstName;
+      final last = profile.lastName;
+      if (first.isNotEmpty || last.isNotEmpty) {
+        return '$first $last'.trim();
+      }
     }
-    return 'U'; // Default letter if no username
+    return '';
+  }
+
+  String? get _userProfileImage {
+    final customer = ProfileController.instance.customer;
+    if (customer != null) {
+      final image = customer['profileImage'] ?? customer['profileImageUrl'] ?? customer['avatar'];
+      if (image is String && image.isNotEmpty) return image;
+    }
+    return null;
+  }
+
+  bool get _isLoggedIn => ProfileController.instance.customer != null;
+
+  void _onNavTap(int index) {
+    // Tabs 1 (Réservations), 2 (Support), 3 (Profile) require login
+    if (index != 0 && !_isLoggedIn) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const SignUp()),
+      );
+      return;
+    }
+    setState(() => _currentPage = index);
+  }
+
+  String _getUserInitial() {
+    if (_userName.isNotEmpty) {
+      return _userName[0].toUpperCase();
+    }
+    return 'U';
   }
 
   @override
@@ -102,7 +134,7 @@ class _HomeState extends State<Home> {
                 ),
                 _buildProfileNavItem(
                   index: 3,
-                  label: 'Mon compte',
+                  label: _isLoggedIn && _userName.isNotEmpty ? _userName : 'Mon compte',
                 ),
               ],
             ),
@@ -121,7 +153,7 @@ class _HomeState extends State<Home> {
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => setState(() => _currentPage = index),
+        onTap: () => _onNavTap(index),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -154,7 +186,7 @@ class _HomeState extends State<Home> {
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => setState(() => _currentPage = index),
+        onTap: () => _onNavTap(index),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

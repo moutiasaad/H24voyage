@@ -3,6 +3,7 @@ import 'package:flight_booking/models/flight_offer.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:nb_utils/nb_utils.dart';
 
 import '../../controllers/flight_controller.dart';
@@ -27,6 +28,7 @@ class SearchResult extends StatefulWidget {
   final bool isMultiDestination;
   final String? searchCode;
   final int? totalOffers;
+  final String? errorMessage;
 
   const SearchResult({
     Key? key,
@@ -41,6 +43,7 @@ class SearchResult extends StatefulWidget {
     this.isMultiDestination = false,
     this.searchCode,
     this.totalOffers,
+    this.errorMessage,
   }) : super(key: key);
 
   @override
@@ -59,6 +62,36 @@ class _SearchResultState extends State<SearchResult> {
   bool get isSmallScreen => MediaQuery.of(context).size.width < 360;
   bool get isMediumScreen => MediaQuery.of(context).size.width < 400;
   double get screenWidth => MediaQuery.of(context).size.width;
+
+  /// Convert raw API error into a professional user-friendly message
+  String _getUserFriendlyError(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('aucun vol') || lower.contains('no flight')) {
+      return 'Aucun vol disponible pour ces critères.\nEssayez d\'autres dates ou destinations.';
+    }
+    if (lower.contains('timeout') || lower.contains('timed out')) {
+      return 'Le serveur met trop de temps à répondre.\nVeuillez réessayer dans quelques instants.';
+    }
+    if (lower.contains('no internet') || lower.contains('network') || lower.contains('socket') || lower.contains('connection')) {
+      return 'Connexion internet indisponible.\nVérifiez votre connexion et réessayez.';
+    }
+    if (lower.contains('500') || lower.contains('server') || lower.contains('internal')) {
+      return 'Le service de recherche est temporairement indisponible.\nVeuillez réessayer plus tard.';
+    }
+    if (lower.contains('401') || lower.contains('unauthorized') || lower.contains('token')) {
+      return 'Votre session a expiré.\nVeuillez vous reconnecter et réessayer.';
+    }
+    if (lower.contains('403') || lower.contains('forbidden')) {
+      return 'Accès refusé au service de recherche.\nVeuillez vous reconnecter.';
+    }
+    if (lower.contains('404') || lower.contains('not found')) {
+      return 'Le service de recherche est introuvable.\nVeuillez réessayer plus tard.';
+    }
+    if (lower.contains('429') || lower.contains('too many')) {
+      return 'Trop de recherches en peu de temps.\nVeuillez patienter avant de réessayer.';
+    }
+    return 'Une erreur inattendue est survenue.\nVeuillez réessayer ou modifier vos critères.';
+  }
 
   @override
   void initState() {
@@ -192,38 +225,33 @@ class _SearchResultState extends State<SearchResult> {
             },
             onSearchComplete: () {
               Navigator.pop(context); // Pop loading screen
-              if (!_flightController.hasError) {
-                // Navigate to new search result, replacing current one
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SearchResult(
-                      fromAirport: fromAirport,
-                      toAirport: toAirport,
-                      adultCount: adultCount,
-                      childCount: childCount,
-                      infantCount: infantCount,
-                      dateRange: departureDate != null
-                          ? DateTimeRange(
-                              start: departureDate,
-                              end: returnDate ?? departureDate,
-                            )
-                          : null,
-                      flightOffers: _flightController.offers,
-                      isOneWay: isOneWay,
-                      isMultiDestination: isMultiDestination,
-                      searchCode: _flightController.searchCode,
-                      totalOffers: _flightController.totalOffers,
-                    ),
+              // Navigate to new search result, replacing current one
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SearchResult(
+                    fromAirport: fromAirport,
+                    toAirport: toAirport,
+                    adultCount: adultCount,
+                    childCount: childCount,
+                    infantCount: infantCount,
+                    dateRange: departureDate != null
+                        ? DateTimeRange(
+                            start: departureDate,
+                            end: returnDate ?? departureDate,
+                          )
+                        : null,
+                    flightOffers: _flightController.hasError ? [] : _flightController.offers,
+                    isOneWay: isOneWay,
+                    isMultiDestination: isMultiDestination,
+                    searchCode: _flightController.searchCode,
+                    totalOffers: _flightController.totalOffers,
+                    errorMessage: _flightController.hasError
+                        ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+                        : null,
                   ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(_flightController.errorMessage ?? 'Erreur lors de la recherche'),
-                  ),
-                );
-              }
+                ),
+              );
             },
           ),
         ),
@@ -379,6 +407,43 @@ class _SearchResultState extends State<SearchResult> {
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
               slivers: [
+                // Duration banner (only for round-trip with both dates)
+                if (widget.dateRange != null && widget.dateRange!.start != widget.dateRange!.end)
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: kPrimaryColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: kPrimaryColor.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.access_time_rounded, size: 18, color: kPrimaryColor),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Durée du séjour : ${widget.dateRange!.duration.inDays} jour${widget.dateRange!.duration.inDays > 1 ? 's' : ''}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: kPrimaryColor,
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '${DateFormat('dd MMM', 'fr').format(widget.dateRange!.start)} - ${DateFormat('dd MMM', 'fr').format(widget.dateRange!.end)}',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: kPrimaryColor.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 // Top spacing
                 const SliverToBoxAdapter(
                   child: SizedBox(height: 16),
@@ -417,28 +482,75 @@ class _SearchResultState extends State<SearchResult> {
                 else if (widget.flightOffers != null && widget.flightOffers!.isEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
                       child: Center(
                         child: Column(
                           children: [
-                            Icon(Icons.flight_outlined, size: 64, color: kSubTitleColor),
-                            const SizedBox(height: 16),
+                            // Icon
+                            Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: widget.errorMessage != null
+                                    ? Colors.red.shade50
+                                    : Colors.grey.shade100,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                widget.errorMessage != null
+                                    ? Icons.cloud_off_rounded
+                                    : Icons.flight_outlined,
+                                size: 40,
+                                color: widget.errorMessage != null
+                                    ? Colors.red.shade300
+                                    : kSubTitleColor,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // Title
                             Text(
-                              'Aucun vol trouvé',
+                              widget.errorMessage != null
+                                  ? 'Recherche indisponible'
+                                  : 'Aucun vol trouvé',
                               style: GoogleFonts.poppins(
                                 color: kTitleColor,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 10),
+                            // Friendly message
                             Text(
-                              'Essayez de modifier vos critères de recherche',
+                              widget.errorMessage != null
+                                  ? _getUserFriendlyError(widget.errorMessage!)
+                                  : 'Essayez de modifier vos critères de recherche',
                               style: GoogleFonts.poppins(
                                 color: kSubTitleColor,
                                 fontSize: 14,
+                                height: 1.5,
                               ),
                               textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 24),
+                            // Edit search button
+                            TextButton.icon(
+                              onPressed: _showEditSearchBottomSheet,
+                              icon: const Icon(Icons.edit, size: 18),
+                              label: Text(
+                                'Modifier la recherche',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: TextButton.styleFrom(
+                                foregroundColor: kPrimaryColor,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  side: BorderSide(color: kPrimaryColor),
+                                ),
+                              ),
                             ),
                           ],
                         ),

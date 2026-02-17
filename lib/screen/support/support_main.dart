@@ -45,7 +45,9 @@ class SupportTicket {
 }
 
 class SupportMain extends StatefulWidget {
-  const SupportMain({Key? key}) : super(key: key);
+  final VoidCallback? onBack;
+
+  const SupportMain({Key? key, this.onBack}) : super(key: key);
 
   @override
   State<SupportMain> createState() => _SupportMainState();
@@ -107,8 +109,8 @@ class _SupportMainState extends State<SupportMain> {
       backgroundColor: kWhite,
       body: Column(
         children: [
-          // Orange Header
-          _buildHeader(),
+          // Orange Header + overlapping banner
+          _buildHeaderWithBanner(),
 
           // Content
           Expanded(
@@ -119,14 +121,6 @@ class _SupportMainState extends State<SupportMain> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: isSmallScreen ? 12 : 16),
-
-                    // Filter Chips Row
-                    _buildFilterChips(),
-                    SizedBox(height: isSmallScreen ? 12 : 16),
-
-                    // Info Banner
-                    _buildInfoBanner(),
                     SizedBox(height: isSmallScreen ? 12 : 16),
 
                     // Stats Tabs
@@ -147,42 +141,108 @@ class _SupportMainState extends State<SupportMain> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeaderWithBanner() {
+    const double bannerHeight = 46;
+    const double overlap = bannerHeight / 2;
+
     return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 12,
-        left: 16,
-        right: 16,
-        bottom: 16,
-      ),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFF8C42),
-            Color(0xFFFF6B35),
-            kPrimaryColor,
-          ],
-        ),
-      ),
-      child: Row(
+      margin: const EdgeInsets.only(bottom: overlap),
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          SmallTapEffect(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 24,
+          // Orange header
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 16,
+              right: 16,
+              bottom: overlap + 12,
+            ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFF8C42),
+                  Color(0xFFFF6B35),
+                  kPrimaryColor,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title row
+                Row(
+                  children: [
+                    SmallTapEffect(
+                      onTap: () {
+                        if (widget.onBack != null) {
+                          widget.onBack!();
+                        } else {
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Support client',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Filter Chips
+                _buildFilterChips(),
+              ],
             ),
           ),
-          const SizedBox(width: 12),
-          Text(
-            'Support client',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+
+          // Overlapping banner - half inside header, half outside
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: -overlap,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                horizontal: isSmallScreen ? 12 : 16,
+                vertical: isSmallScreen ? 10 : 14,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF4EE),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                'Gérez et suivez vos demandes en temps réel',
+                style: GoogleFonts.poppins(
+                  color: kPrimaryColor,
+                  fontSize: isSmallScreen ? 11 : 13,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
         ],
@@ -197,11 +257,9 @@ class _SupportMainState extends State<SupportMain> {
     final iconSize = isSmallScreen ? 16.0 : 18.0;
     final spacing = isSmallScreen ? 6.0 : 10.0;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: [
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
           // Helpdesk Chip (selected)
           SmallTapEffect(
             onTap: () => const FaqScreen().launch(context),
@@ -287,7 +345,6 @@ class _SupportMainState extends State<SupportMain> {
             ),
           ),
         ],
-      ),
     );
   }
 
@@ -296,11 +353,11 @@ class _SupportMainState extends State<SupportMain> {
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         horizontal: isSmallScreen ? 12 : 16,
-        vertical: isSmallScreen ? 10 : 12,
+        vertical: isSmallScreen ? 10 : 14,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF4EE),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
         'Gérez et suivez vos demandes en temps réel',
@@ -377,66 +434,66 @@ class _SupportMainState extends State<SupportMain> {
   Widget _buildTicketCard(SupportTicket ticket) {
     // Responsive values
     final cardPadding = isSmallScreen ? 12.0 : 16.0;
-    final idFontSize = isSmallScreen ? 12.0 : 14.0;
-    final statusFontSize = isSmallScreen ? 10.0 : 11.0;
+    final idFontSize = isSmallScreen ? 12.0 : 13.0;
+    final statusFontSize = isSmallScreen ? 10.0 : 12.0;
     final subjectFontSize = isSmallScreen ? 14.0 : 16.0;
     final infoFontSize = isSmallScreen ? 11.0 : 12.0;
     final smallFontSize = isSmallScreen ? 10.0 : 11.0;
     final avatarSize = isSmallScreen ? 28.0 : 32.0;
     final iconSize = isSmallScreen ? 14.0 : 16.0;
 
-    return TappableCard(
-      onTap: () => TicketDetail(ticketId: ticket.id).launch(context),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: TappableCard(
+        onTap: () => TicketDetail(ticketId: ticket.id).launch(context),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: const Color(0xFFE8E8E8),
+            width: 1,
           ),
-        ],
-      ),
-      padding: EdgeInsets.all(cardPadding),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        ),
+        padding: EdgeInsets.all(cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ID and Status Row
             Row(
               children: [
-                Text(
-                  ticket.id,
-                  style: GoogleFonts.poppins(
-                    fontSize: idFontSize,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF2196F3),
-                  ),
-                ),
-                SizedBox(width: isSmallScreen ? 10 : 14),
+                // ID badge
                 Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isSmallScreen ? 10 : 12,
-                    vertical: isSmallScreen ? 4 : 5,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFFF0E8),
-                    borderRadius: BorderRadius.circular(6),
+                    color: const Color(0xFFEAF3FF),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFFD0E3FF),
+                      width: 1,
+                    ),
                   ),
                   child: Text(
-                    ticket.statusLabel,
+                    ticket.id,
                     style: GoogleFonts.poppins(
-                      fontSize: statusFontSize,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.orange,
+                      fontSize: idFontSize,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF2196F3),
                     ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Status badge
+                Text(
+                  ticket.statusLabel,
+                  style: GoogleFonts.poppins(
+                    fontSize: statusFontSize,
+                    fontWeight: FontWeight.w500,
+                    color: kPrimaryColor,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: isSmallScreen ? 10 : 12),
+            const SizedBox(height: 12),
 
             // Subject
             Text(
@@ -447,13 +504,13 @@ class _SupportMainState extends State<SupportMain> {
                 color: kTitleColor,
               ),
             ),
-            SizedBox(height: isSmallScreen ? 12 : 14),
+            const SizedBox(height: 14),
 
             // Info Row
             _buildInfoRow(ticket, avatarSize, infoFontSize, iconSize, smallFontSize),
 
             // Details Button at bottom right
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,
               child: _buildDetailsLink(infoFontSize),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
 import '../../widgets/constant.dart';
@@ -36,30 +37,56 @@ class _LanguageState extends State<Language> {
     Provider.of<LanguageChangeProvider>(context);
 
     return Scaffold(
-      backgroundColor: kWebsiteGreyBg,
-      appBar: AppBar(
-        elevation: 0.0,
-        backgroundColor: Colors.transparent,
-        iconTheme: const IconThemeData(color: kTitleColor),
-        title: Text(
-          lang.S.of(context).language,
-          style: const TextStyle(fontSize: 18, color: kTitleColor),
-        ),
-        centerTitle: true,
-      ),
-      body: Container(
-        padding: const EdgeInsets.all(10.0),
-        height: context.height(),
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          color: kWhite,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(30),
-            topLeft: Radius.circular(30),
+      backgroundColor: kWhite,
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 12,
+              left: 16,
+              right: 16,
+              bottom: 16,
+            ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFF8C42),
+                  Color(0xFFFF6B35),
+                  kPrimaryColor,
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                SmallTapEffect(
+                  onTap: () => Navigator.pop(context),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  lang.S.of(context).language,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        child: ListView.builder(
-          padding: const EdgeInsets.only(top: 10.0),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(10.0),
           itemCount: languages.length,
           itemBuilder: (context, index) {
             final item = languages[index];
@@ -106,6 +133,8 @@ class _LanguageState extends State<Language> {
             );
           },
         ),
+          ),
+        ],
       ),
     );
   }

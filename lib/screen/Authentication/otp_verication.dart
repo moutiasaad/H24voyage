@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flight_booking/screen/home/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +6,7 @@ import 'package:pinput/pinput.dart';
 import '../widgets/constant.dart';
 import '../widgets/button_global.dart';
 import '../../controllers/register_controller.dart';
+import '../../services/auth_service.dart';
 import 'sign_up_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -23,13 +25,88 @@ class _OtpVerificationState extends State<OtpVerification> {
   final TextEditingController _otpController = TextEditingController();
   final FocusNode _otpFocusNode = FocusNode();
   bool _isLoading = false;
+  bool _isResending = false;
   String? _errorMessage;
+
+  // Resend timer
+  int _resendSeconds = 60;
+  Timer? _resendTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startResendTimer();
+  }
 
   @override
   void dispose() {
     _otpController.dispose();
     _otpFocusNode.dispose();
+    _resendTimer?.cancel();
     super.dispose();
+  }
+
+  void _startResendTimer() {
+    _resendSeconds = 60;
+    _resendTimer?.cancel();
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (_resendSeconds > 0) {
+          _resendSeconds--;
+        } else {
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  bool get _canResend => _resendSeconds == 0 && !_isResending;
+
+  Future<void> _resendOtp() async {
+    if (!_canResend) return;
+    if (widget.email == null || widget.email!.isEmpty) return;
+
+    setState(() {
+      _isResending = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final success = await AuthService.resendLoginOtp(email: widget.email!);
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Un nouveau code a été envoyé à ${widget.email}',
+              style: GoogleFonts.poppins(color: kWhite, fontSize: 13),
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+        _startResendTimer();
+      } else {
+        setState(() {
+          _errorMessage = 'Impossible de renvoyer le code. Réessayez.';
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Erreur lors du renvoi du code.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isResending = false);
+      }
+    }
   }
 
   Future<void> _verifyOtp(String otp) async {
@@ -50,7 +127,7 @@ class _OtpVerificationState extends State<OtpVerification> {
         if (widget.customerId == null) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'ID client manquant pour la vérification';
+            _errorMessage = 'Code incorrect, veuillez réessayer';
           });
           return;
         }
@@ -62,28 +139,20 @@ class _OtpVerificationState extends State<OtpVerification> {
 
         if (!mounted) return;
 
-        if (response == null) {
+        if (response == null || !response.success) {
           setState(() {
             _isLoading = false;
-            _errorMessage = controller.message ?? 'Code incorrect. Veuillez réessayer.';
+            _errorMessage = 'Code incorrect, veuillez réessayer';
           });
           _clearOtpAfterError();
           return;
         }
 
-        if (response.success) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const Home()),
-            (route) => false,
-          );
-        } else {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = response.message ?? 'Code incorrect. Veuillez réessayer.';
-          });
-          _clearOtpAfterError();
-        }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+          (route) => false,
+        );
       } else {
         final response = await controller.verifyOtp(
           email: widget.email ?? '',
@@ -92,42 +161,34 @@ class _OtpVerificationState extends State<OtpVerification> {
 
         if (!mounted) return;
 
-        if (response == null) {
+        if (response == null || !response.success) {
           setState(() {
             _isLoading = false;
-            _errorMessage = controller.message ?? 'Code incorrect. Veuillez réessayer.';
+            _errorMessage = 'Code incorrect, veuillez réessayer';
           });
           _clearOtpAfterError();
           return;
         }
 
-        if (response.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Inscription réussie! Veuillez vous connecter.'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 3),
-            ),
-          );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Inscription réussie! Veuillez vous connecter.'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
 
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const SignUp()),
-            (route) => false,
-          );
-        } else {
-          setState(() {
-            _isLoading = false;
-            _errorMessage = response.message ?? response.error ?? 'Code incorrect. Veuillez réessayer.';
-          });
-          _clearOtpAfterError();
-        }
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const SignUp()),
+          (route) => false,
+        );
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+        _errorMessage = 'Code incorrect, veuillez réessayer';
       });
       _clearOtpAfterError();
     }
@@ -140,6 +201,12 @@ class _OtpVerificationState extends State<OtpVerification> {
         _otpFocusNode.requestFocus();
       }
     });
+  }
+
+  String get _timerText {
+    final minutes = (_resendSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_resendSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 
   @override
@@ -325,12 +392,48 @@ class _OtpVerificationState extends State<OtpVerification> {
                   onCompleted: (pin) => _verifyOtp(pin),
                 ),
 
+                const SizedBox(height: 8),
+
+                // Timer + resend row below OTP input
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _resendSeconds > 0
+                      ? Text(
+                          _timerText,
+                          style: GoogleFonts.poppins(
+                            color: kSubTitleColor,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      : SmallTapEffect(
+                          onTap: _canResend ? _resendOtp : null,
+                          child: _isResending
+                              ? const SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: kPrimaryColor,
+                                  ),
+                                )
+                              : Text(
+                                  'Renvoyer le code',
+                                  style: GoogleFonts.poppins(
+                                    color: kPrimaryColor,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                        ),
+                ),
+
                 // Error message
                 AnimatedSize(
                   duration: const Duration(milliseconds: 200),
                   child: hasError
                       ? Padding(
-                          padding: const EdgeInsets.only(top: 12),
+                          padding: const EdgeInsets.only(top: 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -398,33 +501,6 @@ class _OtpVerificationState extends State<OtpVerification> {
                         'Vérifier l\'adresse e-mail',
                         style: GoogleFonts.poppins(
                           color: _isLoading ? kSubTitleColor : kTitleColor,
-                          fontSize: buttonTextSize,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: isVerySmallScreen ? 10 : 14),
-
-                // Resend code button
-                TappableCard(
-                  onTap: () {
-                    // Resend code logic
-                  },
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F0F0),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    height: buttonHeight,
-                    child: Center(
-                      child: Text(
-                        'Recevoir un nouveau code',
-                        style: GoogleFonts.poppins(
-                          color: kTitleColor,
                           fontSize: buttonTextSize,
                           fontWeight: FontWeight.w500,
                         ),

@@ -122,7 +122,6 @@ class _ProfileState extends State<Profile> {
   void initState() {
     super.initState();
     _profileController.addListener(_onProfileChanged);
-    _profileController.fetchProfile();
 
     // default menu items
     _accountMenuItems = [
@@ -137,7 +136,6 @@ class _ProfileState extends State<Profile> {
         id: 'travelers',
         title: 'Voyageurs enregistrés',
         iconAsset: 'assets/voyageIcon.png',
-        destination: const EditProfile(),
       ),
       ProfileMenuItem(
         id: 'referral',
@@ -367,7 +365,7 @@ class _ProfileState extends State<Profile> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              const WelcomeScreen().launch(context, isNewTask: true);
+              _performLogout();
             },
             child: const Text(
               'Déconnecter',
@@ -379,13 +377,40 @@ class _ProfileState extends State<Profile> {
     );
   }
 
+  Future<void> _performLogout() async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      await AuthService.logout();
+    } catch (_) {
+      // AuthService.logout already clears local data even on failure
+    }
+
+    // Clear profile data in memory
+    ProfileController.instance.clearCustomer();
+
+    if (!mounted) return;
+
+    // Dismiss loading
+    if (Navigator.of(context).canPop()) Navigator.of(context).pop();
+
+    // Navigate to welcome screen and clear stack
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
-      body: _profileController.isLoading
-          ? const Center(child: CircularProgressIndicator(color: kPrimaryColor))
-          : CustomScrollView(
+      body: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
                 // Orange Gradient App Bar
@@ -477,8 +502,9 @@ class _ProfileState extends State<Profile> {
   Widget _buildAppBar() {
     return SliverAppBar(
       expandedHeight: 60,
-      floating: false,
-      pinned: true,
+      floating: true,
+      snap: true,
+      pinned: false,
       elevation: 0,
       backgroundColor: Colors.transparent,
       leadingWidth: 40,

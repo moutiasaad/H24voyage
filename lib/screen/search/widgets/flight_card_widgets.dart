@@ -844,52 +844,52 @@ class ApiFlightCard extends StatelessWidget {
                   spacing: isSmallScreen ? 4 : 8,
                   runSpacing: 4,
                   children: [
-                    if (hasBaggage == true)
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.luggage, size: badgeIconSize, color: Colors.green[700]),
-                            SizedBox(width: isSmallScreen ? 2 : 4),
-                            Text(
-                              isSmallScreen ? 'Bagages' : 'Bagages inclus',
-                              style: kTextStyle.copyWith(
-                                color: Colors.green[700],
-                                fontSize: badgeFontSize,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (isRefundable == true)
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.check_circle_outline, size: badgeIconSize, color: Colors.blue[700]),
-                            SizedBox(width: isSmallScreen ? 2 : 4),
-                            Text(
-                              'Remboursable',
-                              style: kTextStyle.copyWith(
-                                color: Colors.blue[700],
-                                fontSize: badgeFontSize,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    // if (hasBaggage == true)
+                    //   Container(
+                    //     padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.green.withOpacity(0.1),
+                    //       borderRadius: BorderRadius.circular(4),
+                    //     ),
+                    //     child: Row(
+                    //       mainAxisSize: MainAxisSize.min,
+                    //       children: [
+                    //         Icon(Icons.luggage, size: badgeIconSize, color: Colors.green[700]),
+                    //         SizedBox(width: isSmallScreen ? 2 : 4),
+                    //         Text(
+                    //           isSmallScreen ? 'Bagages' : 'Bagages inclus',
+                    //           style: kTextStyle.copyWith(
+                    //             color: Colors.green[700],
+                    //             fontSize: badgeFontSize,
+                    //             fontWeight: FontWeight.w500,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // if (isRefundable == true)
+                    //   Container(
+                    //     padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.blue.withOpacity(0.1),
+                    //       borderRadius: BorderRadius.circular(4),
+                    //     ),
+                    //     child: Row(
+                    //       mainAxisSize: MainAxisSize.min,
+                    //       children: [
+                    //         Icon(Icons.check_circle_outline, size: badgeIconSize, color: Colors.blue[700]),
+                    //         SizedBox(width: isSmallScreen ? 2 : 4),
+                    //         Text(
+                    //           'Remboursable',
+                    //           style: kTextStyle.copyWith(
+                    //             color: Colors.blue[700],
+                    //             fontSize: badgeFontSize,
+                    //             fontWeight: FontWeight.w500,
+                    //           ),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
                   ],
                 ),
                 if (hasBaggage == true || isRefundable == true) SizedBox(height: isSmallScreen ? 8 : 10),

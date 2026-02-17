@@ -1,6 +1,7 @@
 import 'package:flight_booking/Model/FakeFlight.dart';
 import 'package:flight_booking/models/flight_offer.dart';
 import 'package:flight_booking/screen/search/flight_details.dart';
+import 'package:flight_booking/screen/search/booking_webview.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -1827,7 +1828,10 @@ void showFlightDetailsBottomSheet(
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const FlightDetails(),
+                                builder: (_) => const BookingWebView(
+                                  url: 'https://www.google.com',
+                                  title: 'Réservation',
+                                ),
                               ),
                             );
                           },
@@ -2592,7 +2596,10 @@ void showFakeFlightDetailsBottomSheet(
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const FlightDetails(),
+                                builder: (_) => const BookingWebView(
+                                  url: 'https://www.google.com',
+                                  title: 'Réservation',
+                                ),
                               ),
                             );
                           },
