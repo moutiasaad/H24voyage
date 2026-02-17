@@ -6,7 +6,9 @@ import '../ticket status/ticket_status.dart';
 import '../widgets/button_global.dart';
 
 class MyBooking extends StatefulWidget {
-  const MyBooking({Key? key}) : super(key: key);
+  final VoidCallback? onBack;
+
+  const MyBooking({Key? key, this.onBack}) : super(key: key);
 
   @override
   State<MyBooking> createState() => _MyBookingState();
@@ -160,70 +162,71 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
 
   Widget _buildHeader(double statusBarHeight) {
     return Container(
-      height: 88 + statusBarHeight,
-      padding: EdgeInsets.only(top: statusBarHeight),
-      decoration: const BoxDecoration(
-        color: Color(0xFFFF6A00),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+      padding: EdgeInsets.only(
+        top: statusBarHeight + 12,
+        left: 16,
+        right: 16,
+        bottom: 16,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            // Back button
-            SmallTapEffect(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                child: const Icon(
-                  Icons.arrow_back,
-                  size: 24,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            // Title on left
-            Text(
-              'Réservations',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            const Spacer(),
-            // Add button
-            SmallTapEffect(
-              onTap: () {
-                // Navigate to add reservation
-              },
-              child: Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                child: Image.asset(
-                  'assets/plus 1.png',
-                  width: 22,
-                  height: 22,
-                  color: Colors.white,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.add,
-                      size: 22,
-                      color: Colors.white,
-                    );
-                  },
-                ),
-              ),
-            ),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFF8C42),
+            Color(0xFFFF6B35),
+            kPrimaryColor,
           ],
         ),
+      ),
+      child: Row(
+        children: [
+          // Back button -> go to home screen
+          SmallTapEffect(
+            onTap: () {
+              if (widget.onBack != null) {
+                widget.onBack!();
+              } else {
+                Navigator.pop(context);
+              }
+            },
+            child: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Title
+          Text(
+            'Réservations',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Spacer(),
+          // Add button
+          SmallTapEffect(
+            onTap: () {
+              // Navigate to add reservation
+            },
+            child: Image.asset(
+              'assets/plus 1.png',
+              width: 22,
+              height: 22,
+              color: Colors.white,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.add,
+                  size: 22,
+                  color: Colors.white,
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

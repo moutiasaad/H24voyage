@@ -31,12 +31,7 @@ class _HomeState extends State<Home> {
   String? _userName;
   String? _userProfileImage;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomeScreen(),
-    MyBooking(),
-    SupportMain(),
-    Profile(),
-  ];
+  late final List<Widget> _widgetOptions;
 
   @override
   void initState() {
@@ -44,6 +39,13 @@ class _HomeState extends State<Home> {
     _currentPage = widget.initialIndex;
     _userName = widget.userName;
     _userProfileImage = widget.userProfileImage;
+
+    _widgetOptions = <Widget>[
+      const HomeScreen(),
+      MyBooking(onBack: () => setState(() => _currentPage = 0)),
+      const SupportMain(),
+      const Profile(),
+    ];
   }
 
   // Method to update user data from API

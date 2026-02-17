@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'onboard.dart';
 import '../../home/home.dart';
 import '../../../services/auth_service.dart';
+import '../../../services/push_notification_service.dart';
 import '../../../controllers/profile_controller.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -76,6 +77,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
         if (ProfileController.instance.customer != null) {
           debugPrint('Profile loaded - user authenticated');
           await prefs.setBool('is_logged_in', true);
+
+          // Get FCM token after successful authentication
+          await PushNotificationService().getToken();
+
           return const Home();
         } else {
           debugPrint('Profile fetch failed after token refresh');

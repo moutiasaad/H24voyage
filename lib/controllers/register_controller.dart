@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/auth_service.dart';
+import '../services/push_notification_service.dart';
 
 enum RegisterState {
   idle,
@@ -137,6 +138,8 @@ class RegisterController extends ChangeNotifier {
           await prefs.setBool('is_logged_in', true);
           if (response.customerId != null) await prefs.setInt('customer_id', response.customerId!);
           await prefs.setString('user_email', email);
+          // Get FCM token after successful login
+          await PushNotificationService().getToken();
         } catch (e) {
           debugPrint('❌ Failed to save session after login: $e');
         }
@@ -193,6 +196,8 @@ class RegisterController extends ChangeNotifier {
             await prefs.setString('refreshToken', response.refreshToken!);
             debugPrint('✅ Saved refreshToken from login');
           }
+          // Get FCM token after successful OTP verification
+          await PushNotificationService().getToken();
         } catch (e) {
           debugPrint('❌ Failed to save session after login OTP: $e');
         }
