@@ -283,37 +283,63 @@ class _SearchResultState extends State<SearchResult> {
       return [
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(32),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
             child: Center(
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.filter_alt_off,
-                    size: 64,
-                    color: kSubTitleColor,
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.filter_alt_off_rounded,
+                      size: 40,
+                      color: kSubTitleColor,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   Text(
                     'Aucun vol ne correspond à vos filtres',
                     style: GoogleFonts.poppins(
                       color: kTitleColor,
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 8),
-                  TextButton(
+                  const SizedBox(height: 10),
+                  Text(
+                    'Essayez de modifier ou réinitialiser\nvos filtres pour voir plus de résultats',
+                    style: GoogleFonts.poppins(
+                      color: kSubTitleColor,
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  TextButton.icon(
                     onPressed: () {
                       _ctrl.resetAllFilters();
                       _ctrl.reloadFlightsWithFilters();
                     },
-                    child: Text(
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: Text(
                       'Réinitialiser les filtres',
                       style: GoogleFonts.poppins(
-                        color: kPrimaryColor,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: kPrimaryColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: kPrimaryColor),
                       ),
                     ),
                   ),
@@ -484,75 +510,80 @@ class _SearchResultState extends State<SearchResult> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
                       child: Center(
-                        child: Column(
-                          children: [
-                            // Icon
-                            Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                color: widget.errorMessage != null
-                                    ? Colors.red.shade50
-                                    : Colors.grey.shade100,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                widget.errorMessage != null
-                                    ? Icons.cloud_off_rounded
-                                    : Icons.flight_outlined,
-                                size: 40,
-                                color: widget.errorMessage != null
-                                    ? Colors.red.shade300
-                                    : kSubTitleColor,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            // Title
-                            Text(
-                              widget.errorMessage != null
-                                  ? 'Recherche indisponible'
-                                  : 'Aucun vol trouvé',
-                              style: GoogleFonts.poppins(
-                                color: kTitleColor,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            // Friendly message
-                            Text(
-                              widget.errorMessage != null
-                                  ? _getUserFriendlyError(widget.errorMessage!)
-                                  : 'Essayez de modifier vos critères de recherche',
-                              style: GoogleFonts.poppins(
-                                color: kSubTitleColor,
-                                fontSize: 14,
-                                height: 1.5,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 24),
-                            // Edit search button
-                            TextButton.icon(
-                              onPressed: _showEditSearchBottomSheet,
-                              icon: const Icon(Icons.edit, size: 18),
-                              label: Text(
-                                'Modifier la recherche',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
+                        child: Builder(
+                          builder: (context) {
+                            final isNoFlights = widget.errorMessage == null ||
+                                widget.errorMessage!.toLowerCase().contains('aucun vol') ||
+                                widget.errorMessage!.toLowerCase().contains('no flight');
+                            final isRealError = widget.errorMessage != null && !isNoFlights;
+
+                            return Column(
+                              children: [
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  decoration: BoxDecoration(
+                                    color: isRealError
+                                        ? Colors.red.shade50
+                                        : Colors.grey.shade100,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    isRealError
+                                        ? Icons.cloud_off_rounded
+                                        : Icons.flight_outlined,
+                                    size: 40,
+                                    color: isRealError
+                                        ? Colors.red.shade300
+                                        : kSubTitleColor,
+                                  ),
                                 ),
-                              ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: kPrimaryColor,
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  side: BorderSide(color: kPrimaryColor),
+                                const SizedBox(height: 20),
+                                Text(
+                                  isRealError
+                                      ? 'Recherche indisponible'
+                                      : 'Aucun vol trouvé',
+                                  style: GoogleFonts.poppins(
+                                    color: kTitleColor,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ],
+                                const SizedBox(height: 10),
+                                Text(
+                                  isRealError
+                                      ? _getUserFriendlyError(widget.errorMessage!)
+                                      : 'Essayez de modifier vos dates ou\nvos critères de recherche',
+                                  style: GoogleFonts.poppins(
+                                    color: kSubTitleColor,
+                                    fontSize: 14,
+                                    height: 1.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 24),
+                                TextButton.icon(
+                                  onPressed: _showEditSearchBottomSheet,
+                                  icon: const Icon(Icons.edit, size: 18),
+                                  label: Text(
+                                    'Modifier la recherche',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: kPrimaryColor,
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      side: BorderSide(color: kPrimaryColor),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ),

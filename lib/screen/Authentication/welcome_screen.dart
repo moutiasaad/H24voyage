@@ -49,30 +49,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Skip button
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (context) => const Home()),
-                                (route) => false,
-                              );
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
-                              child: Text(
-                                'Passer',
-                                style: GoogleFonts.poppins(
-                                  color: kPrimaryColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                        SizedBox(height: 8 * ratioH),
                         // Top section: Image + Title + Subtitle
                         Column(
                         children: [
@@ -232,6 +209,46 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   ),
                                 ],
                               ),
+                            ),
+                          ),
+
+                          SizedBox(height: 24 * ratioH),
+
+                          // Skip button
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => const Home()),
+                                (route) => false,
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              splashFactory: InkSparkle.splashFactory,
+                              overlayColor: kPrimaryColor.withOpacity(0.08),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Continuer sans connexion',
+                                  style: GoogleFonts.poppins(
+                                    color: kSubTitleColor,
+                                    fontSize: subtitleSize,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: kSubTitleColor,
+                                  size: subtitleSize,
+                                ),
+                              ],
                             ),
                           ),
                         ],

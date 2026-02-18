@@ -40,7 +40,7 @@ class _HomeState extends State<Home> {
       const HomeScreen(),
       MyBooking(onBack: () => setState(() => _currentPage = 0)),
       SupportMain(onBack: () => setState(() => _currentPage = 0)),
-      const Profile(),
+      Profile(onBack: () => setState(() => _currentPage = 0)),
     ];
   }
 

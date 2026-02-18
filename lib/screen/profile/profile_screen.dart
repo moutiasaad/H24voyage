@@ -106,7 +106,8 @@ class UserProfile {
 }
 
 class Profile extends StatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+  final VoidCallback? onBack;
+  const Profile({Key? key, this.onBack}) : super(key: key);
 
   @override
   State<Profile> createState() => _ProfileState();
@@ -509,7 +510,13 @@ class _ProfileState extends State<Profile> {
       backgroundColor: Colors.transparent,
       leadingWidth: 40,
       leading: SmallTapEffect(
-        onTap: () => Navigator.pop(context),
+        onTap: () {
+          if (widget.onBack != null) {
+            widget.onBack!();
+          } else {
+            Navigator.pop(context);
+          }
+        },
         child: const Padding(
           padding: EdgeInsets.all(12.0),
           child: Icon(

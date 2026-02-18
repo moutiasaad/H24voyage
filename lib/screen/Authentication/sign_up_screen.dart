@@ -9,6 +9,7 @@ import 'package:nb_utils/nb_utils.dart';
 
 import 'otp_verication.dart';
 import '../../controllers/register_controller.dart';
+import '../../controllers/profile_controller.dart';
 import '../home/home.dart';
 
 class SignUp extends StatefulWidget {
@@ -276,7 +277,9 @@ class _SignUpState extends State<SignUp> {
                                     ),
                                   );
                                 } else if (response.success && !response.requiresOTP) {
-                                  // login succeeded without OTP -> navigate to Home
+                                  // login succeeded without OTP -> fetch profile then navigate to Home
+                                  await ProfileController.instance.fetchProfile();
+                                  if (!mounted) return;
                                   Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(builder: (context) => const Home()),

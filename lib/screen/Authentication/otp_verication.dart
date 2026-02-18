@@ -6,6 +6,7 @@ import 'package:pinput/pinput.dart';
 import '../widgets/constant.dart';
 import '../widgets/button_global.dart';
 import '../../controllers/register_controller.dart';
+import '../../controllers/profile_controller.dart';
 import '../../services/auth_service.dart';
 import 'sign_up_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -147,6 +148,11 @@ class _OtpVerificationState extends State<OtpVerification> {
           _clearOtpAfterError();
           return;
         }
+
+        // Fetch user profile (same as app startup in splash screen)
+        await ProfileController.instance.fetchProfile();
+
+        if (!mounted) return;
 
         Navigator.pushAndRemoveUntil(
           context,
