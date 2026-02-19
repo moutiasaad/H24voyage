@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/support/support.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
@@ -115,28 +116,33 @@ class _HomeState extends State<Home> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
-            child: Row(
-              children: [
-                _buildNavItem(
-                  index: 0,
-                  iconPath: 'assets/rechercher.png',
-                  label: 'Rechercher',
-                ),
-                _buildNavItem(
-                  index: 1,
-                  iconPath: 'assets/valise.png',
-                  label: 'Réservations',
-                ),
-                _buildNavItem(
-                  index: 2,
-                  iconPath: 'assets/assistance-telephonique.png',
-                  label: 'Support client',
-                ),
-                _buildProfileNavItem(
-                  index: 3,
-                  label: _isLoggedIn && _userName.isNotEmpty ? _userName : 'Mon compte',
-                ),
-              ],
+            child: Builder(
+              builder: (context) {
+                final t = lang.S.of(context);
+                return Row(
+                  children: [
+                    _buildNavItem(
+                      index: 0,
+                      iconPath: 'assets/rechercher.png',
+                      label: t.navSearch,
+                    ),
+                    _buildNavItem(
+                      index: 1,
+                      iconPath: 'assets/valise.png',
+                      label: t.navBookings,
+                    ),
+                    _buildNavItem(
+                      index: 2,
+                      iconPath: 'assets/assistance-telephonique.png',
+                      label: t.navSupport,
+                    ),
+                    _buildProfileNavItem(
+                      index: 3,
+                      label: _isLoggedIn && _userName.isNotEmpty ? _userName : t.navMyAccount,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -166,6 +172,8 @@ class _HomeState extends State<Home> {
             const SizedBox(height: 4),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
                 color: isSelected ? kPrimaryColor : kSubTitleColor,
@@ -220,6 +228,8 @@ class _HomeState extends State<Home> {
             const SizedBox(height: 4),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
                 color: isSelected ? kPrimaryColor : kSubTitleColor,

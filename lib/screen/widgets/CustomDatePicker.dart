@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
@@ -100,7 +101,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               children: [
                 Center(
                   child: Text(
-                    widget.isRoundTrip ? 'Dates de voyage' : 'Date de voyage',
+                    widget.isRoundTrip ? lang.S.of(context).datePickerTitleRoundTrip : lang.S.of(context).datePickerTitleOneWay,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -128,7 +129,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   child: Column(
                     children: [
                       Text(
-                        'Départ',
+                        lang.S.of(context).homeDeparture,
                         style: TextStyle(
                           color: Colors.grey.shade500,
                           fontSize: 15,
@@ -139,7 +140,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                       Text(
                         departureDate != null
                             ? _getFormattedDate(departureDate!)
-                            : 'Sélectionner une date',
+                            : lang.S.of(context).datePickerSelectDate,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -169,7 +170,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                     child: Column(
                       children: [
                         Text(
-                          'Retour',
+                          lang.S.of(context).homeReturn,
                           style: TextStyle(
                             color: Colors.grey.shade500,
                             fontSize: 15,
@@ -180,7 +181,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                         Text(
                           returnDate != null
                               ? _getFormattedDate(returnDate!)
-                              : 'Sélectionner une date',
+                              : lang.S.of(context).datePickerSelectDate,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -248,9 +249,9 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                             color: Colors.black,
                           ),
                           children: [
-                            const TextSpan(text: 'Durée du voyage : '),
+                            TextSpan(text: lang.S.of(context).datePickerTripDuration),
                             TextSpan(
-                              text: '${returnDate!.difference(departureDate!).inDays} jour${returnDate!.difference(departureDate!).inDays > 1 ? 's' : ''}',
+                              text: '${returnDate!.difference(departureDate!).inDays} ${returnDate!.difference(departureDate!).inDays > 1 ? lang.S.of(context).datePickerDays : lang.S.of(context).datePickerDay}',
                               style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ],
@@ -275,9 +276,9 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        'Confirmer',
-                        style: TextStyle(
+                      child: Text(
+                        lang.S.of(context).datePickerConfirm,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -317,13 +318,13 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
           // Weekday headers
           Row(
             children: [
-              Expanded(child: _buildWeekdayHeader('Lun.')),
-              Expanded(child: _buildWeekdayHeader('Mar.')),
-              Expanded(child: _buildWeekdayHeader('Mer.')),
-              Expanded(child: _buildWeekdayHeader('Jeu.')),
-              Expanded(child: _buildWeekdayHeader('Ven.')),
-              Expanded(child: _buildWeekdayHeader('Sam.')),
-              Expanded(child: _buildWeekdayHeader('Dim.')),
+              Expanded(child: _buildWeekdayHeader(lang.S.of(context).datePickerMon)),
+              Expanded(child: _buildWeekdayHeader(lang.S.of(context).datePickerTue)),
+              Expanded(child: _buildWeekdayHeader(lang.S.of(context).datePickerWed)),
+              Expanded(child: _buildWeekdayHeader(lang.S.of(context).datePickerThu)),
+              Expanded(child: _buildWeekdayHeader(lang.S.of(context).datePickerFri)),
+              Expanded(child: _buildWeekdayHeader(lang.S.of(context).datePickerSat)),
+              Expanded(child: _buildWeekdayHeader(lang.S.of(context).datePickerSun)),
             ],
           ),
           const SizedBox(height: 10),

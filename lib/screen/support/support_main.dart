@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -28,16 +29,17 @@ class SupportTicket {
     required this.date,
   });
 
-  String get statusLabel {
+  String statusLabelTranslated(BuildContext context) {
+    final t = lang.S.of(context);
     switch (status) {
       case 'en_cours':
-        return 'en cours';
+        return t.supportStatusInProgress;
       case 'actif':
-        return 'Actif';
+        return t.supportStatusActive;
       case 'resolu':
-        return 'Résolu';
+        return t.supportStatusResolved;
       case 'ferme':
-        return 'Fermé';
+        return t.supportStatusClosed;
       default:
         return status;
     }
@@ -57,7 +59,10 @@ class _SupportMainState extends State<SupportMain> {
   int _selectedTabIndex = 0;
   List<SupportTicket> _tickets = [];
 
-  final List<String> _tabs = ['Toutes', 'Actifs', 'Résolus', 'Fermés'];
+  List<String> _tabs(BuildContext context) {
+    final t = lang.S.of(context);
+    return [t.supportTabAll, t.supportTabActive, t.supportTabResolved, t.supportTabClosed];
+  }
 
   // Responsive breakpoints
   bool get isSmallScreen => MediaQuery.of(context).size.width < 360;
@@ -195,7 +200,7 @@ class _SupportMainState extends State<SupportMain> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Support client',
+                      lang.S.of(context).supportTitle,
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 18,
@@ -235,7 +240,7 @@ class _SupportMainState extends State<SupportMain> {
                 ],
               ),
               child: Text(
-                'Gérez et suivez vos demandes en temps réel',
+                lang.S.of(context).supportBanner,
                 style: GoogleFonts.poppins(
                   color: kPrimaryColor,
                   fontSize: isSmallScreen ? 11 : 13,
@@ -276,7 +281,7 @@ class _SupportMainState extends State<SupportMain> {
                   Icon(Icons.menu, color: kPrimaryColor, size: iconSize),
                   SizedBox(width: isSmallScreen ? 4 : 8),
                   Text(
-                    'Helpdesk',
+                    lang.S.of(context).supportHelpdesk,
                     style: GoogleFonts.poppins(
                       color: kPrimaryColor,
                       fontSize: fontSize,
@@ -304,7 +309,7 @@ class _SupportMainState extends State<SupportMain> {
                   Icon(Icons.tune, color: kSubTitleColor, size: iconSize),
                   SizedBox(width: isSmallScreen ? 4 : 8),
                   Text(
-                    'Filtrer',
+                    lang.S.of(context).supportFilter,
                     style: GoogleFonts.poppins(
                       color: kSubTitleColor,
                       fontSize: fontSize,
@@ -333,7 +338,7 @@ class _SupportMainState extends State<SupportMain> {
                   Icon(Icons.add_circle_outline, color: kSubTitleColor, size: iconSize),
                   SizedBox(width: isSmallScreen ? 4 : 8),
                   Text(
-                    'Ticket',
+                    lang.S.of(context).supportTicket,
                     style: GoogleFonts.poppins(
                       color: kSubTitleColor,
                       fontSize: fontSize,
@@ -360,7 +365,7 @@ class _SupportMainState extends State<SupportMain> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        'Gérez et suivez vos demandes en temps réel',
+        lang.S.of(context).supportBanner,
         style: GoogleFonts.poppins(
           color: kPrimaryColor,
           fontSize: isSmallScreen ? 11 : 13,
@@ -381,7 +386,7 @@ class _SupportMainState extends State<SupportMain> {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
-        children: List.generate(_tabs.length, (index) {
+        children: List.generate(_tabs(context).length, (index) {
           final isSelected = _selectedTabIndex == index;
           return Expanded(
             child: SmallTapEffect(
@@ -411,7 +416,7 @@ class _SupportMainState extends State<SupportMain> {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Text(
-                        _tabs[index],
+                        _tabs(context)[index],
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
@@ -484,7 +489,7 @@ class _SupportMainState extends State<SupportMain> {
                 const SizedBox(width: 12),
                 // Status badge
                 Text(
-                  ticket.statusLabel,
+                  ticket.statusLabelTranslated(context),
                   style: GoogleFonts.poppins(
                     fontSize: statusFontSize,
                     fontWeight: FontWeight.w500,
@@ -513,7 +518,7 @@ class _SupportMainState extends State<SupportMain> {
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,
-              child: _buildDetailsLink(infoFontSize),
+              child: _buildDetailsLink(context, infoFontSize),
             ),
           ],
         ),
@@ -675,12 +680,12 @@ class _SupportMainState extends State<SupportMain> {
     );
   }
 
-  Widget _buildDetailsLink(double fontSize) {
+  Widget _buildDetailsLink(BuildContext context, double fontSize) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Détails',
+          lang.S.of(context).supportDetails,
           style: GoogleFonts.poppins(
             fontSize: fontSize,
             fontWeight: FontWeight.w500,

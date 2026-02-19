@@ -1,6 +1,6 @@
 import 'package:flag/flag_widget.dart';
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/widgets/constant.dart';
-import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,15 +13,25 @@ class Currency extends StatefulWidget {
 }
 
 class _CurrencyState extends State<Currency> {
-  List<String> baseFlagsCode = ['dz'];
-
   List<Map<String, String>> currencies = [
     {
-      'name': 'Algeria',
+      'key': 'currencyAlgeria',
       'code': 'DZD',
       'symbol': 'دج',
       'flag': 'dz',
-    }
+    },
+    {
+      'key': 'currencyFrance',
+      'code': 'EUR',
+      'symbol': '€',
+      'flag': 'fr',
+    },
+    {
+      'key': 'currencyTunisia',
+      'code': 'TND',
+      'symbol': 'د.ت',
+      'flag': 'tn',
+    },
   ];
 
   late Map<String, String> selected;
@@ -36,9 +46,8 @@ class _CurrencyState extends State<Currency> {
   Future<void> _loadCurrency() async {
     final prefs = await SharedPreferences.getInstance();
     final code = prefs.getString('currency_code');
-    final symbol = prefs.getString('currency_symbol');
 
-    if (code != null && symbol != null) {
+    if (code != null) {
       setState(() {
         selected = currencies.firstWhere(
               (e) => e['code'] == code,
@@ -56,6 +65,8 @@ class _CurrencyState extends State<Currency> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = lang.S.of(context);
+
     return Scaffold(
       backgroundColor: kWhite,
       body: Column(
@@ -84,7 +95,7 @@ class _CurrencyState extends State<Currency> {
             ),
             child: Row(
               children: [
-                SmallTapEffect(
+                GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: const Icon(
                     Icons.arrow_back,
@@ -94,7 +105,7 @@ class _CurrencyState extends State<Currency> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Devises',
+                  l10n.profileCurrencies,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 18,
@@ -106,41 +117,65 @@ class _CurrencyState extends State<Currency> {
           ),
           Expanded(
             child: ListView.builder(
-          itemCount: currencies.length,
-          itemBuilder: (_, index) {
-            final item = currencies[index];
-            final isSelected = selected['code'] == item['code'];
+              itemCount: currencies.length,
+              itemBuilder: (_, index) {
+                final item = currencies[index];
+                final isSelected = selected['code'] == item['code'];
 
-            return Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: TappableCard(
-                onTap: () async {
-                  setState(() => selected = item);
-                  await _saveCurrency(item);
-                  Navigator.pop(context, item); // 👈 return value
-                },
-                child: ListTile(
-                  leading: Flag.fromString(item['flag']!, height: 25, width: 30),
-                  title: Text(
-                    '${item['name']} (${item['code']}) - ${item['symbol']}',
-                    style: TextStyle(
-                      color: isSelected ? kTitleColor : kSubTitleColor,
+                return Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListTile(
+                      onTap: () async {
+                        setState(() => selected = item);
+                        await _saveCurrency(item);
+                        Navigator.pop(context, item);
+                      },
+                      leading: Flag.fromString(
+                        item['flag']!,
+                        height: 25,
+                        width: 30,
+                      ),
+                      title: Text(
+                        '${_getLocalizedCurrencyName(item['key']!, l10n)} '
+                            '(${item['code']}) - ${item['symbol']}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? kPrimaryColor : kTitleColor,
+                        ),
+                      ),
+                      trailing: Icon(
+                        isSelected
+                            ? Icons.radio_button_checked
+                            : Icons.circle_outlined,
+                        color:
+                        isSelected ? kPrimaryColor : kSubTitleColor,
+                      ),
                     ),
                   ),
-                  trailing: Icon(
-                    isSelected
-                        ? Icons.radio_button_checked
-                        : Icons.circle_outlined,
-                    color: isSelected ? kPrimaryColor : kSubTitleColor,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+                );
+              },
+            ),
           ),
         ],
       ),
     );
+  }
+
+  String _getLocalizedCurrencyName(String key, lang.S l10n) {
+    switch (key) {
+      case 'currencyAlgeria':
+        return l10n.currencyAlgeria;
+      case 'currencyFrance':
+        return l10n.currencyFrance;
+      case 'currencyTunisia':
+        return l10n.currencyTunisia;
+      default:
+        return '';
+    }
   }
 }

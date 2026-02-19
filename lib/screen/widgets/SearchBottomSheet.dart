@@ -234,7 +234,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
 
             // Title
             Text(
-              widget.isDestination ? 'Destination' : 'Lieu de départ',
+              widget.isDestination ? lang.S.of(context).homeDestination : lang.S.of(context).homeDeparturePlace,
               style: kTextStyle.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -254,7 +254,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
               },
               decoration: kInputDecoration.copyWith(
                 contentPadding: const EdgeInsets.only(left: 10, right: 10),
-                hintText: 'Pays, ville ou aéroport',
+                hintText: lang.S.of(context).searchSheetHint,
                 hintStyle: kTextStyle.copyWith(color: kSubTitleColor),
                 border: const OutlineInputBorder(),
                 prefixIcon: Icon(
@@ -314,7 +314,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
             if (widget.isDestination && !_controller.hasSearchQuery && _recentAirports.isNotEmpty) ...[
               const SizedBox(height: 10.0),
               Text(
-                'Récents',
+                lang.S.of(context).searchSheetRecent,
                 style: kTextStyle.copyWith(
                   color: kSubTitleColor,
                   fontWeight: FontWeight.bold,
@@ -383,7 +383,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
             const SizedBox(height: 10.0),
             Text(
               _controller.hasSearchQuery
-                  ? 'Résultats de recherche'
+                  ? lang.S.of(context).searchSheetResults
                   : lang.S.of(context).recentPlaceTitle,
               style: kTextStyle.copyWith(
                   color: kSubTitleColor, fontWeight: FontWeight.bold),

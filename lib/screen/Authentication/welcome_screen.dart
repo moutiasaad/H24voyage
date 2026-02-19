@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/Authentication/sign_up_screen.dart';
 import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
@@ -81,7 +82,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                           // Title
                           Center(
                             child: Text(
-                              'Connectez-vous pour économiser',
+                              lang.S.of(context).welcomeTitle,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 color: kTitleColor,
@@ -95,7 +96,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                           // Subtitle
                           Text(
-                            'Connectez-vous pour économiser au moins\n10 % grâce à une adhésion gratuite à h24voyages',
+                            lang.S.of(context).welcomeSubtitle,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: kTitleColor,
@@ -149,7 +150,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   const SizedBox(width: 10),
                                   Flexible(
                                     child: Text(
-                                      'Continuer via l\'adresse e-mail',
+                                      lang.S.of(context).welcomeContinueEmail,
                                       style: GoogleFonts.poppins(
                                         color: kWhite,
                                         fontSize: buttonTextSize,
@@ -198,7 +199,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                   const SizedBox(width: 10),
                                   Flexible(
                                     child: Text(
-                                      'Continuer avec Google',
+                                      lang.S.of(context).welcomeContinueGoogle,
                                       style: GoogleFonts.poppins(
                                         color: const Color(0xFF333333),
                                         fontSize: buttonTextSize,
@@ -235,7 +236,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'Continuer sans connexion',
+                                  lang.S.of(context).welcomeSkipLogin,
                                   style: GoogleFonts.poppins(
                                     color: kSubTitleColor,
                                     fontSize: subtitleSize,
@@ -262,7 +263,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'En créant ou en vous connectant à un compte, vous acceptez',
+                            lang.S.of(context).welcomeTermsIntro,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: kSubTitleColor,
@@ -282,9 +283,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                 height: 20 / 11,
                               ),
                               children: [
-                                const TextSpan(text: 'nos '),
+                                TextSpan(text: lang.S.of(context).welcomeTermsOur),
                                 TextSpan(
-                                  text: 'conditions générales',
+                                  text: lang.S.of(context).welcomeTermsConditions,
                                   style: GoogleFonts.poppins(
                                     color: kPrimaryColor,
                                     fontSize: 11,
@@ -297,9 +298,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                       // Open terms and conditions
                                     },
                                 ),
-                                const TextSpan(text: ' et notre '),
+                                TextSpan(text: lang.S.of(context).welcomeTermsAnd),
                                 TextSpan(
-                                  text: 'charte de confidentialité',
+                                  text: lang.S.of(context).welcomePrivacyPolicy,
                                   style: GoogleFonts.poppins(
                                     color: kPrimaryColor,
                                     fontSize: 11,
@@ -312,7 +313,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                                       // Open privacy policy
                                     },
                                 ),
-                                const TextSpan(text: '.'),
+                                TextSpan(text: '.'),
                               ],
                             ),
                           ),
@@ -321,7 +322,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                           // Copyright
                           Text(
-                            'Tous droits réservés. Copyright- h24voyages',
+                            lang.S.of(context).welcomeCopyright,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: kSubTitleColor,

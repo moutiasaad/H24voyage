@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -115,80 +116,84 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   final ProfileController _profileController = ProfileController.instance;
-  late List<ProfileMenuItem> _accountMenuItems;
-  late List<ProfileMenuItem> _settingsMenuItems;
-  late List<ProfileMenuItem> _aideMenuItems;
 
   @override
   void initState() {
     super.initState();
     _profileController.addListener(_onProfileChanged);
+  }
 
-    // default menu items
-    _accountMenuItems = [
+  List<ProfileMenuItem> _buildAccountMenuItems(BuildContext context) {
+    final t = lang.S.of(context);
+    return [
       ProfileMenuItem(
         id: 'personal_info',
-        title: 'Coordonnées personnelles',
+        title: t.profilePersonalInfo,
         iconAsset: 'assets/profileIcon.png',
         destination: const EditProfile(),
       ),
-
       ProfileMenuItem(
         id: 'travelers',
-        title: 'Voyageurs enregistrés',
+        title: t.profileRegisteredTravelers,
         iconAsset: 'assets/voyageIcon.png',
       ),
       ProfileMenuItem(
         id: 'referral',
-        title: 'Parrainez un(e) ami(e)',
+        title: t.profileReferFriend,
         iconAsset: 'assets/usersIcon.png',
         onTap: () => _handleReferral(),
       ),
       ProfileMenuItem(
         id: 'security',
-        title: 'Paramètre de sécurité',
+        title: t.profileSecuritySettings,
         iconAsset: 'assets/paramIcon.png',
         destination: const ChangePassword(),
       ),
     ];
+  }
 
-    _settingsMenuItems = [
+  List<ProfileMenuItem> _buildSettingsMenuItems(BuildContext context) {
+    final t = lang.S.of(context);
+    return [
       ProfileMenuItem(
         id: 'currency',
-        title: 'Devises',
+        title: t.profileCurrencies,
         iconAsset: 'assets/walletIcon.png',
         destination: const Currency(),
       ),
       ProfileMenuItem(
         id: 'language',
-        title: 'Langues',
+        title: t.profileLanguages,
         iconAsset: 'assets/langIcon.png',
         destination: const Language(),
       ),
       ProfileMenuItem(
         id: 'notifications',
-        title: 'Notifications',
+        title: t.profileNotifications,
         iconAsset: 'assets/notif.png',
         destination: const NotificationScreen(),
       ),
       ProfileMenuItem(
         id: 'terms',
-        title: 'Conditions générales',
+        title: t.profileTerms,
         iconAsset: 'assets/cadeauIcon.png',
         destination: const PrivacyPolicy(),
       ),
     ];
+  }
 
-    _aideMenuItems = [
+  List<ProfileMenuItem> _buildHelpMenuItems(BuildContext context) {
+    final t = lang.S.of(context);
+    return [
       ProfileMenuItem(
         id: 'contact',
-        title: 'Contacter le service client',
+        title: t.profileContactSupport,
         iconAsset: 'assets/assistIcon.png',
         destination: const SupportMain(),
       ),
       ProfileMenuItem(
         id: 'faq',
-        title: 'FAQ',
+        title: t.profileFaq,
         iconAsset: 'assets/fqaIcon.png',
         destination: const FaqScreen(),
       ),
@@ -203,12 +208,12 @@ class _ProfileState extends State<Profile> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Parrainage'),
-        content: const Text('Partagez votre code de parrainage avec vos amis !'),
+        title: Text(lang.S.of(context).profileReferralTitle),
+        content: Text(lang.S.of(context).profileReferralMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Fermer'),
+            child: Text(lang.S.of(context).profileClose),
           ),
         ],
       ),
@@ -225,18 +230,18 @@ class _ProfileState extends State<Profile> {
             children: [
               Icon(IconlyBold.danger, color: Colors.red, size: 28),
               const SizedBox(width: 10),
-              const Text('Désactiver le compte'),
+              Text(lang.S.of(context).profileDisableAccount),
             ],
           ),
-          content: const Text(
-            'Êtes-vous sûr de vouloir désactiver votre compte ? Cette action est irréversible et vous serez déconnecté.',
-            style: TextStyle(fontSize: 14),
+          content: Text(
+            lang.S.of(context).profileDisableConfirm,
+            style: const TextStyle(fontSize: 14),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: Text(
-                'Annuler',
+                lang.S.of(context).profileCancel,
                 style: kTextStyle.copyWith(color: kSubTitleColor),
               ),
             ),
@@ -246,7 +251,7 @@ class _ProfileState extends State<Profile> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Désactiver'),
+              child: Text(lang.S.of(context).profileDisable),
             ),
           ],
         );
@@ -274,7 +279,7 @@ class _ProfileState extends State<Profile> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Compte désactivé avec succès'),
+              content: Text(result['message'] ?? lang.S.of(context).profileDisableSuccess),
               backgroundColor: kSuccessGreen,
             ),
           );
@@ -288,7 +293,7 @@ class _ProfileState extends State<Profile> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Échec de la désactivation du compte'),
+              content: Text(result['message'] ?? lang.S.of(context).profileDisableFailed),
               backgroundColor: Colors.red,
             ),
           );
@@ -299,7 +304,7 @@ class _ProfileState extends State<Profile> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: ${e.toString()}'),
+            content: Text(lang.S.of(context).profileError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -356,21 +361,21 @@ class _ProfileState extends State<Profile> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Déconnexion'),
-        content: const Text('Êtes-vous sûr de vouloir vous déconnecter ?'),
+        title: Text(lang.S.of(context).profileLogoutTitle),
+        content: Text(lang.S.of(context).profileLogoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+            child: Text(lang.S.of(context).profileCancel),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _performLogout();
             },
-            child: const Text(
-              'Déconnecter',
-              style: TextStyle(color: Colors.red),
+            child: Text(
+              lang.S.of(context).profileLogoutAction,
+              style: const TextStyle(color: Colors.red),
             ),
           ),
         ],
@@ -454,23 +459,23 @@ class _ProfileState extends State<Profile> {
                         // ),
 
                         // Section: Gérer mon compte
-                        _buildSectionTitle('Gérer mon compte'),
+                        _buildSectionTitle(lang.S.of(context).profileManageAccount),
                         const SizedBox(height: 12),
-                        _buildMenuCard(_accountMenuItems),
+                        _buildMenuCard(_buildAccountMenuItems(context)),
 
                         const SizedBox(height: 24),
 
                         // Section: Paramètre
-                        _buildSectionTitle('Paramètre'),
+                        _buildSectionTitle(lang.S.of(context).profileSettingsSection),
                         const SizedBox(height: 12),
-                        _buildMenuCard(_settingsMenuItems),
+                        _buildMenuCard(_buildSettingsMenuItems(context)),
 
                         const SizedBox(height: 24),
 
                         // Section: Aide
-                        _buildSectionTitle('Aide'),
+                        _buildSectionTitle(lang.S.of(context).profileHelpSection),
                         const SizedBox(height: 12),
-                        _buildMenuCard(_aideMenuItems),
+                        _buildMenuCard(_buildHelpMenuItems(context)),
 
                         const SizedBox(height: 24),
 
@@ -484,7 +489,7 @@ class _ProfileState extends State<Profile> {
                           icon: IconlyLight.delete,
                           iconColor: Colors.red,
                           iconBg: Colors.red.withOpacity(0.1),
-                          title: 'Désactiver le compte',
+                          title: lang.S.of(context).profileDisableAccount,
                           titleColor: Colors.red,
                           onTap: () => _showDisableAccountDialog(),
                         ),
@@ -745,10 +750,10 @@ class _ProfileState extends State<Profile> {
           ),
         ),
         padding: const EdgeInsets.symmetric(vertical: 18),
-        child: const Center(
+        child: Center(
           child: Text(
-            'Se déconnecter',
-            style: TextStyle(
+            lang.S.of(context).profileLogoutButton,
+            style: const TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w600,
               color: Color(0xFFE53935),

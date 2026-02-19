@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/Authentication/register_screen.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flight_booking/screen/widgets/button_global.dart';
@@ -26,15 +27,15 @@ class _SignUpState extends State<SignUp> {
   String? _emailError;
   final RegisterController _controller = RegisterController();
 
-  bool _validateEmail() {
+  bool _validateEmail(lang.S t) {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
-      setState(() => _emailError = 'Veuillez saisir votre adresse e-mail');
+      setState(() => _emailError = t.signUpEmailEmpty);
       return false;
     }
     final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w{2,}$');
     if (!emailRegex.hasMatch(email)) {
-      setState(() => _emailError = 'Veuillez saisir une adresse e-mail valide');
+      setState(() => _emailError = t.signUpEmailInvalid);
       return false;
     }
     setState(() => _emailError = null);
@@ -68,6 +69,7 @@ class _SignUpState extends State<SignUp> {
     final inputSize = (14 * ratioW).clamp(12.0, 14.0);
     final buttonHeight = (50 * ratioH).clamp(42.0, 54.0);
     final buttonTextSize = (16 * ratioW).clamp(13.0, 16.0);
+    final t = lang.S.of(context);
 
     return Scaffold(
       backgroundColor: kWhite,
@@ -133,7 +135,7 @@ class _SignUpState extends State<SignUp> {
                           // Title
                           Center(
                             child: Text(
-                              'Se connecter ou créer un compte',
+                              t.signUpTitle,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 color: kTitleColor,
@@ -147,7 +149,7 @@ class _SignUpState extends State<SignUp> {
 
                           // Subtitle
                           Text(
-                            'Connectez-vous à l\'aide de votre compte h24voyages\net accédez à nos services.',
+                            t.signUpSubtitle,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: kSubTitleColor,
@@ -161,7 +163,7 @@ class _SignUpState extends State<SignUp> {
 
                           // Email label
                           Text(
-                            'Adresse e-mail',
+                            t.signUpEmailLabel,
                             style: GoogleFonts.poppins(
                               color: kTitleColor,
                               fontSize: labelSize,
@@ -183,7 +185,7 @@ class _SignUpState extends State<SignUp> {
                               fontSize: inputSize,
                             ),
                             decoration: InputDecoration(
-                              hintText: 'email@email.com',
+                              hintText: t.signUpEmailHint,
                               hintStyle: GoogleFonts.poppins(
                                 color: kSubTitleColor,
                                 fontSize: inputSize,
@@ -241,7 +243,7 @@ class _SignUpState extends State<SignUp> {
                               setState(() => _isButtonPressed = false);
                               FocusScope.of(context).unfocus();
 
-                              if (!_validateEmail()) return;
+                              if (!_validateEmail(t)) return;
 
                               // Show loading
                               showDialog(
@@ -260,7 +262,7 @@ class _SignUpState extends State<SignUp> {
 
                                 if (response == null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(_controller.message ?? 'Erreur lors de la connexion')),
+                                    SnackBar(content: Text(_controller.message ?? t.signUpLoginError)),
                                   );
                                   return;
                                 }
@@ -287,7 +289,7 @@ class _SignUpState extends State<SignUp> {
                                   );
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(response.message ?? 'Erreur')),
+                                    SnackBar(content: Text(response.message ?? t.signUpError)),
                                   );
                                 }
                               } catch (e) {
@@ -317,7 +319,7 @@ class _SignUpState extends State<SignUp> {
                                 ),
                                 child: Center(
                                   child: Text(
-                                    'Continuer',
+                                    t.continueButton,
                                     style: GoogleFonts.poppins(
                                       color: kWhite,
                                       fontSize: buttonTextSize,
@@ -339,7 +341,7 @@ class _SignUpState extends State<SignUp> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      "Vous n'avez pas de compte ? ",
+                                      t.noAccTitle1,
                                       style: GoogleFonts.lato(
                                         color: kSubTitleColor,
                                         fontSize: 14,
@@ -350,7 +352,7 @@ class _SignUpState extends State<SignUp> {
                                     TapEffect(
                                       onTap: () => const RegisterScreen().launch(context),
                                       child: Text(
-                                        "Inscrivez vous",
+                                        t.signUpRegister,
                                         style: GoogleFonts.lato(
                                           color: kPrimaryColor,
                                           fontSize: 14,
@@ -365,8 +367,8 @@ class _SignUpState extends State<SignUp> {
                                 // First line
                                 Text(
                                   isVerySmallScreen
-                                      ? 'En vous connectant, vous acceptez'
-                                      : 'En créant ou en vous connectant à un compte, vous acceptez',
+                                      ? t.signUpTermsShort
+                                      : t.welcomeTermsIntro,
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.poppins(
                                     color: kSubTitleColor,
@@ -387,9 +389,9 @@ class _SignUpState extends State<SignUp> {
                                       height: 20 / 11,
                                     ),
                                     children: [
-                                      const TextSpan(text: 'nos '),
+                                      TextSpan(text: t.welcomeTermsOur),
                                       TextSpan(
-                                        text: 'conditions générales',
+                                        text: t.welcomeTermsConditions,
                                         style: GoogleFonts.poppins(
                                           color: kPrimaryColor,
                                           fontSize: 11,
@@ -402,9 +404,9 @@ class _SignUpState extends State<SignUp> {
                                             // Open terms and conditions
                                           },
                                       ),
-                                      const TextSpan(text: ' et notre '),
+                                      TextSpan(text: t.welcomeTermsAnd),
                                       TextSpan(
-                                        text: 'charte de confidentialité',
+                                        text: t.welcomePrivacyPolicy,
                                         style: GoogleFonts.poppins(
                                           color: kPrimaryColor,
                                           fontSize: 11,
@@ -417,7 +419,7 @@ class _SignUpState extends State<SignUp> {
                                             // Open privacy policy
                                           },
                                       ),
-                                      const TextSpan(text: '.'),
+                                      TextSpan(text: '.'),
                                     ],
                                   ),
                                 ),
@@ -426,7 +428,7 @@ class _SignUpState extends State<SignUp> {
 
                                 // Copyright - centered
                                 Text(
-                                  'Tous droits réservés. Copyright- h24voyages',
+                                  t.welcomeCopyright,
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.poppins(
                                     color: kSubTitleColor,

@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -203,7 +204,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
           const SizedBox(width: 12),
           // Title
           Text(
-            'Réservations',
+            lang.S.of(context).bookingTitle,
             style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: 18,
@@ -236,7 +237,8 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
   }
 
   Widget _buildTabSelector() {
-    final tabs = ['Actifs', 'Passés', 'Annulés'];
+    final t = lang.S.of(context);
+    final tabs = [t.bookingTabActive, t.bookingTabPast, t.bookingTabCancelled];
 
     return Container(
       margin: const EdgeInsets.only(top: 8),
@@ -291,24 +293,25 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
   }
 
   Widget _buildEmptyState() {
+    final t = lang.S.of(context);
     String message;
     IconData icon;
 
     switch (_selectedTabIndex) {
       case 0:
-        message = 'Aucune réservation active';
+        message = t.bookingEmptyActive;
         icon = Icons.flight_takeoff;
         break;
       case 1:
-        message = 'Aucun voyage passé';
+        message = t.bookingEmptyPast;
         icon = Icons.history;
         break;
       case 2:
-        message = 'Aucune réservation annulée';
+        message = t.bookingEmptyCancelled;
         icon = Icons.cancel_outlined;
         break;
       default:
-        message = 'Aucune réservation';
+        message = t.bookingEmptyDefault;
         icon = Icons.flight;
     }
 
@@ -402,7 +405,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
         ),
         // Status as plain text
         Text(
-          reservation.status.label,
+          reservation.status.labelTranslated(context),
           style: GoogleFonts.inter(
             fontSize: 13,
             fontWeight: FontWeight.w500,
@@ -604,7 +607,7 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
           child: Row(
             children: [
               Text(
-                'Détails',
+                lang.S.of(context).bookingDetails,
                 style: GoogleFonts.inter(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -641,16 +644,17 @@ enum ReservationStatus {
 }
 
 extension ReservationStatusExtension on ReservationStatus {
-  String get label {
+  String labelTranslated(BuildContext context) {
+    final t = lang.S.of(context);
     switch (this) {
       case ReservationStatus.enCours:
-        return 'en cours';
+        return t.statusInProgress;
       case ReservationStatus.confirme:
-        return 'confirmé';
+        return t.statusConfirmed;
       case ReservationStatus.termine:
-        return 'terminé';
+        return t.statusCompleted;
       case ReservationStatus.annule:
-        return 'annulé';
+        return t.statusCancelled;
     }
   }
 

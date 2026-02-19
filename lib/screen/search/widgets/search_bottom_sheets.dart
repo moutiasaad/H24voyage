@@ -1,4 +1,5 @@
 import 'package:flight_booking/Model/FakeFlight.dart';
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/models/flight_offer.dart';
 import 'package:flight_booking/screen/search/flight_details.dart';
 import 'package:flight_booking/screen/search/booking_webview.dart';
@@ -41,7 +42,7 @@ void showSortBottomSheet(BuildContext context, SearchResultController ctrl) {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Trier par',
+                      lang.S.of(context).sortBy,
                       style: GoogleFonts.poppins(
                         color: kTitleColor,
                         fontSize: 18,
@@ -69,35 +70,40 @@ void showSortBottomSheet(BuildContext context, SearchResultController ctrl) {
 
                 // Sort options
                 _SortOption(
-                  title: 'Le moins cher',
+                  title: lang.S.of(context).sortCheapest,
+                  value: 'cheapest',
                   selectedValue: tempSelectedOption,
                   onChanged: (value) {
                     setModalState(() => tempSelectedOption = value);
                   },
                 ),
                 _SortOption(
-                  title: 'Le plus cher',
+                  title: lang.S.of(context).sortMostExpensive,
+                  value: 'most_expensive',
                   selectedValue: tempSelectedOption,
                   onChanged: (value) {
                     setModalState(() => tempSelectedOption = value);
                   },
                 ),
                 _SortOption(
-                  title: 'Heure de départ',
+                  title: lang.S.of(context).sortDepartureTime,
+                  value: 'departure_time',
                   selectedValue: tempSelectedOption,
                   onChanged: (value) {
                     setModalState(() => tempSelectedOption = value);
                   },
                 ),
                 _SortOption(
-                  title: 'Heure d\'arrivée',
+                  title: lang.S.of(context).sortArrivalTime,
+                  value: 'arrival_time',
                   selectedValue: tempSelectedOption,
                   onChanged: (value) {
                     setModalState(() => tempSelectedOption = value);
                   },
                 ),
                 _SortOption(
-                  title: 'Durée du vol',
+                  title: lang.S.of(context).sortFlightDuration,
+                  value: 'flight_duration',
                   selectedValue: tempSelectedOption,
                   onChanged: (value) {
                     setModalState(() => tempSelectedOption = value);
@@ -121,7 +127,7 @@ void showSortBottomSheet(BuildContext context, SearchResultController ctrl) {
                     ),
                     child: Center(
                       child: Text(
-                        'Appliquer',
+                        lang.S.of(context).sheetApply,
                         style: GoogleFonts.poppins(
                           color: kWhite,
                           fontSize: 16,
@@ -143,20 +149,22 @@ void showSortBottomSheet(BuildContext context, SearchResultController ctrl) {
 
 class _SortOption extends StatelessWidget {
   final String title;
+  final String value;
   final String selectedValue;
   final Function(String) onChanged;
 
   const _SortOption({
     required this.title,
+    required this.value,
     required this.selectedValue,
     required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = title == selectedValue;
+    final isSelected = value == selectedValue;
     return GestureDetector(
-      onTap: () => onChanged(title),
+      onTap: () => onChanged(value),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: Row(
@@ -330,7 +338,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Filtrer',
+                        lang.S.of(context).filterTitle,
                         style: GoogleFonts.poppins(
                           color: kTitleColor,
                           fontSize: headerFontSize,
@@ -426,7 +434,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                       child: Column(
                                         children: [
                                           Text(
-                                            'Aller',
+                                            lang.S.of(context).filterOutbound,
                                             style: GoogleFonts.poppins(
                                               color: tempSelectedTab == 0 ? kTitleColor : kSubTitleColor,
                                               fontSize: 14,
@@ -450,7 +458,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                       child: Column(
                                         children: [
                                           Text(
-                                            'Retour',
+                                            lang.S.of(context).filterReturn,
                                             style: GoogleFonts.poppins(
                                               color: tempSelectedTab == 1 ? kTitleColor : kSubTitleColor,
                                               fontSize: 14,
@@ -474,6 +482,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                               Expanded(
                                 child: SingleChildScrollView(
                                   child: _buildFilterContent(
+                                    context,
                                     tempSelectedCategory,
                                     currentEscaleOption,
                                     currentEscaleOptions,
@@ -587,7 +596,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                             ),
                             child: Center(
                               child: Text(
-                                'Réinitialiser',
+                                lang.S.of(context).filterReset,
                                 style: GoogleFonts.poppins(
                                   color: kTitleColor,
                                   fontSize: 12,
@@ -695,7 +704,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                             ),
                             child: Center(
                               child: Text(
-                                'Appliquer',
+                                lang.S.of(context).sheetApply,
                                 style: GoogleFonts.poppins(
                                   color: kPrimaryColor,
                                   fontSize: 12,
@@ -721,6 +730,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
 // ── Filter content builder ──
 
 Widget _buildFilterContent(
+  BuildContext context,
   int category,
   String escaleOption,
   List<String> escaleOptions,
@@ -771,7 +781,7 @@ Widget _buildFilterContent(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Sélectionner une plage de prix',
+            lang.S.of(context).filterSelectPriceRange,
             style: GoogleFonts.poppins(
               color: kTitleColor,
               fontSize: 13,
@@ -827,11 +837,11 @@ Widget _buildFilterContent(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Min: ${sliderMin.round()} $priceCurrency',
+                lang.S.of(context).filterMin(sliderMin.round().toString(), priceCurrency),
                 style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor),
               ),
               Text(
-                'Max: ${sliderMax.round()} $priceCurrency',
+                lang.S.of(context).filterMax(sliderMax.round().toString(), priceCurrency),
                 style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor),
               ),
             ],
@@ -850,16 +860,16 @@ Widget _buildFilterContent(
 
     case 3: // Horaires
       final timeSlots = [
-        {'label': 'Tôt le matin', 'range': '(00:00 - 07:59)', 'asset': 'assets/matin_tot.svg'},
-        {'label': 'Matin', 'range': '(08:00 - 15:59)', 'asset': 'assets/matin.svg'},
-        {'label': 'Soir', 'range': '(16:00 - 23:59)', 'asset': 'assets/soir.svg'},
+        {'label': lang.S.of(context).filterEarlyMorning, 'range': '(00:00 - 07:59)', 'asset': 'assets/matin_tot.svg'},
+        {'label': lang.S.of(context).filterMorning, 'range': '(08:00 - 15:59)', 'asset': 'assets/matin.svg'},
+        {'label': lang.S.of(context).filterEvening, 'range': '(16:00 - 23:59)', 'asset': 'assets/soir.svg'},
       ];
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Departure airport time slots
           Text(
-            departureAirportName.isNotEmpty ? departureAirportName : 'Départ',
+            departureAirportName.isNotEmpty ? departureAirportName : lang.S.of(context).filterDepartureDefault,
             style: GoogleFonts.poppins(
               color: kTitleColor,
               fontSize: 13,
@@ -886,7 +896,7 @@ Widget _buildFilterContent(
           const SizedBox(height: 16),
           // Arrival airport time slots
           Text(
-            arrivalAirportName.isNotEmpty ? arrivalAirportName : 'Arrivée',
+            arrivalAirportName.isNotEmpty ? arrivalAirportName : lang.S.of(context).filterArrivalDefault,
             style: GoogleFonts.poppins(
               color: kTitleColor,
               fontSize: 13,
@@ -922,7 +932,7 @@ Widget _buildFilterContent(
         children: [
           // Departure airports
           Text(
-            'Départ de ${aeroports['depart']['city']}',
+            lang.S.of(context).filterDepartureFrom(aeroports['depart']['city'] as String),
             style: GoogleFonts.poppins(
               color: kTitleColor,
               fontSize: 13,
@@ -944,7 +954,7 @@ Widget _buildFilterContent(
 
           // Arrival airports
           Text(
-            'Arrivée à ${aeroports['arrivee']['city']}',
+            lang.S.of(context).filterArrivalAt(aeroports['arrivee']['city'] as String),
             style: GoogleFonts.poppins(
               color: kTitleColor,
               fontSize: 13,
@@ -966,7 +976,7 @@ Widget _buildFilterContent(
           if (connAirports.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(
-              'Escales via',
+              lang.S.of(context).filterLayoversVia,
               style: GoogleFonts.poppins(
                 color: kTitleColor,
                 fontSize: 13,
@@ -1247,8 +1257,8 @@ Widget _buildTimeSlotCard({
 
 void showBaggageDetailsBottomSheet(BuildContext context, BaggageAllowance? baggage) {
   // Get baggage info
-  String cabinBaggageText = 'Non inclus';
-  String checkedBaggageText = 'Non inclus';
+  String cabinBaggageText = lang.S.of(context).baggageNotIncluded;
+  String checkedBaggageText = lang.S.of(context).baggageNotIncluded;
 
   if (baggage != null) {
     // Cabin baggage
@@ -1265,9 +1275,9 @@ void showBaggageDetailsBottomSheet(BuildContext context, BaggageAllowance? bagga
       final checked = baggage.checkedInBaggage.first;
       final paxType = SearchResultController.getPaxTypeDisplayName(checked.paxType);
       final value = checked.value ?? 0;
-      final unit = checked.unit ?? 'pièces';
+      final unit = checked.unit ?? 'PC';
       if (unit.toUpperCase() == 'PC' || unit.toUpperCase() == 'PIECE' || unit.toUpperCase() == 'PIECES') {
-        checkedBaggageText = '$paxType: $value pièce${value > 1 ? 's' : ''}';
+        checkedBaggageText = '$paxType: ${value > 1 ? lang.S.of(context).baggagePieces(value.toString()) : lang.S.of(context).baggagePiece(value.toString())}';
       } else {
         checkedBaggageText = '$paxType: $value$unit';
       }
@@ -1292,7 +1302,7 @@ void showBaggageDetailsBottomSheet(BuildContext context, BaggageAllowance? bagga
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Détails bagages',
+                  lang.S.of(context).baggageDetailsTitle,
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF333333),
                     fontSize: 16,
@@ -1325,7 +1335,7 @@ void showBaggageDetailsBottomSheet(BuildContext context, BaggageAllowance? bagga
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Bagages en soute:',
+                  lang.S.of(context).baggageCheckedLabel,
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF666666),
                     fontSize: 14,
@@ -1349,7 +1359,7 @@ void showBaggageDetailsBottomSheet(BuildContext context, BaggageAllowance? bagga
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Bagages à main:',
+                  lang.S.of(context).baggageCabinLabel,
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF666666),
                     fontSize: 14,
@@ -1418,7 +1428,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Détails prix',
+                  lang.S.of(context).priceDetailsTitle,
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF333333),
                     fontSize: 16,
@@ -1454,7 +1464,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                isRefundable ? 'Remboursable' : 'Non remboursable',
+                isRefundable ? lang.S.of(context).cardRefundable : lang.S.of(context).priceNonRefundable,
                 style: GoogleFonts.poppins(
                   color: isRefundable
                       ? const Color(0xFF4CAF50)
@@ -1493,7 +1503,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Frais de base',
+                          lang.S.of(context).priceBaseFare,
                           style: GoogleFonts.poppins(
                             color: const Color(0xFF666666),
                             fontSize: 13,
@@ -1517,7 +1527,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Taxes par ${paxType.toLowerCase()}',
+                          lang.S.of(context).priceTaxesPer(paxType.toLowerCase()),
                           style: GoogleFonts.poppins(
                             color: const Color(0xFF666666),
                             fontSize: 13,
@@ -1541,7 +1551,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
             ] else ...[
               // Fallback if no fare breakdown
               Text(
-                '1x Adulte',
+                lang.S.of(context).priceAdultFallback,
                 style: GoogleFonts.poppins(
                   color: const Color(0xFF333333),
                   fontSize: 14,
@@ -1553,7 +1563,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Frais de base',
+                    lang.S.of(context).priceBaseFare,
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF666666),
                       fontSize: 13,
@@ -1575,7 +1585,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Taxes par adulte',
+                    lang.S.of(context).priceTaxesPerAdult,
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF666666),
                       fontSize: 13,
@@ -1603,7 +1613,7 @@ void showPriceDetailsBottomSheet(BuildContext context, FlightOffer offer) {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total TTC',
+                  lang.S.of(context).priceTotalInclTax,
                   style: GoogleFonts.poppins(
                     color: const Color(0xFF333333),
                     fontSize: 14,
@@ -1691,7 +1701,7 @@ void showFlightDetailsBottomSheet(
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Détails du vol',
+                        lang.S.of(ctx).sheetFlightDetails,
                         style: GoogleFonts.poppins(
                           color: kTitleColor,
                           fontSize: 17,
@@ -1718,7 +1728,7 @@ void showFlightDetailsBottomSheet(
                             final segs = journey.flightSegments;
                             final depCode = segs.isNotEmpty ? (segs.first.departureAirportCode ?? '') : '';
                             final arrCode = segs.isNotEmpty ? (segs.last.arrivalAirportCode ?? '') : '';
-                            final label = i == 0 ? 'Aller' : 'Retour';
+                            final label = i == 0 ? lang.S.of(ctx).filterOutbound : lang.S.of(ctx).filterReturn;
 
                             return Expanded(
                               child: GestureDetector(
@@ -1805,7 +1815,7 @@ void showFlightDetailsBottomSheet(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                '${price.toStringAsFixed(0)} $currency/ pers',
+                                lang.S.of(ctx).sheetPricePerPerson(price.toStringAsFixed(0), currency),
                                 style: GoogleFonts.poppins(
                                   color: kTitleColor,
                                   fontSize: 16,
@@ -1813,7 +1823,7 @@ void showFlightDetailsBottomSheet(
                                 ),
                               ),
                               Text(
-                                isRoundTrip ? 'Vol aller-retour' : 'Vol aller simple',
+                                isRoundTrip ? lang.S.of(ctx).sheetRoundTrip : lang.S.of(ctx).sheetOneWay,
                                 style: GoogleFonts.poppins(
                                   color: kSubTitleColor,
                                   fontSize: 11,
@@ -1828,9 +1838,9 @@ void showFlightDetailsBottomSheet(
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const BookingWebView(
+                                builder: (_) => BookingWebView(
                                   url: 'https://www.google.com',
-                                  title: 'Réservation',
+                                  title: lang.S.of(ctx).detailBookingTitle,
                                 ),
                               ),
                             );
@@ -1842,7 +1852,7 @@ void showFlightDetailsBottomSheet(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              'Réserver ce vol',
+                              lang.S.of(ctx).sheetBookFlight,
                               style: GoogleFonts.poppins(
                                 color: kWhite,
                                 fontSize: 14,
@@ -1888,8 +1898,8 @@ class _FlightJourneyContent extends StatelessWidget {
     final journeyDuration = journey.flight?.flightInfo?.duration ?? '--';
     final stops = journey.flight?.stopQuantity ?? (segments.length - 1);
     final stopsText = stops == 0
-        ? 'Vol direct'
-        : '$stops escale${stops > 1 ? 's' : ''}';
+        ? lang.S.of(context).cardDirectFlight
+        : (stops > 1 ? lang.S.of(context).cardStops(stops.toString()) : lang.S.of(context).cardStop(stops.toString()));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1968,15 +1978,15 @@ class _FlightSegmentCard extends StatelessWidget {
     final arrDateFull = ctrl.formatDateDayFull(seg.arrivalDateTime);
     final depCode = seg.departureAirportCode ?? '';
     final arrCode = seg.arrivalAirportCode ?? '';
-    final depAirportName = seg.departureAirportDetails?.name ?? 'Aéroport $depCode';
-    final arrAirportName = seg.arrivalAirportDetails?.name ?? 'Aéroport $arrCode';
+    final depAirportName = seg.departureAirportDetails?.name ?? lang.S.of(context).segmentAirportFallback(depCode);
+    final arrAirportName = seg.arrivalAirportDetails?.name ?? lang.S.of(context).segmentAirportFallback(arrCode);
     final depTerminal = seg.departureTerminal;
     final arrTerminal = seg.arrivalTerminal;
     final airlineCode = seg.marketingAirline ?? seg.operatingAirline ?? '';
     final airlineName = seg.marketingAirlineName ?? seg.operatingAirlineName ?? airlineCode;
     final flightNum = seg.flightNumber?.toString() ?? '';
     final seats = seg.seatsAvailable;
-    final cabinClass = seg.cabinClass ?? 'Économique';
+    final cabinClass = seg.cabinClass ?? lang.S.of(context).classEconomy;
     final duration = seg.duration ?? '--';
     final equipmentType = seg.equipmentType;
     final equipmentName = seg.equipmentName;
@@ -1991,7 +2001,7 @@ class _FlightSegmentCard extends StatelessWidget {
         final cb = bag.checkedInBaggage.first;
         final unit = cb.unit ?? 'Kg';
         if (unit.toUpperCase().contains('PC') || unit.toUpperCase().contains('PIECE')) {
-          checkedBag = '${cb.value ?? 1} pièce${(cb.value ?? 1) > 1 ? 's' : ''}';
+          checkedBag = (cb.value ?? 1) > 1 ? lang.S.of(context).baggagePieces((cb.value ?? 1).toString()) : lang.S.of(context).baggagePiece((cb.value ?? 1).toString());
         } else {
           checkedBag = '${cb.value ?? 24} $unit';
         }
@@ -2106,7 +2116,7 @@ class _FlightSegmentCard extends StatelessWidget {
                       ),
                       if (depTerminal != null)
                         Text(
-                          'Terminal $depTerminal',
+                          lang.S.of(context).segmentTerminal(depTerminal!),
                           style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor),
                         ),
 
@@ -2165,7 +2175,7 @@ class _FlightSegmentCard extends StatelessWidget {
                                         ),
                                       ),
                                       Text(
-                                        'Vol $airlineCode $flightNum${equipmentDisplay != null ? '  \u2022  $equipmentDisplay' : ''}',
+                                        '${lang.S.of(context).segmentFlightInfo(airlineCode, flightNum)}${equipmentDisplay != null ? '  \u2022  $equipmentDisplay' : ''}',
                                         style: GoogleFonts.poppins(
                                           fontSize: 10,
                                           color: kSubTitleColor,
@@ -2193,7 +2203,7 @@ class _FlightSegmentCard extends StatelessWidget {
                                 if (seats != null)
                                   _InfoChip(
                                     icon: Icons.event_seat,
-                                    text: '$seats places',
+                                    text: lang.S.of(context).segmentSeats(seats.toString()),
                                     textColor: const Color(0xFF2E7D32),
                                     iconColor: const Color(0xFF2E7D32),
                                   ),
@@ -2216,7 +2226,7 @@ class _FlightSegmentCard extends StatelessWidget {
                       ),
                       if (arrTerminal != null)
                         Text(
-                          'Terminal $arrTerminal',
+                          lang.S.of(context).segmentTerminal(arrTerminal!),
                           style: GoogleFonts.poppins(fontSize: 11, color: kSubTitleColor),
                         ),
                     ],
@@ -2241,7 +2251,7 @@ class _FlightSegmentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Bagages',
+                  lang.S.of(context).segmentBaggage,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -2255,7 +2265,7 @@ class _FlightSegmentCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Bagage en soute: $checkedBag',
+                        lang.S.of(context).segmentCheckedBag(checkedBag),
                         style: GoogleFonts.poppins(fontSize: 11, color: kTitleColor),
                       ),
                     ),
@@ -2268,7 +2278,7 @@ class _FlightSegmentCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Bagage cabine: $cabinBag',
+                        lang.S.of(context).segmentCabinBag(cabinBag),
                         style: GoogleFonts.poppins(fontSize: 11, color: kTitleColor),
                       ),
                     ),
@@ -2319,7 +2329,7 @@ class _LayoverCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Escale à $airportName ($airportCode)',
+                  lang.S.of(context).layoverAt(airportName, airportCode),
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -2328,7 +2338,7 @@ class _LayoverCard extends StatelessWidget {
                 ),
                 if (layoverTime.isNotEmpty)
                   Text(
-                    'Durée: $layoverTime',
+                    lang.S.of(context).layoverDuration(layoverTime),
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       color: kSubTitleColor,
@@ -2459,7 +2469,7 @@ void showFakeFlightDetailsBottomSheet(
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'Détails du vol',
+                        lang.S.of(ctx).sheetFlightDetails,
                         style: GoogleFonts.poppins(
                           color: kTitleColor,
                           fontSize: 17,
@@ -2482,7 +2492,7 @@ void showFakeFlightDetailsBottomSheet(
                         child: Row(
                           children: List.generate(2, (i) {
                             final isSelected = selectedTab == i;
-                            final label = i == 0 ? 'Aller' : 'Retour';
+                            final label = i == 0 ? lang.S.of(ctx).filterOutbound : lang.S.of(ctx).filterReturn;
                             final depCode = i == 0 ? fromCode : toCode;
                             final arrCode = i == 0 ? toCode : fromCode;
 
@@ -2573,7 +2583,7 @@ void showFakeFlightDetailsBottomSheet(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                '${flight.price} DZD/ pers',
+                                lang.S.of(ctx).sheetPricePerPerson(flight.price.toString(), 'DZD'),
                                 style: GoogleFonts.poppins(
                                   color: kTitleColor,
                                   fontSize: 16,
@@ -2581,7 +2591,7 @@ void showFakeFlightDetailsBottomSheet(
                                 ),
                               ),
                               Text(
-                                hasReturn ? 'Vol aller-retour' : 'Vol aller simple',
+                                hasReturn ? lang.S.of(ctx).sheetRoundTrip : lang.S.of(ctx).sheetOneWay,
                                 style: GoogleFonts.poppins(
                                   color: kSubTitleColor,
                                   fontSize: 11,
@@ -2596,9 +2606,9 @@ void showFakeFlightDetailsBottomSheet(
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const BookingWebView(
+                                builder: (_) => BookingWebView(
                                   url: 'https://www.google.com',
-                                  title: 'Réservation',
+                                  title: lang.S.of(ctx).detailBookingTitle,
                                 ),
                               ),
                             );
@@ -2610,7 +2620,7 @@ void showFakeFlightDetailsBottomSheet(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              'Réserver ce vol',
+                              lang.S.of(ctx).sheetBookFlight,
                               style: GoogleFonts.poppins(
                                 color: kWhite,
                                 fontSize: 14,
@@ -2653,8 +2663,8 @@ class _FakeFlightJourneyContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stopsText = flight.stops == 0
-        ? 'Vol direct'
-        : '${flight.stops} escale${flight.stops > 1 ? 's' : ''}';
+        ? lang.S.of(context).cardDirectFlight
+        : (flight.stops > 1 ? lang.S.of(context).cardStops(flight.stops.toString()) : lang.S.of(context).cardStop(flight.stops.toString()));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2779,7 +2789,7 @@ class _FakeFlightJourneyContent extends StatelessWidget {
                   children: [
                     // Departure airport
                     Text(
-                      'Aéroport $fromCode',
+                      lang.S.of(context).segmentAirportFallback(fromCode),
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -2842,7 +2852,7 @@ class _FakeFlightJourneyContent extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      'Vol $flightNumber',
+                                      lang.S.of(context).segmentFlightInfo(flightNumber, '').trimRight(),
                                       style: GoogleFonts.poppins(
                                         fontSize: 10,
                                         color: kSubTitleColor,
@@ -2863,9 +2873,9 @@ class _FakeFlightJourneyContent extends StatelessWidget {
                                 icon: Icons.schedule,
                                 text: flight.duration,
                               ),
-                              const _InfoChip(
+                              _InfoChip(
                                 icon: Icons.airline_seat_recline_normal,
-                                text: 'Économique',
+                                text: lang.S.of(context).classEconomy,
                               ),
                             ],
                           ),
@@ -2877,7 +2887,7 @@ class _FakeFlightJourneyContent extends StatelessWidget {
 
                     // Arrival airport
                     Text(
-                      'Aéroport $toCode',
+                      lang.S.of(context).segmentAirportFallback(toCode),
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -2906,7 +2916,7 @@ class _FakeFlightJourneyContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Bagages',
+                lang.S.of(context).segmentBaggage,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -2920,7 +2930,7 @@ class _FakeFlightJourneyContent extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Bagage en soute: 24 Kg',
+                      lang.S.of(context).segmentCheckedBag('24 Kg'),
                       style: GoogleFonts.poppins(fontSize: 11, color: kTitleColor),
                     ),
                   ),
@@ -2933,7 +2943,7 @@ class _FakeFlightJourneyContent extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Bagage cabine: 7 Kg',
+                      lang.S.of(context).segmentCabinBag('7 Kg'),
                       style: GoogleFonts.poppins(fontSize: 11, color: kTitleColor),
                     ),
                   ),

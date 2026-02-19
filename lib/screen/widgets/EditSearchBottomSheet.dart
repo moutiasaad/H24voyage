@@ -120,16 +120,17 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
   }
 
   String _getClassDisplayName(String classCode) {
+    final t = lang.S.of(context);
     switch (classCode) {
       case 'first':
-        return 'Première';
+        return t.homeClassFirstShort;
       case 'business':
-        return 'Affaires';
+        return t.homeClassBusinessShort;
       case 'premium':
-        return 'Premium Eco';
+        return t.homeClassPremiumEconomyShort;
       case 'economy':
       default:
-        return 'Économique';
+        return t.homeClassEconomyShort;
     }
   }
 
@@ -263,7 +264,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           ],
                         ),
                         Text(
-                          '${fromAirport.city} à ${toAirport.city}',
+                          lang.S.of(context).editRouteInfo(fromAirport.city, toAirport.city),
                           style: kTextStyle.copyWith(color: kSubTitleColor),
                         ),
                       ],
@@ -301,7 +302,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                                         style: kTextStyle.copyWith(
                                             color: kTitleColor,
                                             fontWeight: FontWeight.bold)),
-                                    Text('12 ans et plus',
+                                    Text(lang.S.of(context).homeAdultsAge,
                                         style: kTextStyle.copyWith(
                                             color: kSubTitleColor)),
                                   ],
@@ -347,7 +348,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                                         style: kTextStyle.copyWith(
                                             color: kTitleColor,
                                             fontWeight: FontWeight.bold)),
-                                    Text('2-12 ans',
+                                    Text(lang.S.of(context).homeChildAge,
                                         style: kTextStyle.copyWith(
                                             color: kSubTitleColor)),
                                   ],
@@ -393,7 +394,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                                         style: kTextStyle.copyWith(
                                             color: kTitleColor,
                                             fontWeight: FontWeight.bold)),
-                                    Text('Moins de 2 ans',
+                                    Text(lang.S.of(context).homeInfantAge,
                                         style: kTextStyle.copyWith(
                                             color: kSubTitleColor)),
                                   ],
@@ -435,11 +436,11 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text('Classe',
+                                    Text(lang.S.of(context).homeClassLabel,
                                         style: kTextStyle.copyWith(
                                             color: kTitleColor,
                                             fontWeight: FontWeight.bold)),
-                                    Text('Sélectionnez la classe',
+                                    Text(lang.S.of(context).editSelectClass,
                                         style: kTextStyle.copyWith(
                                             color: kSubTitleColor)),
                                   ],
@@ -448,11 +449,11 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                                 DropdownButton<String>(
                                   value: selectedClass,
                                   underline: const SizedBox(),
-                                  items: const [
-                                    DropdownMenuItem(value: 'economy', child: Text('Économique')),
-                                    DropdownMenuItem(value: 'premium', child: Text('Premium Eco')),
-                                    DropdownMenuItem(value: 'business', child: Text('Affaires')),
-                                    DropdownMenuItem(value: 'first', child: Text('Première')),
+                                  items: [
+                                    DropdownMenuItem(value: 'economy', child: Text(lang.S.of(context).homeClassEconomyShort)),
+                                    DropdownMenuItem(value: 'premium', child: Text(lang.S.of(context).homeClassPremiumEconomyShort)),
+                                    DropdownMenuItem(value: 'business', child: Text(lang.S.of(context).homeClassBusinessShort)),
+                                    DropdownMenuItem(value: 'first', child: Text(lang.S.of(context).homeClassFirstShort)),
                                   ],
                                   onChanged: (value) {
                                     if (value != null) {
@@ -486,7 +487,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                     ),
                     child: SafeArea(
                       child: ButtonGlobal(
-                        buttontext: 'Terminé',
+                        buttontext: lang.S.of(context).homeDone,
                         buttonDecoration: kButtonDecoration.copyWith(
                           color: kPrimaryColor,
                         ),
@@ -581,7 +582,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Lieu de départ',
+                                lang.S.of(context).homeDeparturePlace,
                                 style: kTextStyle.copyWith(
                                   color: Colors.grey.shade600,
                                   fontSize: 13,
@@ -591,7 +592,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                               Text(
                                 leg.fromAirport != null
                                     ? '${leg.fromAirport!.city} (${leg.fromAirport!.code})'
-                                    : 'Sélectionner',
+                                    : lang.S.of(context).editSelect,
                                 style: kTextStyle.copyWith(
                                   color: kTitleColor,
                                   fontSize: 13,
@@ -643,7 +644,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Destination',
+                                lang.S.of(context).homeDestination,
                                 style: kTextStyle.copyWith(
                                   color: Colors.grey.shade600,
                                   fontSize: 13,
@@ -653,7 +654,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                               Text(
                                 leg.toAirport != null
                                     ? '${leg.toAirport!.city} (${leg.toAirport!.code})'
-                                    : 'Sélectionner',
+                                    : lang.S.of(context).editSelect,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: kTextStyle.copyWith(
@@ -734,7 +735,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Départ',
+                            lang.S.of(context).homeDeparture,
                             style: kTextStyle.copyWith(
                               color: Colors.grey.shade600,
                               fontSize: 13,
@@ -744,7 +745,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           Text(
                             leg.departureDate != null
                                 ? DateFormat('dd MMM yyyy', 'fr').format(leg.departureDate!)
-                                : 'Sélectionner une date',
+                                : lang.S.of(context).editSelectDate,
                             style: kTextStyle.copyWith(
                               color: kTitleColor,
                               fontSize: 13,
@@ -768,12 +769,12 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
     // Validation for round-trip and one-way
     if (selectedIndex != 2) {
       if (departureDate == null) {
-        toast('Veuillez sélectionner une date de départ.');
+        toast(lang.S.of(context).homeSelectDepartureDate);
         return;
       }
 
       if (selectedIndex == 0 && returnDate == null) {
-        toast('Veuillez sélectionner une date de retour.');
+        toast(lang.S.of(context).homeSelectReturnDate);
         return;
       }
     }
@@ -781,18 +782,18 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
     // Validation for multi-destination
     if (selectedIndex == 2) {
       if (departureDate == null) {
-        toast('Veuillez sélectionner une date de départ pour le vol 1.');
+        toast(lang.S.of(context).homeSelectDateFlight1);
         return;
       }
 
       for (int i = 0; i < multiDestinationLegs.length; i++) {
         final leg = multiDestinationLegs[i];
         if (leg.fromAirport == null || leg.toAirport == null) {
-          toast('Veuillez sélectionner les aéroports pour le vol ${i + 2}.');
+          toast(lang.S.of(context).homeSelectAirportsFlightN((i + 2).toString()));
           return;
         }
         if (leg.departureDate == null) {
-          toast('Veuillez sélectionner une date pour le vol ${i + 2}.');
+          toast(lang.S.of(context).homeSelectDateFlightN((i + 2).toString()));
           return;
         }
       }
@@ -854,7 +855,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
             child: Row(
               children: [
                 Text(
-                  'Modifier la recherche',
+                  lang.S.of(context).searchEditSearch,
                   style: kTextStyle.copyWith(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -985,7 +986,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Lieu de départ',
+                              lang.S.of(context).homeDeparturePlace,
                               style: kTextStyle.copyWith(
                                 color: Colors.grey.shade600,
                                 fontSize: 13,
@@ -993,7 +994,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${fromAirport.city} (${fromAirport.code}- tous les aéroports)',
+                              lang.S.of(context).editAirportAll(fromAirport.city, fromAirport.code),
                               style: kTextStyle.copyWith(
                                 color: kTitleColor,
                                 fontSize: 13,
@@ -1029,7 +1030,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Destination',
+                              lang.S.of(context).homeDestination,
                               style: kTextStyle.copyWith(
                                 color: Colors.grey.shade600,
                                 fontSize: 13,
@@ -1037,7 +1038,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${toAirport.city} (${toAirport.code}-aéroport ..)',
+                              lang.S.of(context).editAirportSingle(toAirport.city, toAirport.code),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: kTextStyle.copyWith(
@@ -1114,7 +1115,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Départ',
+                            lang.S.of(context).homeDeparture,
                             style: kTextStyle.copyWith(
                               color: Colors.grey.shade600,
                               fontSize: 13,
@@ -1124,7 +1125,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           Text(
                             departureDate != null
                                 ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
-                                : 'Sélectionner',
+                                : lang.S.of(context).editSelect,
                             style: kTextStyle.copyWith(
                               color: kTitleColor,
                               fontSize: 13,
@@ -1162,7 +1163,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Retour',
+                              lang.S.of(context).homeReturn,
                               style: kTextStyle.copyWith(
                                 color: Colors.grey.shade600,
                                 fontSize: 13,
@@ -1172,7 +1173,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                             Text(
                               returnDate != null
                                   ? DateFormat('dd MMM yyyy', 'fr').format(returnDate!)
-                                  : 'Sélectionner',
+                                  : lang.S.of(context).editSelect,
                               style: kTextStyle.copyWith(
                                 color: kTitleColor,
                                 fontSize: 13,
@@ -1221,7 +1222,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      'Vols directs',
+                      lang.S.of(context).homeDirectFlights,
                       style: kTextStyle.copyWith(
                         color: kTitleColor,
                         fontSize: 14,
@@ -1238,7 +1239,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
 
         // Search button
         ButtonGlobalWithoutIcon(
-          buttontext: 'Rechercher vols',
+          buttontext: lang.S.of(context).homeSearchFlights,
           buttonDecoration: kButtonDecoration.copyWith(
             color: kPrimaryColor,
             borderRadius: BorderRadius.circular(100.0),
@@ -1294,7 +1295,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Lieu de départ',
+                              lang.S.of(context).homeDeparturePlace,
                               style: kTextStyle.copyWith(
                                 color: Colors.grey.shade600,
                                 fontSize: 13,
@@ -1338,7 +1339,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Destination',
+                              lang.S.of(context).homeDestination,
                               style: kTextStyle.copyWith(
                                 color: Colors.grey.shade600,
                                 fontSize: 13,
@@ -1422,7 +1423,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Départ',
+                          lang.S.of(context).homeDeparture,
                           style: kTextStyle.copyWith(
                             color: Colors.grey.shade600,
                             fontSize: 13,
@@ -1432,7 +1433,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                         Text(
                           departureDate != null
                               ? DateFormat('dd MMM yyyy', 'fr').format(departureDate!)
-                              : 'Sélectionner une date',
+                              : lang.S.of(context).editSelectDate,
                           style: kTextStyle.copyWith(
                             color: kTitleColor,
                             fontSize: 13,
@@ -1544,7 +1545,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      'Vols directs',
+                      lang.S.of(context).homeDirectFlights,
                       style: kTextStyle.copyWith(
                         color: kTitleColor,
                         fontSize: 14,
@@ -1561,7 +1562,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
 
         // Search button
         ButtonGlobalWithoutIcon(
-          buttontext: 'Rechercher vols',
+          buttontext: lang.S.of(context).homeSearchFlights,
           buttonDecoration: kButtonDecoration.copyWith(
             color: kPrimaryColor,
             borderRadius: BorderRadius.circular(100.0),
@@ -1598,7 +1599,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Passager & Classe',
+                      lang.S.of(context).homePassengerClass,
                       style: kTextStyle.copyWith(
                         color: Colors.grey.shade600,
                         fontSize: 13,
@@ -1606,7 +1607,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${adultCount + childCount + infantCount} Passager${(adultCount + childCount + infantCount) > 1 ? 's' : ''}, ${_getClassDisplayName(selectedClass)}',
+                      lang.S.of(context).editPassengerSummary((adultCount + childCount + infantCount).toString(), _getClassDisplayName(selectedClass)),
                       style: kTextStyle.copyWith(
                         color: kTitleColor,
                         fontSize: 13,

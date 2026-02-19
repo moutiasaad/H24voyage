@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -5,7 +6,10 @@ import '../widgets/constant.dart';
 import '../widgets/button_global.dart';
 
 class CreateTicket extends StatefulWidget {
-  const CreateTicket({Key? key}) : super(key: key);
+  final String? subject;
+  final String? ticketId;
+
+  const CreateTicket({Key? key, this.subject, this.ticketId}) : super(key: key);
 
   @override
   State<CreateTicket> createState() => _CreateTicketState();
@@ -14,11 +18,18 @@ class CreateTicket extends StatefulWidget {
 class _CreateTicketState extends State<CreateTicket> {
   final _messageController = TextEditingController();
 
-  String _selectedStatus = 'Ouvert';
-  String _selectedPriority = 'Urgent';
+  int _selectedStatusIndex = 0;
+  int _selectedPriorityIndex = 2;
 
-  final List<String> _statusOptions = ['Ouvert', 'En cours', 'Résolu', 'Fermé'];
-  final List<String> _priorityOptions = ['Faible', 'Normale', 'Urgent'];
+  List<String> _statusOptions(BuildContext context) {
+    final t = lang.S.of(context);
+    return [t.createTicketStatusOpen, t.createTicketStatusInProgress, t.createTicketStatusResolved, t.createTicketStatusClosed];
+  }
+
+  List<String> _priorityOptions(BuildContext context) {
+    final t = lang.S.of(context);
+    return [t.createTicketPriorityLow, t.createTicketPriorityNormal, t.createTicketPriorityUrgent];
+  }
 
   // Sample conversation messages
   final List<Map<String, dynamic>> _messages = [
@@ -57,7 +68,7 @@ class _CreateTicketState extends State<CreateTicket> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'Détails du ticket',
+                      lang.S.of(context).createTicketDetailsTitle,
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -71,11 +82,11 @@ class _CreateTicketState extends State<CreateTicket> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _buildSimpleDropdownField(
-                      label: 'Statut',
-                      value: _selectedStatus,
-                      options: _statusOptions,
+                      label: lang.S.of(context).createTicketStatus,
+                      value: _statusOptions(context)[_selectedStatusIndex],
+                      options: _statusOptions(context),
                       onChanged: (value) {
-                        setState(() => _selectedStatus = value!);
+                        setState(() => _selectedStatusIndex = _statusOptions(context).indexOf(value!));
                       },
                     ),
                   ),
@@ -85,11 +96,11 @@ class _CreateTicketState extends State<CreateTicket> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _buildSimpleDropdownField(
-                      label: 'Priorité',
-                      value: _selectedPriority,
-                      options: _priorityOptions,
+                      label: lang.S.of(context).createTicketPriority,
+                      value: _priorityOptions(context)[_selectedPriorityIndex],
+                      options: _priorityOptions(context),
                       onChanged: (value) {
-                        setState(() => _selectedPriority = value!);
+                        setState(() => _selectedPriorityIndex = _priorityOptions(context).indexOf(value!));
                       },
                     ),
                   ),
@@ -98,7 +109,7 @@ class _CreateTicketState extends State<CreateTicket> {
                   // Créé par field
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildSimpleTextField('Crée par'),
+                    child: _buildSimpleTextField(lang.S.of(context).createTicketCreatedBy),
                   ),
 
                   const SizedBox(height: 20),
@@ -108,11 +119,11 @@ class _CreateTicketState extends State<CreateTicket> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
-                        _buildInfoRowWithImage('assets/calandreIcon.png', 'Créé le', '28/01/2026'),
+                        _buildInfoRowWithImage('assets/calandreIcon.png', lang.S.of(context).createTicketCreatedOn, '28/01/2026'),
                         const SizedBox(height: 12),
-                        _buildInfoRowWithImage('assets/horlogeIcon.png', 'Mise à jour', '28/01/2026'),
+                        _buildInfoRowWithImage('assets/horlogeIcon.png', lang.S.of(context).createTicketUpdatedOn, '28/01/2026'),
                         const SizedBox(height: 12),
-                        _buildInfoRowWithImage('assets/servicesIcon.png', 'Services', 'Billetterie'),
+                        _buildInfoRowWithImage('assets/servicesIcon.png', lang.S.of(context).createTicketServices, 'Billetterie'),
                       ],
                     ),
                   ),
@@ -129,7 +140,7 @@ class _CreateTicketState extends State<CreateTicket> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'Conversation',
+                      lang.S.of(context).createTicketConversation,
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -152,7 +163,7 @@ class _CreateTicketState extends State<CreateTicket> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'Rédiger une réponse',
+                      lang.S.of(context).createTicketWriteReply,
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -229,7 +240,7 @@ class _CreateTicketState extends State<CreateTicket> {
                       ),
                     ),
                     Text(
-                      'Support client',
+                      lang.S.of(context).supportTitle,
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 18,
@@ -315,7 +326,7 @@ class _CreateTicketState extends State<CreateTicket> {
           ),
           const SizedBox(width: 10),
           Text(
-            'Helpdesk',
+            lang.S.of(context).supportHelpdesk,
             style: GoogleFonts.poppins(
               color: const Color(0xFFFF6A00),
               fontSize: 14,
@@ -328,6 +339,9 @@ class _CreateTicketState extends State<CreateTicket> {
   }
 
   Widget _buildTicketTitleCard() {
+    final subject = widget.subject ?? lang.S.of(context).createTicketDefaultSubject;
+    final ticketId = widget.ticketId ?? '#------';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -338,17 +352,20 @@ class _CreateTicketState extends State<CreateTicket> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            'Demande de devis vol',
-            style: GoogleFonts.poppins(
-              color: const Color(0xFFFF6A00),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+          Flexible(
+            child: Text(
+              subject,
+              style: GoogleFonts.poppins(
+                color: const Color(0xFFFF6A00),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           const SizedBox(width: 12),
           Text(
-            '#123456',
+            ticketId,
             style: GoogleFonts.poppins(
               color: const Color(0xFF2196F3),
               fontSize: 13,
@@ -655,7 +672,7 @@ class _CreateTicketState extends State<CreateTicket> {
         height: 48,
         child: Center(
           child: Text(
-            'Fermer le ticket',
+            lang.S.of(context).createTicketCloseTicket,
             style: GoogleFonts.poppins(
               color: const Color(0xFFFF4D4F),
               fontSize: 15,
@@ -753,7 +770,7 @@ class _CreateTicketState extends State<CreateTicket> {
           fontSize: 14,
         ),
         decoration: InputDecoration(
-          hintText: 'Écrivez votre message ici...',
+          hintText: lang.S.of(context).createTicketMessageHint,
           hintStyle: GoogleFonts.poppins(
             color: const Color(0xFF999999),
             fontSize: 14,
@@ -793,7 +810,7 @@ class _CreateTicketState extends State<CreateTicket> {
                   const Icon(Icons.attach_file, color: Color(0xFF444444), size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'Pièces jointes',
+                    lang.S.of(context).createTicketAttachments,
                     style: GoogleFonts.poppins(
                       color: const Color(0xFF444444),
                       fontSize: 13,
@@ -813,8 +830,8 @@ class _CreateTicketState extends State<CreateTicket> {
               if (_messageController.text.isNotEmpty) {
                 setState(() {
                   _messages.add({
-                    'name': 'Vous',
-                    'initials': 'V',
+                    'name': lang.S.of(context).createTicketYou,
+                    'initials': lang.S.of(context).createTicketYou[0],
                     'message': _messageController.text,
                     'isAgent': false,
                   });
@@ -834,7 +851,7 @@ class _CreateTicketState extends State<CreateTicket> {
                   const Icon(Icons.send, color: Colors.white, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'Envoyer',
+                    lang.S.of(context).createTicketSend,
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontSize: 13,

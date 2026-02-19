@@ -39,7 +39,7 @@ class _FlightDetailsState extends State<FlightDetails>
               contentPadding: const EdgeInsets.only(left: 15.0, right: 15.0),
               visualDensity: const VisualDensity(vertical: 2),
               title: Text(
-                'Prix ​​total',
+                lang.S.of(context).totalPrice,
                 style: kTextStyle.copyWith(color: kSubTitleColor),
               ),
               subtitle: Text(
@@ -60,9 +60,9 @@ class _FlightDetailsState extends State<FlightDetails>
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const BookingWebView(
+                        builder: (_) => BookingWebView(
                           url: 'https://www.google.com',
-                          title: 'Réservation',
+                          title: lang.S.of(context).detailBookingTitle,
                         ),
                       ),
                     );
@@ -198,7 +198,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                             ),
                                           ),
                                           Text(
-                                            '1 stop | 5 hrs 40 mins | Économique ',
+                                            lang.S.of(context).detailStopInfo('1', '5 hrs 40 mins', lang.S.of(context).classEconomy),
                                             style: kTextStyle.copyWith(
                                                 color: kSubTitleColor),
                                           ),
@@ -252,7 +252,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                   fontWeight: FontWeight.bold),
                                             ),
                                             subtitle: Text(
-                                              '01h 10m en vol',
+                                              lang.S.of(context).detailInFlight('01h 10m'),
                                               style: kTextStyle.copyWith(
                                                   color: kSubTitleColor),
                                             ),
@@ -400,7 +400,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                 ),
                                               ),
                                               title: Text(
-                                                'Escale d''une nuit à Tunis ',
+                                                lang.S.of(context).detailOvernightLayover('Tunis'),
                                                 style: kTextStyle.copyWith(
                                                     color: kTitleColor,
                                                     fontWeight:
@@ -563,7 +563,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                         ),
                                       ),
                                       Text(
-                                        'Sans escale | 1 h 40 min | Économie',
+                                        lang.S.of(context).detailNonStopInfo('1 h 40 min', lang.S.of(context).classEconomy),
                                         style: kTextStyle.copyWith(
                                             color: kSubTitleColor),
                                       ),
@@ -616,7 +616,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                               fontWeight: FontWeight.bold),
                                         ),
                                         subtitle: Text(
-                                          '1 h 25 min de vol',
+                                          lang.S.of(context).detailInFlight('1 h 25 min'),
                                           style: kTextStyle.copyWith(
                                               color: kSubTitleColor),
                                         ),
@@ -773,7 +773,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                             children: [
                                               Expanded(
                                                 child: Text(
-                                                  'Tarif proposé par la compagnie aérienne',
+                                                  lang.S.of(context).detailAirlineFare,
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis, // 🔧 prevent overflow
                                                   style: kTextStyle.copyWith(
@@ -850,7 +850,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         title: Text(
-                                                          'bagage cabine',
+                                                          lang.S.of(context).detailCabinBaggage,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color: kTitleColor,
@@ -894,7 +894,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         title: Text(
-                                                          'Sélection des sièges',
+                                                          lang.S.of(context).detailSeatSelection,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color: kTitleColor,
@@ -903,7 +903,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         subtitle: Text(
-                                                          'Disponible',
+                                                          lang.S.of(context).detailAvailable,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color:
@@ -938,7 +938,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         title: Text(
-                                                          'Cancellation',
+                                                          lang.S.of(context).detailCancellation,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color: kTitleColor,
@@ -947,7 +947,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         subtitle: Text(
-                                                          'Frais d''annulation à partir de ${5000} $currencySign',
+                                                          lang.S.of(context).detailCancellationFees('5000', currencySign),
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color:
@@ -994,7 +994,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         title: Text(
-                                                          'bagages enregistrés',
+                                                          lang.S.of(context).detailCheckedBaggage,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color: kTitleColor,
@@ -1038,7 +1038,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         title: Text(
-                                                          'Repas',
+                                                          lang.S.of(context).detailMeals,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color: kTitleColor,
@@ -1047,7 +1047,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         subtitle: Text(
-                                                          'Disponiblee',
+                                                          lang.S.of(context).detailAvailable,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color:
@@ -1082,7 +1082,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         title: Text(
-                                                          'Date Change ',
+                                                          lang.S.of(context).detailDateChange,
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color: kTitleColor,
@@ -1091,7 +1091,7 @@ class _FlightDetailsState extends State<FlightDetails>
                                                           ),
                                                         ),
                                                         subtitle: Text(
-                                                          'Frais de changement de date à partir de ${7000} $currencySign',
+                                                          lang.S.of(context).detailDateChangeFees('7000', currencySign),
                                                           style: kTextStyle
                                                               .copyWith(
                                                             color:

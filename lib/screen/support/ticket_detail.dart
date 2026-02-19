@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -46,18 +47,19 @@ class TicketDetails {
   bool get isUrgent => status == 'urgent';
   bool get isClosed => status == 'closed';
 
-  String get statusLabel {
+  String statusLabelTranslated(BuildContext context) {
+    final t = lang.S.of(context);
     switch (status) {
       case 'urgent':
-        return 'Urgent';
+        return t.ticketDetailStatusUrgent;
       case 'open':
-        return 'Ouvert';
+        return t.ticketDetailStatusOpen;
       case 'pending':
-        return 'En attente';
+        return t.ticketDetailStatusPending;
       case 'resolved':
-        return 'Résolu';
+        return t.ticketDetailStatusResolved;
       case 'closed':
-        return 'Fermé';
+        return t.ticketDetailStatusClosed;
       default:
         return status;
     }
@@ -248,7 +250,7 @@ class _TicketDetailState extends State<TicketDetail> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Détail du ticket',
+                  lang.S.of(context).ticketDetailTitle,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 18,
@@ -276,7 +278,7 @@ class _TicketDetailState extends State<TicketDetail> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'Fermer',
+                  lang.S.of(context).ticketDetailClose,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 12,
@@ -325,7 +327,7 @@ class _TicketDetailState extends State<TicketDetail> {
                     border: Border.all(color: kPrimaryColor, width: 1.5),
                   ),
                   child: Text(
-                    'Urgent',
+                    lang.S.of(context).ticketDetailStatusUrgent,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
@@ -345,7 +347,7 @@ class _TicketDetailState extends State<TicketDetail> {
           ),
           const SizedBox(height: 4),
           Text(
-            'Créé le ${_formatDate(_ticket!.createdAt)} · Mis à jour ${_formatDate(_ticket!.updatedAt)}',
+            lang.S.of(context).ticketDetailCreatedUpdated(_formatDate(_ticket!.createdAt), _formatDate(_ticket!.updatedAt)),
             style: GoogleFonts.poppins(
               fontSize: 12,
               color: kSubTitleColor,
@@ -461,7 +463,7 @@ class _TicketDetailState extends State<TicketDetail> {
               const Icon(Icons.lock_outline, size: 16, color: kSubTitleColor),
               const SizedBox(width: 8),
               Text(
-                'Ce ticket est fermé',
+                lang.S.of(context).ticketDetailTicketClosed,
                 style: GoogleFonts.poppins(color: kSubTitleColor, fontSize: 13),
               ),
             ],
@@ -512,7 +514,7 @@ class _TicketDetailState extends State<TicketDetail> {
               child: TextField(
                 controller: _messageController,
                 decoration: InputDecoration(
-                  hintText: 'Écrire un message...',
+                  hintText: lang.S.of(context).ticketDetailMessageHint,
                   hintStyle: GoogleFonts.poppins(color: kSubTitleColor, fontSize: 14),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
@@ -565,11 +567,11 @@ class _TicketDetailState extends State<TicketDetail> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(
-          'Fermer le ticket ?',
+          lang.S.of(context).ticketDetailCloseDialog,
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         content: Text(
-          'Vous ne pourrez plus envoyer de messages une fois le ticket fermé.',
+          lang.S.of(context).ticketDetailCloseWarning,
           style: GoogleFonts.poppins(color: kSubTitleColor, fontSize: 14),
         ),
         actions: [
@@ -586,7 +588,7 @@ class _TicketDetailState extends State<TicketDetail> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Center(
                     child: Text(
-                      'Annuler',
+                      lang.S.of(context).ticketDetailCancel,
                       style: GoogleFonts.poppins(color: kTitleColor, fontSize: 14),
                     ),
                   ),
@@ -616,7 +618,7 @@ class _TicketDetailState extends State<TicketDetail> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Center(
                     child: Text(
-                      'Fermer',
+                      lang.S.of(context).ticketDetailClose,
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 14,

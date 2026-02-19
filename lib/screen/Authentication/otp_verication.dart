@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/home/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -81,11 +82,12 @@ class _OtpVerificationState extends State<OtpVerification> {
 
       if (!mounted) return;
 
+      final t = lang.S.of(context);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Un nouveau code a été envoyé à ${widget.email}',
+              t.otpCodeSent(widget.email ?? ''),
               style: GoogleFonts.poppins(color: kWhite, fontSize: 13),
             ),
             backgroundColor: Colors.green,
@@ -95,13 +97,14 @@ class _OtpVerificationState extends State<OtpVerification> {
         _startResendTimer();
       } else {
         setState(() {
-          _errorMessage = 'Impossible de renvoyer le code. Réessayez.';
+          _errorMessage = t.otpResendFailed;
         });
       }
     } catch (e) {
       if (!mounted) return;
+      final t = lang.S.of(context);
       setState(() {
-        _errorMessage = 'Erreur lors du renvoi du code.';
+        _errorMessage = t.otpResendError;
       });
     } finally {
       if (mounted) {
@@ -115,6 +118,7 @@ class _OtpVerificationState extends State<OtpVerification> {
     if (_isLoading) return;
 
     FocusScope.of(context).unfocus();
+    final t = lang.S.of(context);
 
     setState(() {
       _isLoading = true;
@@ -128,7 +132,7 @@ class _OtpVerificationState extends State<OtpVerification> {
         if (widget.customerId == null) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Code incorrect, veuillez réessayer';
+            _errorMessage = t.otpWrongCode;
           });
           return;
         }
@@ -143,7 +147,7 @@ class _OtpVerificationState extends State<OtpVerification> {
         if (response == null || !response.success) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Code incorrect, veuillez réessayer';
+            _errorMessage = t.otpWrongCode;
           });
           _clearOtpAfterError();
           return;
@@ -170,17 +174,17 @@ class _OtpVerificationState extends State<OtpVerification> {
         if (response == null || !response.success) {
           setState(() {
             _isLoading = false;
-            _errorMessage = 'Code incorrect, veuillez réessayer';
+            _errorMessage = t.otpWrongCode;
           });
           _clearOtpAfterError();
           return;
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Inscription réussie! Veuillez vous connecter.'),
+          SnackBar(
+            content: Text(t.otpRegistrationSuccess),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
           ),
         );
 
@@ -194,7 +198,7 @@ class _OtpVerificationState extends State<OtpVerification> {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
-        _errorMessage = 'Code incorrect, veuillez réessayer';
+        _errorMessage = t.otpWrongCode;
       });
       _clearOtpAfterError();
     }
@@ -235,6 +239,7 @@ class _OtpVerificationState extends State<OtpVerification> {
     final buttonHeight = isVerySmallScreen ? 46.0 : (isSmallScreen ? 48.0 : 52.0);
     final buttonTextSize = isVerySmallScreen ? 13.0 : (isSmallScreen ? 14.0 : 15.0);
 
+    final t = lang.S.of(context);
     final hasError = _errorMessage != null;
 
     final defaultTheme = PinTheme(
@@ -336,8 +341,8 @@ class _OtpVerificationState extends State<OtpVerification> {
                 // Title
                 Text(
                   isVerySmallScreen
-                      ? 'Vérifiez votre adresse e-mail'
-                      : 'Vérifiez votre adresse e-mail pour vous connecter',
+                      ? t.otpVerifyTitleShort
+                      : t.otpVerifyTitle,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     color: kTitleColor,
@@ -361,11 +366,11 @@ class _OtpVerificationState extends State<OtpVerification> {
                     children: [
                       TextSpan(
                         text: isVerySmallScreen
-                            ? 'Code envoyé à : '
-                            : 'Nous avons envoyé un code de vérification à :\n',
+                            ? t.otpCodeSentToShort
+                            : t.otpCodeSentTo,
                       ),
                       TextSpan(
-                        text: widget.email ?? 'adresse e-mail',
+                        text: widget.email ?? t.otpEmailFallback,
                         style: GoogleFonts.poppins(
                           color: kTitleColor,
                           fontSize: subtitleSize,
@@ -373,7 +378,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                         ),
                       ),
                       if (!isVerySmallScreen)
-                        const TextSpan(text: '\nVeuillez le saisir pour continuer.'),
+                        TextSpan(text: t.otpEnterToContinue),
                     ],
                   ),
                 ),
@@ -424,7 +429,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                                   ),
                                 )
                               : Text(
-                                  'Renvoyer le code',
+                                  t.otpResendTitle2,
                                   style: GoogleFonts.poppins(
                                     color: kPrimaryColor,
                                     fontSize: 13,
@@ -479,7 +484,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          'Vérification en cours...',
+                          t.otpVerifying,
                           style: GoogleFonts.poppins(
                             color: kSubTitleColor,
                             fontSize: 13,
@@ -504,7 +509,7 @@ class _OtpVerificationState extends State<OtpVerification> {
                     height: buttonHeight,
                     child: Center(
                       child: Text(
-                        'Vérifier l\'adresse e-mail',
+                        t.otpVerifyEmail,
                         style: GoogleFonts.poppins(
                           color: _isLoading ? kSubTitleColor : kTitleColor,
                           fontSize: buttonTextSize,

@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,6 +37,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+    final t = lang.S.of(context);
 
     showDialog(
       context: context,
@@ -55,7 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (response == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_controller.message ?? 'Erreur lors de l\'inscription')),
+          SnackBar(content: Text(_controller.message ?? t.registerError)),
         );
         return;
       }
@@ -75,7 +77,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_controller.message ?? 'Erreur inconnue')),
+        SnackBar(content: Text(_controller.message ?? t.registerUnknownError)),
       );
     } catch (e) {
       if (Navigator.of(context).canPop()) Navigator.of(context).pop();
@@ -85,21 +87,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  String? _notEmptyValidator(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Ce champ est requis';
+  String? _notEmptyValidator(String? v, lang.S t) {
+    if (v == null || v.trim().isEmpty) return t.registerFieldRequired;
     return null;
   }
 
-  String? _emailValidator(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Veuillez saisir votre adresse e-mail';
+  String? _emailValidator(String? v, lang.S t) {
+    if (v == null || v.trim().isEmpty) return t.signUpEmailEmpty;
     final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w{2,}$');
-    if (!emailRegex.hasMatch(v.trim())) return 'Veuillez saisir une adresse e-mail valide';
+    if (!emailRegex.hasMatch(v.trim())) return t.signUpEmailInvalid;
     return null;
   }
 
-  String? _passwordValidator(String? v) {
-    if (v == null || v.isEmpty) return 'Mot de passe requis';
-    if (v.length < 6) return 'Au moins 6 caractères';
+  String? _passwordValidator(String? v, lang.S t) {
+    if (v == null || v.isEmpty) return t.registerPasswordRequired;
+    if (v.length < 6) return t.registerPasswordMinLength;
     return null;
   }
 
@@ -121,6 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final buttonHeight = (50 * ratioH).clamp(42.0, 54.0);
     final buttonTextSize = (16 * ratioW).clamp(13.0, 16.0);
     final horizontalPadding = screenWidth * 0.06;
+    final t = lang.S.of(context);
 
     return Scaffold(
       backgroundColor: kWhite,
@@ -187,7 +190,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             // Title
                             Center(
                               child: Text(
-                                "S'inscrire",
+                                t.registerTitle,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.poppins(
                                   color: kTitleColor,
@@ -201,7 +204,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                             // Subtitle
                             Text(
-                              'Inscrivez-vous dès maintenant à  h24voyages\net accédez à nos services.',
+                              t.registerSubtitle,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.lato(
                                 color: kSubTitleColor,
@@ -218,8 +221,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               controller: _firstNameController,
                               cursorColor: kTitleColor,
                               style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
-                              decoration: _outlineDecoration('Prénom', inputSize),
-                              validator: _notEmptyValidator,
+                              decoration: _outlineDecoration(t.registerFirstName, inputSize),
+                              validator: (v) => _notEmptyValidator(v, t),
                             ),
 
                             SizedBox(height: 12 * ratioH),
@@ -229,8 +232,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               controller: _lastNameController,
                               cursorColor: kTitleColor,
                               style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
-                              decoration: _outlineDecoration('Nom', inputSize),
-                              validator: _notEmptyValidator,
+                              decoration: _outlineDecoration(t.registerLastName, inputSize),
+                              validator: (v) => _notEmptyValidator(v, t),
                             ),
 
                             SizedBox(height: 12 * ratioH),
@@ -241,8 +244,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               keyboardType: TextInputType.emailAddress,
                               cursorColor: kTitleColor,
                               style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
-                              decoration: _outlineDecoration('E-mail', inputSize),
-                              validator: _emailValidator,
+                              decoration: _outlineDecoration(t.registerEmail, inputSize),
+                              validator: (v) => _emailValidator(v, t),
                             ),
 
                             SizedBox(height: 12 * ratioH),
@@ -253,7 +256,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               obscureText: _obscurePassword,
                               cursorColor: kTitleColor,
                               style: GoogleFonts.poppins(color: kTitleColor, fontSize: inputSize),
-                              decoration: _outlineDecoration('Mo de passe', inputSize).copyWith(
+                              decoration: _outlineDecoration(t.registerPassword, inputSize).copyWith(
                                 suffixIcon: GestureDetector(
                                   onTap: () => setState(() => _obscurePassword = !_obscurePassword),
                                   child: Icon(
@@ -264,7 +267,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                                 suffixIconConstraints: const BoxConstraints(minHeight: 20, minWidth: 20),
                               ),
-                              validator: _passwordValidator,
+                              validator: (v) => _passwordValidator(v, t),
                             ),
 
                             SizedBox(height: 16 * ratioH),
@@ -300,7 +303,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                   child: Center(
                                     child: Text(
-                                      "S'inscrire",
+                                      t.registerTitle,
                                       style: GoogleFonts.poppins(
                                         color: kWhite,
                                         fontSize: buttonTextSize,
@@ -331,12 +334,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         height: 18 / 11,
                                       ),
                                       children: [
-                                        const TextSpan(
-                                          text: 'En créant ou en vous connectant à un compte, vous acceptez\n',
-                                        ),
-                                        const TextSpan(text: 'nos '),
                                         TextSpan(
-                                          text: 'conditions générales',
+                                          text: '${t.welcomeTermsIntro}\n',
+                                        ),
+                                        TextSpan(text: t.welcomeTermsOur),
+                                        TextSpan(
+                                          text: t.welcomeTermsConditions,
                                           style: GoogleFonts.poppins(
                                             color: kPrimaryColor,
                                             fontSize: 11,
@@ -347,9 +350,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           ),
                                           recognizer: TapGestureRecognizer()..onTap = () {},
                                         ),
-                                        const TextSpan(text: ' et notre '),
+                                        TextSpan(text: t.welcomeTermsAnd),
                                         TextSpan(
-                                          text: 'charte de confidentialité',
+                                          text: t.welcomePrivacyPolicy,
                                           style: GoogleFonts.poppins(
                                             color: kPrimaryColor,
                                             fontSize: 11,
@@ -360,13 +363,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           ),
                                           recognizer: TapGestureRecognizer()..onTap = () {},
                                         ),
-                                        const TextSpan(text: '.'),
+                                        TextSpan(text: '.'),
                                       ],
                                     ),
                                   ),
                                   SizedBox(height: 4 * ratioH),
                                   Text(
-                                    'Tous droits réservés. Copyright- h24voyages',
+                                    t.welcomeCopyright,
                                     textAlign: TextAlign.center,
                                     style: GoogleFonts.poppins(
                                       color: kSubTitleColor,

@@ -102,8 +102,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int _currentOfferIndex = 0;
 
   // Dynamic slider data - can be replaced with API call
-  late List<AdvantageSliderItem> _advantageSliders;
-  late List<OfferSliderItem> _offerSliders;
+  List<AdvantageSliderItem> _advantageSliders = [];
+  List<OfferSliderItem> _offerSliders = [];
 
   @override
   void initState() {
@@ -119,29 +119,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     returnDate = DateTime.now().add(const Duration(days: 1));
     _selectedDateRange = DateTimeRange(start: departureDate!, end: returnDate!);
 
-    // Initialize slider data - replace with API call in future
-    _loadSliderData();
-
     // Preload Algerian airports in background for SearchBottomSheet
     AirportController.preloadAirports();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize slider data with translations - replace with API call in future
+    _loadSliderData(lang.S.of(context));
+  }
+
   /// Load slider data - replace with API call in future
-  void _loadSliderData() {
+  void _loadSliderData(lang.S t) {
     _advantageSliders = [
       AdvantageSliderItem(
         id: '1',
         backgroundImage: 'assets/home1.png',
         iconImage: 'assets/garantie.png',
-        title: 'Obtenez le meilleur prix',
-        subtitle: 'à chaque fois',
+        title: t.homeAdvantageTitle1,
+        subtitle: t.homeAdvantageSubtitle1,
       ),
       AdvantageSliderItem(
         id: '2',
         backgroundImage: 'assets/home1.png',
         iconImage: 'assets/garantie.png',
-        title: 'Service client 24/7',
-        subtitle: 'à votre écoute',
+        title: t.homeAdvantageTitle2,
+        subtitle: t.homeAdvantageSubtitle2,
       ),
     ];
 
@@ -182,17 +186,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   String selectedClass = 'economy';
   // String selectedClass = 'Economy';
 
-  String _getClassDisplayName(String classKey) {
+  String _getClassDisplayName(String classKey, lang.S t) {
     switch (classKey) {
       case 'first':
-        return 'Première';
+        return t.homeClassFirstShort;
       case 'business':
-        return 'Affaires';
+        return t.homeClassBusinessShort;
       case 'premium_economy':
-        return 'Éco Premium';
+        return t.homeClassPremiumEconomyShort;
       case 'economy':
       default:
-        return 'Économique';
+        return t.homeClassEconomyShort;
     }
   }
 
@@ -232,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       context,
       MaterialPageRoute(
         builder: (context) => FlightSearchLoading(
-          destinationCity: toAirport?.city ?? 'Destination',
+          destinationCity: toAirport?.city ?? lang.S.of(context).homeDefaultDestination,
           searchFunction: () => _performOneWaySearch(),
           getTotalFlights: () => _flightController.totalOffers,
           onSearchComplete: () {
@@ -251,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               searchCode: _flightController.searchCode,
               totalOffers: _flightController.totalOffers,
               errorMessage: _flightController.hasError
-                  ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+                  ? _flightController.errorMessage ?? lang.S.of(context).homeSearchError
                   : null,
             ).launch(context);
           },
@@ -281,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       context,
       MaterialPageRoute(
         builder: (context) => FlightSearchLoading(
-          destinationCity: toAirport?.city ?? 'Destination',
+          destinationCity: toAirport?.city ?? lang.S.of(context).homeDefaultDestination,
           searchFunction: () => _performRoundTripSearch(),
           getTotalFlights: () => _flightController.totalOffers,
           onSearchComplete: () {
@@ -298,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               searchCode: _flightController.searchCode,
               totalOffers: _flightController.totalOffers,
               errorMessage: _flightController.hasError
-                  ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+                  ? _flightController.errorMessage ?? lang.S.of(context).homeSearchError
                   : null,
             ).launch(context);
           },
@@ -367,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       // Validate that we have at least 2 legs for multi-destination
       if (bounds.length < 2) {
-        toast('Veuillez ajouterau moins 2 vols pour une recherche multi-destination.');
+        toast(lang.S.of(context).homeMultiMinFlights);
         setState(() => _isSearching = false);
         return;
       }
@@ -398,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         searchCode: _flightController.searchCode,
         totalOffers: _flightController.totalOffers,
         errorMessage: _flightController.hasError
-            ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+            ? _flightController.errorMessage ?? lang.S.of(context).homeSearchError
             : null,
       ).launch(context);
     } catch (e) {
@@ -414,7 +418,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         flightOffers: [],
         isOneWay: false,
         isMultiDestination: true,
-        errorMessage: 'Erreur: $e',
+        errorMessage: lang.S.of(context).homeErrorPrefix('$e'),
       ).launch(context);
     } finally {
       setState(() => _isSearching = false);
@@ -472,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    'Lieu de départ',
+                                    lang.S.of(context).homeDeparturePlace,
                                     style: kTextStyle.copyWith(
                                       color: Colors.grey.shade600,
                                       fontSize: 13,
@@ -482,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   Text(
                                     leg.fromAirport != null
                                         ? '${leg.fromAirport!.city} (${leg.fromAirport!.code})'
-                                        : 'Sélectionner un aéroport',
+                                        : lang.S.of(context).homeSelectAirport,
                                     style: kTextStyle.copyWith(
                                       color: kTitleColor,
                                       fontSize: 13,
@@ -538,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    'Destination',
+                                    lang.S.of(context).homeDestination,
                                     style: kTextStyle.copyWith(
                                       color: Colors.grey.shade600,
                                       fontSize: 13,
@@ -548,7 +552,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   Text(
                                     leg.toAirport != null
                                         ? '${leg.toAirport!.city} (${leg.toAirport!.code})'
-                                        : 'Sélectionner un aéroport',
+                                        : lang.S.of(context).homeSelectAirport,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: kTextStyle.copyWith(
@@ -624,7 +628,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Départ',
+                            lang.S.of(context).homeDeparture,
                             style: kTextStyle.copyWith(
                               color: Colors.grey.shade600,
                               fontSize: 13,
@@ -898,7 +902,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             children: [
                                               if (isLoggedIn && firstName.isNotEmpty)
                                                 Text(
-                                                  'Bonjour, $firstName',
+                                                  lang.S.of(context).homeGreeting(firstName),
                                                   style: kTextStyle.copyWith(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.w600,
@@ -907,7 +911,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 )
                                               else
                                                 Text(
-                                                  'Bienvenue',
+                                                  lang.S.of(context).homeWelcome,
                                                   style: kTextStyle.copyWith(
                                                     color: Colors.white,
                                                     fontWeight: FontWeight.w600,
@@ -915,7 +919,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ),
                                                 ),
                                               Text(
-                                                'Réserver votre vol',
+                                                lang.S.of(context).homeBookFlight,
                                                 style: kTextStyle.copyWith(
                                                   color: Colors.white.withOpacity(0.8),
                                                   fontSize: 13.0,
@@ -1063,7 +1067,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Text(
-                                                    'Lieu de départ',
+                                                    lang.S.of(context).homeDeparturePlace,
                                                     style: kTextStyle.copyWith(
                                                       color: Colors.grey.shade600,
                                                       fontSize: 13,
@@ -1073,7 +1077,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   Text(
                                                     fromAirport != null
                                                         ? '${fromAirport!.city} (${fromAirport!.code})'
-                                                        : 'Sélectionner un aéroport',
+                                                        : lang.S.of(context).homeSelectAirport,
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                     style: kTextStyle.copyWith(
@@ -1126,7 +1130,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Text(
-                                                    'Destination',
+                                                    lang.S.of(context).homeDestination,
                                                     style: kTextStyle.copyWith(
                                                       color: Colors.grey.shade600,
                                                       fontSize: 13,
@@ -1136,7 +1140,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   Text(
                                                     toAirport != null
                                                         ? '${toAirport!.city} (${toAirport!.code})'
-                                                        : 'Sélectionner un aéroport',
+                                                        : lang.S.of(context).homeSelectAirport,
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
                                                     style: kTextStyle.copyWith(
@@ -1214,7 +1218,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Text(
-                                                  'Départ',
+                                                  lang.S.of(context).homeDeparture,
                                                   style: kTextStyle.copyWith(
                                                     color: Colors.grey.shade600,
                                                     fontSize: 13,
@@ -1263,7 +1267,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Text(
-                                                  'Retour',
+                                                  lang.S.of(context).homeReturn,
                                                   style: kTextStyle.copyWith(
                                                     color: Colors.grey.shade600,
                                                     fontSize: 13,
@@ -1335,7 +1339,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ],
                                                 ),
                                                 Text(
-                                                  '${fromAirport?.city ?? 'Départ'} à ${toAirport?.city ?? 'Destination'}${departureDate != null ? ', ${DateFormat('EEE. d MMM yyyy', 'fr').format(departureDate!)}' : ''}',
+                                                  '${fromAirport?.city ?? lang.S.of(context).homeDefaultDeparture} - ${toAirport?.city ?? lang.S.of(context).homeDefaultDestination}${departureDate != null ? ', ${DateFormat('EEE. d MMM yyyy', 'fr').format(departureDate!)}' : ''}',
                                                   style: kTextStyle.copyWith(color: kSubTitleColor),
                                                 ),
                                               ],
@@ -1371,7 +1375,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 style: kTextStyle.copyWith(
                                                                     color: kTitleColor,
                                                                     fontWeight: FontWeight.bold)),
-                                                            Text('12 ans et plus',
+                                                            Text(lang.S.of(context).homeAdultsAge,
                                                                 style: kTextStyle.copyWith(
                                                                     color: kSubTitleColor)),
                                                           ],
@@ -1415,7 +1419,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 style: kTextStyle.copyWith(
                                                                     color: kTitleColor,
                                                                     fontWeight: FontWeight.bold)),
-                                                            Text('2-12 ans',
+                                                            Text(lang.S.of(context).homeChildAge,
                                                                 style: kTextStyle.copyWith(
                                                                     color: kSubTitleColor)),
                                                           ],
@@ -1459,7 +1463,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                 style: kTextStyle.copyWith(
                                                                     color: kTitleColor,
                                                                     fontWeight: FontWeight.bold)),
-                                                            Text('Moins de 2 ans',
+                                                            Text(lang.S.of(context).homeInfantAge,
                                                                 style: kTextStyle.copyWith(
                                                                     color: kSubTitleColor)),
                                                           ],
@@ -1503,7 +1507,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         child: DropdownButtonFormField<String>(
                                                           value: selectedClass,
                                                           decoration: InputDecoration(
-                                                            labelText: 'Classe',
+                                                            labelText: lang.S.of(context).homeClassLabel,
                                                             labelStyle: kTextStyle.copyWith(
                                                               color: kSubTitleColor,
                                                               fontSize: 12,
@@ -1528,38 +1532,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                             fontWeight: FontWeight.w500,
                                                           ),
                                                           selectedItemBuilder: (context) => [
-                                                            Text('Économique', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
-                                                            Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
-                                                            Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
-                                                            Text('Première classe', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                            Text(lang.S.of(context).homeClassEconomy, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                            Text(lang.S.of(context).homeClassPremiumEconomy, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                            Text(lang.S.of(context).homeClassBusiness, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                            Text(lang.S.of(context).homeClassFirst, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
                                                           ],
                                                           items: [
                                                             DropdownMenuItem(
                                                               value: 'economy',
                                                               child: Container(
                                                                 padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                child: Text('Économique', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                child: Text(lang.S.of(context).homeClassEconomy, style: kTextStyle.copyWith(fontSize: 14)),
                                                               ),
                                                             ),
                                                             DropdownMenuItem(
                                                               value: 'premium_economy',
                                                               child: Container(
                                                                 padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                child: Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                child: Text(lang.S.of(context).homeClassPremiumEconomy, style: kTextStyle.copyWith(fontSize: 14)),
                                                               ),
                                                             ),
                                                             DropdownMenuItem(
                                                               value: 'business',
                                                               child: Container(
                                                                 padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                child: Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                child: Text(lang.S.of(context).homeClassBusiness, style: kTextStyle.copyWith(fontSize: 14)),
                                                               ),
                                                             ),
                                                             DropdownMenuItem(
                                                               value: 'first',
                                                               child: Container(
                                                                 padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                child: Text('Première classe', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                child: Text(lang.S.of(context).homeClassFirst, style: kTextStyle.copyWith(fontSize: 14)),
                                                               ),
                                                             ),
                                                           ],
@@ -1576,7 +1580,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     // Done Button
                                                     const SizedBox(height: 16),
                                                     ButtonGlobal(
-                                                      buttontext: 'Terminé',
+                                                      buttontext: lang.S.of(context).homeDone,
                                                       buttonDecoration: kButtonDecoration.copyWith(
                                                         color: kPrimaryColor,
                                                       ),
@@ -1613,7 +1617,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        'Passager & Classe',
+                                        lang.S.of(context).homePassengerClass,
                                         style: kTextStyle.copyWith(
                                           color: Colors.grey.shade600,
                                           fontSize: 13,
@@ -1621,7 +1625,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        '${adultCount + childCount + infantCount} Passager${(adultCount + childCount + infantCount) > 1 ? 's' : ''}, ${_getClassDisplayName(selectedClass)}',
+                                        '${lang.S.of(context).homePassengerCount(adultCount + childCount + infantCount)}, ${_getClassDisplayName(selectedClass, lang.S.of(context))}',
                                         style: kTextStyle.copyWith(
                                           color: kTitleColor,
                                           fontSize: 13,
@@ -1829,7 +1833,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             const SizedBox(width: 8),
                                             Flexible(
                                               child: Text(
-                                                'Vols directs',
+                                                lang.S.of(context).homeDirectFlights,
                                                 style: kTextStyle.copyWith(
                                                   color: kTitleColor,
                                                   fontSize: 14,
@@ -1844,7 +1848,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   ),
                                   const SizedBox(height: 15.0),
                                   ButtonGlobalWithoutIcon(
-                                    buttontext: _isSearching ? 'Recherche en cours...' : 'Rechercher vols',
+                                    buttontext: _isSearching ? lang.S.of(context).homeSearching : lang.S.of(context).homeSearchFlights,
                                     buttonDecoration: kButtonDecoration.copyWith(
                                       color: _isSearching ? kPrimaryColor.withOpacity(0.7) : kPrimaryColor,
                                       borderRadius: BorderRadius.circular(100.0),
@@ -1853,19 +1857,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       if (_isSearching) return;
 
                                       if (fromAirport == null || toAirport == null) {
-                                        toast('Veuillez sélectionner les aéroports de départ et d\'arrivée.');
+                                        toast(lang.S.of(context).homeSelectAirportsError);
                                         return;
                                       }
 
                                       if (departureDate == null) {
-                                        toast('Veuillez sélectionner une date de départ.');
+                                        toast(lang.S.of(context).homeSelectDepartureDate);
                                         return;
                                       }
 
                                       // Tab2 (selectedIndex == 0) = Aller-retour (Round-trip)
                                       if (selectedIndex == 0) {
                                         if (returnDate == null) {
-                                          toast('Veuillez sélectionner une date de retour.');
+                                          toast(lang.S.of(context).homeSelectReturnDate);
                                           return;
                                         }
                                         _searchRoundTripFlights();
@@ -1938,7 +1942,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         mainAxisSize: MainAxisSize.min,
                                                         children: [
                                                           Text(
-                                                            'Lieu de départ',
+                                                            lang.S.of(context).homeDeparturePlace,
                                                             style: kTextStyle.copyWith(
                                                               color: Colors.grey.shade600,
                                                               fontSize: 13,
@@ -1948,7 +1952,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                           Text(
                                                             fromAirport != null
                                                                 ? '${fromAirport!.city} (${fromAirport!.code})'
-                                                                : 'Sélectionner un aéroport',
+                                                                : lang.S.of(context).homeSelectAirport,
                                                             style: kTextStyle.copyWith(
                                                               color: kTitleColor,
                                                               fontSize: 13,
@@ -2003,7 +2007,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                         mainAxisSize: MainAxisSize.min,
                                                         children: [
                                                           Text(
-                                                            'Destination',
+                                                            lang.S.of(context).homeDestination,
                                                             style: kTextStyle.copyWith(
                                                               color: Colors.grey.shade600,
                                                               fontSize: 13,
@@ -2013,7 +2017,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                           Text(
                                                             toAirport != null
                                                                 ? '${toAirport!.city} (${toAirport!.code})'
-                                                                : 'Sélectionner un aéroport',
+                                                                : lang.S.of(context).homeSelectAirport,
                                                             maxLines: 1,
                                                             overflow: TextOverflow.ellipsis,
                                                             style: kTextStyle.copyWith(
@@ -2092,7 +2096,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
                                                     Text(
-                                                      'Départ',
+                                                      lang.S.of(context).homeDeparture,
                                                       style: kTextStyle.copyWith(
                                                         color: Colors.grey.shade600,
                                                         fontSize: 13,
@@ -2141,7 +2145,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
                                                     Text(
-                                                      'Retour',
+                                                      lang.S.of(context).homeReturn,
                                                       style: kTextStyle.copyWith(
                                                         color: Colors.grey.shade600,
                                                         fontSize: 13,
@@ -2274,7 +2278,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                             ],
                                                           ),
                                                           Text(
-                                                            '${fromAirport?.city ?? 'Départ'} à ${toAirport?.city ?? 'Destination'}',
+                                                            '${fromAirport?.city ?? lang.S.of(context).homeDefaultDeparture} - ${toAirport?.city ?? lang.S.of(context).homeDefaultDestination}',
                                                             style: kTextStyle.copyWith(color: kSubTitleColor),
                                                           ),
                                                         ],
@@ -2310,7 +2314,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                           style: kTextStyle.copyWith(
                                                                               color: kTitleColor,
                                                                               fontWeight: FontWeight.bold)),
-                                                                      Text('12 ans et plus',
+                                                                      Text(lang.S.of(context).homeAdultsAge,
                                                                           style: kTextStyle.copyWith(
                                                                               color: kSubTitleColor)),
                                                                     ],
@@ -2354,7 +2358,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                           style: kTextStyle.copyWith(
                                                                               color: kTitleColor,
                                                                               fontWeight: FontWeight.bold)),
-                                                                      Text('2-12 ans',
+                                                                      Text(lang.S.of(context).homeChildAge,
                                                                           style: kTextStyle.copyWith(
                                                                               color: kSubTitleColor)),
                                                                     ],
@@ -2398,7 +2402,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                           style: kTextStyle.copyWith(
                                                                               color: kTitleColor,
                                                                               fontWeight: FontWeight.bold)),
-                                                                      Text('Moins de 2 ans',
+                                                                      Text(lang.S.of(context).homeInfantAge,
                                                                           style: kTextStyle.copyWith(
                                                                               color: kSubTitleColor)),
                                                                     ],
@@ -2442,7 +2446,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                   child: DropdownButtonFormField<String>(
                                                                     value: selectedClass,
                                                                     decoration: InputDecoration(
-                                                                      labelText: 'Classe',
+                                                                      labelText: lang.S.of(context).homeClassLabel,
                                                                       labelStyle: kTextStyle.copyWith(
                                                                         color: kSubTitleColor,
                                                                         fontSize: 12,
@@ -2467,38 +2471,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                                       fontWeight: FontWeight.w500,
                                                                     ),
                                                                     selectedItemBuilder: (context) => [
-                                                                      Text('Économique', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
-                                                                      Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
-                                                                      Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
-                                                                      Text('Première classe', style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                      Text(lang.S.of(context).homeClassEconomy, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                      Text(lang.S.of(context).homeClassPremiumEconomy, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                      Text(lang.S.of(context).homeClassBusiness, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
+                                                                      Text(lang.S.of(context).homeClassFirst, style: kTextStyle.copyWith(fontSize: 14, color: kTitleColor)),
                                                                     ],
                                                                     items: [
                                                                       DropdownMenuItem(
                                                                         value: 'economy',
                                                                         child: Container(
                                                                           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                          child: Text('Économique', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                          child: Text(lang.S.of(context).homeClassEconomy, style: kTextStyle.copyWith(fontSize: 14)),
                                                                         ),
                                                                       ),
                                                                       DropdownMenuItem(
                                                                         value: 'premium_economy',
                                                                         child: Container(
                                                                           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                          child: Text('Économie Premium', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                          child: Text(lang.S.of(context).homeClassPremiumEconomy, style: kTextStyle.copyWith(fontSize: 14)),
                                                                         ),
                                                                       ),
                                                                       DropdownMenuItem(
                                                                         value: 'business',
                                                                         child: Container(
                                                                           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                          child: Text('Classe Affaires', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                          child: Text(lang.S.of(context).homeClassBusiness, style: kTextStyle.copyWith(fontSize: 14)),
                                                                         ),
                                                                       ),
                                                                       DropdownMenuItem(
                                                                         value: 'first',
                                                                         child: Container(
                                                                           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                                          child: Text('Première classe', style: kTextStyle.copyWith(fontSize: 14)),
+                                                                          child: Text(lang.S.of(context).homeClassFirst, style: kTextStyle.copyWith(fontSize: 14)),
                                                                         ),
                                                                       ),
                                                                     ],
@@ -2515,7 +2519,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                               // Done Button
                                                               const SizedBox(height: 16),
                                                               ButtonGlobal(
-                                                                buttontext: 'Terminé',
+                                                                buttontext: lang.S.of(context).homeDone,
                                                                 buttonDecoration: kButtonDecoration.copyWith(
                                                                   color: kPrimaryColor,
                                                                 ),
@@ -2552,7 +2556,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Text(
-                                                    'Passager & Classe',
+                                                    lang.S.of(context).homePassengerClass,
                                                     style: kTextStyle.copyWith(
                                                       color: Colors.grey.shade600,
                                                       fontSize: 13,
@@ -2560,7 +2564,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                   ),
                                                   const SizedBox(height: 2),
                                                   Text(
-                                                    '${adultCount + childCount + infantCount} Passager${(adultCount + childCount + infantCount) > 1 ? 's' : ''}, ${_getClassDisplayName(selectedClass)}',
+                                                    '${lang.S.of(context).homePassengerCount(adultCount + childCount + infantCount)}, ${_getClassDisplayName(selectedClass, lang.S.of(context))}',
                                                     style: kTextStyle.copyWith(
                                                       color: kTitleColor,
                                                       fontSize: 13,
@@ -2757,11 +2761,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     onPressed: () {
                                       // Validate first leg
                                       if (fromAirport == null || toAirport == null) {
-                                        toast('Veuillez sélectionner les aéroports de départ et d\'arrivée pour le vol 1.');
+                                        toast(lang.S.of(context).homeSelectAirportsFlight1);
                                         return;
                                       }
                                       if (departureDate == null) {
-                                        toast('Veuillez sélectionner une date de départ pour le vol 1.');
+                                        toast(lang.S.of(context).homeSelectDateFlight1);
                                         return;
                                       }
 
@@ -2769,11 +2773,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       for (int i = 0; i < multiDestinationLegs.length; i++) {
                                         final leg = multiDestinationLegs[i];
                                         if (leg.fromAirport == null || leg.toAirport == null) {
-                                          toast('Veuillez sélectionner les aéroports pour le vol ${i + 2}.');
+                                          toast(lang.S.of(context).homeSelectAirportsFlightN(i + 2));
                                           return;
                                         }
                                         if (leg.departureDate == null) {
-                                          toast('Veuillez sélectionner une date pour le vol ${i + 2}.');
+                                          toast(lang.S.of(context).homeSelectDateFlightN(i + 2));
                                           return;
                                         }
                                       }
@@ -2802,7 +2806,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Nos avantages',
+                            lang.S.of(context).homeAdvantagesSection,
                             style: kTextStyle.copyWith(
                               color: kTitleColor,
                               fontWeight: FontWeight.bold,
@@ -2911,7 +2915,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Nos offres pour vous',
+                            lang.S.of(context).homeOffersSection,
                             style: kTextStyle.copyWith(
                               color: kTitleColor,
                               fontWeight: FontWeight.bold,

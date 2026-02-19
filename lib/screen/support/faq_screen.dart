@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -55,6 +56,11 @@ class _FaqScreenState extends State<FaqScreen> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _loadFaqData();
   }
 
@@ -65,120 +71,61 @@ class _FaqScreenState extends State<FaqScreen> {
   }
 
   void _loadFaqData() {
+    final t = lang.S.of(context);
     _categories = [
       FaqCategory(
         id: 'reservation',
-        title: 'Réservation',
+        title: t.faqCatReservation,
         icon: CupertinoIcons.airplane,
         color: kPrimaryColor,
         items: [
-          FaqItem(
-            id: '1',
-            question: 'Comment réserver un vol ?',
-            answer: 'Pour réserver un vol, suivez ces étapes :\n\n1. Recherchez votre vol en entrant votre ville de départ, destination et dates\n2. Sélectionnez le vol qui vous convient\n3. Choisissez votre classe de voyage (Classic ou Flex)\n4. Remplissez les informations des passagers\n5. Procédez au paiement\n\nVous recevrez votre confirmation par email.',
-          ),
-          FaqItem(
-            id: '2',
-            question: 'Puis-je réserver pour plusieurs passagers ?',
-            answer: 'Oui, vous pouvez réserver jusqu\'à 9 passagers par réservation (adultes, enfants et bébés combinés). Les informations de chaque passager devront être renseignées lors de la réservation.',
-          ),
-          FaqItem(
-            id: '3',
-            question: 'Comment ajouter des bagages à ma réservation ?',
-            answer: 'Vous pouvez ajouter des bagages supplémentaires :\n\n• Lors de la réservation, à l\'étape des options\n• Après la réservation, dans la section "Gérer ma réservation"\n\nNote : L\'ajout de bagages est moins cher lors de la réservation initiale.',
-          ),
+          FaqItem(id: '1', question: t.faqQ1, answer: t.faqA1),
+          FaqItem(id: '2', question: t.faqQ2, answer: t.faqA2),
+          FaqItem(id: '3', question: t.faqQ3, answer: t.faqA3),
         ],
       ),
       FaqCategory(
         id: 'payment',
-        title: 'Paiement',
+        title: t.faqCatPayment,
         icon: CupertinoIcons.creditcard,
         color: const Color(0xFF4CAF50),
         items: [
-          FaqItem(
-            id: '4',
-            question: 'Quels modes de paiement sont acceptés ?',
-            answer: 'Nous acceptons les modes de paiement suivants :\n\n• Cartes bancaires (Visa, Mastercard)\n• Carte CIB / EDAHABIA\n• Virement bancaire\n• Paiement en agence\n\nTous les paiements sont sécurisés et cryptés.',
-          ),
-          FaqItem(
-            id: '5',
-            question: 'Ma transaction a échoué, que faire ?',
-            answer: 'Si votre transaction a échoué :\n\n1. Vérifiez que les informations de votre carte sont correctes\n2. Assurez-vous que votre carte est activée pour les paiements en ligne\n3. Vérifiez votre plafond de paiement\n4. Essayez un autre mode de paiement\n\nSi le problème persiste, contactez notre support.',
-          ),
-          FaqItem(
-            id: '6',
-            question: 'Comment obtenir une facture ?',
-            answer: 'Votre facture est automatiquement envoyée par email après confirmation de la réservation. Vous pouvez également la télécharger depuis la section "Mes réservations" dans votre espace personnel.',
-          ),
+          FaqItem(id: '4', question: t.faqQ4, answer: t.faqA4),
+          FaqItem(id: '5', question: t.faqQ5, answer: t.faqA5),
+          FaqItem(id: '6', question: t.faqQ6, answer: t.faqA6),
         ],
       ),
       FaqCategory(
         id: 'modification',
-        title: 'Modification',
+        title: t.faqCatModification,
         icon: CupertinoIcons.pencil,
         color: const Color(0xFF2196F3),
         items: [
-          FaqItem(
-            id: '7',
-            question: 'Comment modifier ma réservation ?',
-            answer: 'Pour modifier votre réservation :\n\n1. Connectez-vous à votre compte\n2. Allez dans "Mes réservations"\n3. Sélectionnez la réservation à modifier\n4. Cliquez sur "Modifier"\n\nNote : Des frais peuvent s\'appliquer selon votre tarif (Classic ou Flex).',
-          ),
-          FaqItem(
-            id: '8',
-            question: 'Puis-je changer le nom sur ma réservation ?',
-            answer: 'Le changement de nom n\'est possible que pour les corrections mineures (erreur de frappe). Pour un changement complet de passager, vous devez annuler et refaire une nouvelle réservation.',
-          ),
-          FaqItem(
-            id: '9',
-            question: 'Quels sont les frais de modification ?',
-            answer: 'Les frais dépendent de votre tarif :\n\n• Tarif Flex : Modifications gratuites\n• Tarif Classic : Frais de 7000 DZD par passager\n\n+ Différence tarifaire éventuelle si le nouveau vol est plus cher.',
-          ),
+          FaqItem(id: '7', question: t.faqQ7, answer: t.faqA7),
+          FaqItem(id: '8', question: t.faqQ8, answer: t.faqA8),
+          FaqItem(id: '9', question: t.faqQ9, answer: t.faqA9),
         ],
       ),
       FaqCategory(
         id: 'refund',
-        title: 'Annulation & Remboursement',
+        title: t.faqCatRefund,
         icon: CupertinoIcons.arrow_counterclockwise,
         color: const Color(0xFFFF9800),
         items: [
-          FaqItem(
-            id: '10',
-            question: 'Comment annuler ma réservation ?',
-            answer: 'Pour annuler votre réservation :\n\n1. Connectez-vous à votre compte\n2. Allez dans "Mes réservations"\n3. Sélectionnez la réservation concernée\n4. Cliquez sur "Annuler"\n5. Confirmez l\'annulation\n\nUn email de confirmation vous sera envoyé.',
-          ),
-          FaqItem(
-            id: '11',
-            question: 'Quels sont les frais d\'annulation ?',
-            answer: 'Les frais d\'annulation varient selon votre tarif :\n\n• Tarif Flex : Annulation gratuite\n• Tarif Classic : Frais de 5000 DZD par passager\n\nPour les annulations moins de 24h avant le départ, des conditions spéciales s\'appliquent.',
-          ),
-          FaqItem(
-            id: '12',
-            question: 'Quand vais-je recevoir mon remboursement ?',
-            answer: 'Le délai de remboursement est de 7 à 14 jours ouvrables après validation de votre demande. Le montant sera crédité sur le même mode de paiement utilisé lors de la réservation.',
-          ),
+          FaqItem(id: '10', question: t.faqQ10, answer: t.faqA10),
+          FaqItem(id: '11', question: t.faqQ11, answer: t.faqA11),
+          FaqItem(id: '12', question: t.faqQ12, answer: t.faqA12),
         ],
       ),
       FaqCategory(
         id: 'baggage',
-        title: 'Bagages',
+        title: t.faqCatBaggage,
         icon: CupertinoIcons.bag,
         color: const Color(0xFF9C27B0),
         items: [
-          FaqItem(
-            id: '13',
-            question: 'Quelle est la franchise bagages incluse ?',
-            answer: 'La franchise bagages dépend de votre classe :\n\n• Économique : 1 bagage de 23kg en soute + 1 bagage cabine de 8kg\n• Business : 2 bagages de 32kg en soute + 1 bagage cabine de 12kg\n\nLes dimensions maximales varient selon les compagnies.',
-          ),
-          FaqItem(
-            id: '14',
-            question: 'Que faire si mon bagage est perdu ?',
-            answer: 'Si votre bagage est perdu :\n\n1. Signalez-le immédiatement au comptoir bagages de l\'aéroport\n2. Remplissez un formulaire PIR (Property Irregularity Report)\n3. Conservez votre numéro de dossier\n4. Contactez notre support avec ces informations\n\nNous vous accompagnerons dans vos démarches.',
-          ),
-          FaqItem(
-            id: '15',
-            question: 'Puis-je transporter des objets spéciaux ?',
-            answer: 'Certains objets nécessitent une déclaration préalable :\n\n• Équipements sportifs (vélo, ski, golf)\n• Instruments de musique\n• Animaux de compagnie\n• Équipements médicaux\n\nContactez-nous au moins 48h avant votre vol pour organiser le transport.',
-          ),
+          FaqItem(id: '13', question: t.faqQ13, answer: t.faqA13),
+          FaqItem(id: '14', question: t.faqQ14, answer: t.faqA14),
+          FaqItem(id: '15', question: t.faqQ15, answer: t.faqA15),
         ],
       ),
     ];
@@ -238,7 +185,7 @@ class _FaqScreenState extends State<FaqScreen> {
                         ? _categories
                             .firstWhere((c) => c.id == _selectedCategoryId)
                             .title
-                        : 'Toutes les questions',
+                        : lang.S.of(context).faqAllQuestions,
                     style: GoogleFonts.jost(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -247,7 +194,7 @@ class _FaqScreenState extends State<FaqScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_filteredItems.length} questions',
+                    lang.S.of(context).faqQuestionCount(_filteredItems.length.toString()),
                     style: GoogleFonts.jost(
                       fontSize: 14,
                       color: kSubTitleColor,
@@ -327,7 +274,7 @@ class _FaqScreenState extends State<FaqScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              'FAQ',
+              lang.S.of(context).faqTitle,
               style: GoogleFonts.poppins(
                 color: Colors.white,
                 fontSize: 18,
@@ -357,7 +304,7 @@ class _FaqScreenState extends State<FaqScreen> {
         controller: _searchController,
         onChanged: (value) => setState(() => _searchQuery = value),
         decoration: InputDecoration(
-          hintText: 'Rechercher une question...',
+          hintText: lang.S.of(context).faqSearchHint,
           hintStyle: GoogleFonts.jost(color: kSubTitleColor),
           prefixIcon: const Icon(CupertinoIcons.search, color: kSubTitleColor),
           suffixIcon: _searchQuery.isNotEmpty
@@ -390,7 +337,7 @@ class _FaqScreenState extends State<FaqScreen> {
           // All categories pill
           _buildCategoryPill(
             id: null,
-            title: 'Tout',
+            title: lang.S.of(context).faqAllCategory,
             icon: CupertinoIcons.square_grid_2x2,
             color: kTitleColor,
           ),
@@ -539,7 +486,7 @@ class _FaqScreenState extends State<FaqScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Aucun résultat',
+              lang.S.of(context).faqNoResults,
               style: GoogleFonts.jost(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -548,7 +495,7 @@ class _FaqScreenState extends State<FaqScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Aucune question ne correspond à votre recherche.',
+              lang.S.of(context).faqNoResultsDesc,
               style: GoogleFonts.jost(
                 fontSize: 14,
                 color: kSubTitleColor,
@@ -594,7 +541,7 @@ class _FaqScreenState extends State<FaqScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Vous n\'avez pas trouvé votre réponse ?',
+            lang.S.of(context).faqNotFoundAnswer,
             style: GoogleFonts.jost(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -604,7 +551,7 @@ class _FaqScreenState extends State<FaqScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Notre équipe support est disponible pour vous aider.',
+            lang.S.of(context).faqSupportAvailable,
             style: GoogleFonts.jost(
               fontSize: 14,
               color: kSubTitleColor,
@@ -624,7 +571,7 @@ class _FaqScreenState extends State<FaqScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: Text(
-                'Contacter le support',
+                lang.S.of(context).faqContactSupport,
                 style: GoogleFonts.jost(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,

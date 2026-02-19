@@ -1,4 +1,5 @@
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -109,7 +110,7 @@ class _EditProfileState extends State<EditProfile> {
                   }
 
                   if (fullName.isEmpty || email.isEmpty) {
-                    toast('Veuillez remplir le nom et l\'email');
+                    toast(lang.S.of(context).editProfileFillNameEmail);
                     return;
                   }
 
@@ -132,11 +133,11 @@ class _EditProfileState extends State<EditProfile> {
 
                   String? uploadedUrl;
                   if (image != null) {
-                    toast('Téléchargement de l\'image...');
+                    toast(lang.S.of(context).editProfileUploadingImage);
                     uploadedUrl = await _profileController.postImage(File(image!.path));
                     if (uploadedUrl == null) {
                       if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Échec du téléchargement de l\'image. Réessayez.')));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(lang.S.of(context).editProfileUploadFailed)));
                       }
                       return;
                     }
@@ -154,10 +155,10 @@ class _EditProfileState extends State<EditProfile> {
                     if (Navigator.of(context).canPop()) Navigator.of(context).pop();
 
                     if (res != null && res['success'] == true) {
-                      toast('Profil mis à jour');
+                      toast(lang.S.of(context).editProfileUpdated);
                       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyProfile()));
                     } else {
-                      final msg = res != null ? (res['message'] ?? 'Erreur lors de la mise à jour') : (_profileController.error ?? 'Erreur');
+                      final msg = res != null ? (res['message'] ?? lang.S.of(context).editProfileUpdateError) : (_profileController.error ?? lang.S.of(context).editProfileErrorGeneric);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
                     }
                   } catch (e) {
@@ -165,7 +166,7 @@ class _EditProfileState extends State<EditProfile> {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
                   }
                 },
-                child: Text('Mettre à jour', style: kTextStyle.copyWith(color: kWhite)),
+                child: Text(lang.S.of(context).editProfileUpdate, style: kTextStyle.copyWith(color: kWhite)),
               ),
             ),
           ),
@@ -208,7 +209,7 @@ class _EditProfileState extends State<EditProfile> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Modifier le profil',
+                  lang.S.of(context).editProfileTitle,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 18,
@@ -241,7 +242,7 @@ class _EditProfileState extends State<EditProfile> {
                       const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text('Informations personnelles', style: kTextStyle.copyWith(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Text(lang.S.of(context).editProfilePersonalInfo, style: kTextStyle.copyWith(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(height: 12),
                       Center(
@@ -295,7 +296,7 @@ class _EditProfileState extends State<EditProfile> {
 
                       DropdownButtonFormField<String>(
                         initialValue: _selectedTitle,
-                        decoration: kInputDecoration.copyWith(labelText: 'Civilité', hintText: 'Sélectionnez'),
+                        decoration: kInputDecoration.copyWith(labelText: lang.S.of(context).editProfileCivility, hintText: lang.S.of(context).editProfileSelectOption),
                         items: ['M.', 'Mme', 'Pro'].map((e) => DropdownMenuItem<String>(value: e, child: Text(e))).toList(),
                         onChanged: (val) {
                           setState(() {
@@ -311,7 +312,7 @@ class _EditProfileState extends State<EditProfile> {
                         controller: _fullNameController,
                         cursorColor: kTitleColor,
                         textFieldType: TextFieldType.NAME,
-                        decoration: kInputDecoration.copyWith(hintText: 'Nom Prénom', labelText: 'Nom complet', prefixIcon: const Icon(Icons.person)),
+                        decoration: kInputDecoration.copyWith(hintText: lang.S.of(context).editProfileFullNameHint, labelText: lang.S.of(context).editProfileFullNameLabel, prefixIcon: const Icon(Icons.person)),
                       ),
 
                       const SizedBox(height: 12),
@@ -320,7 +321,7 @@ class _EditProfileState extends State<EditProfile> {
                         controller: _emailController,
                         cursorColor: kTitleColor,
                         textFieldType: TextFieldType.EMAIL,
-                        decoration: kInputDecoration.copyWith(hintText: 'exemple@domaine.com', labelText: 'E-mail', prefixIcon: const Icon(Icons.email)),
+                        decoration: kInputDecoration.copyWith(hintText: lang.S.of(context).editProfileEmailHint, labelText: lang.S.of(context).editProfileEmailLabel, prefixIcon: const Icon(Icons.email)),
                       ),
 
                       const SizedBox(height: 12),
@@ -333,7 +334,7 @@ class _EditProfileState extends State<EditProfile> {
                               controller: _phoneController,
                               cursorColor: kTitleColor,
                               textFieldType: TextFieldType.PHONE,
-                              decoration: kInputDecoration.copyWith(hintText: '+33612345678', labelText: 'Téléphone', prefixIcon: CountryCodePicker(showFlag: true, initialSelection: 'FR')),
+                              decoration: kInputDecoration.copyWith(hintText: '+33612345678', labelText: lang.S.of(context).editProfilePhoneLabel, prefixIcon: CountryCodePicker(showFlag: true, initialSelection: 'FR')),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -343,7 +344,7 @@ class _EditProfileState extends State<EditProfile> {
                               controller: _postCodeController,
                               cursorColor: kTitleColor,
                               textFieldType: TextFieldType.NUMBER,
-                              decoration: kInputDecoration.copyWith(hintText: '75001', labelText: 'Code postal', prefixIcon: const Icon(Icons.location_on)),
+                              decoration: kInputDecoration.copyWith(hintText: '75001', labelText: lang.S.of(context).editProfilePostCodeLabel, prefixIcon: const Icon(Icons.location_on)),
                             ),
                           ),
                         ],
@@ -355,7 +356,7 @@ class _EditProfileState extends State<EditProfile> {
                         controller: _addressController,
                         cursorColor: kTitleColor,
                         textFieldType: TextFieldType.MULTILINE,
-                        decoration: kInputDecoration.copyWith(hintText: '123 rue Principale', labelText: 'Adresse', prefixIcon: const Icon(Icons.home)),
+                        decoration: kInputDecoration.copyWith(hintText: lang.S.of(context).editProfileAddressHint, labelText: lang.S.of(context).editProfileAddressLabel, prefixIcon: const Icon(Icons.home)),
                       ),
 
                       const SizedBox(height: 12),
@@ -367,7 +368,7 @@ class _EditProfileState extends State<EditProfile> {
                               controller: _cityController,
                               cursorColor: kTitleColor,
                               textFieldType: TextFieldType.NAME,
-                              decoration: kInputDecoration.copyWith(hintText: 'Paris', labelText: 'Ville', prefixIcon: const Icon(Icons.location_city)),
+                              decoration: kInputDecoration.copyWith(hintText: 'Paris', labelText: lang.S.of(context).editProfileCityLabel, prefixIcon: const Icon(Icons.location_city)),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -376,7 +377,7 @@ class _EditProfileState extends State<EditProfile> {
                               controller: _countryController,
                               cursorColor: kTitleColor,
                               textFieldType: TextFieldType.NAME,
-                              decoration: kInputDecoration.copyWith(hintText: 'France', labelText: 'Pays', prefixIcon: const Icon(Icons.flag)),
+                              decoration: kInputDecoration.copyWith(hintText: 'France', labelText: lang.S.of(context).editProfileCountryLabel, prefixIcon: const Icon(Icons.flag)),
                             ),
                           ),
                         ],
@@ -402,7 +403,7 @@ class _EditProfileState extends State<EditProfile> {
                             controller: _birthDateController,
                             cursorColor: kTitleColor,
                             textFieldType: TextFieldType.NAME,
-                            decoration: kInputDecoration.copyWith(hintText: 'AAAA-MM-JJ', labelText: 'Date de naissance', prefixIcon: const Icon(Icons.calendar_today)),
+                            decoration: kInputDecoration.copyWith(hintText: lang.S.of(context).editProfileBirthDateHint, labelText: lang.S.of(context).editProfileBirthDateLabel, prefixIcon: const Icon(Icons.calendar_today)),
                           ),
                         ),
                       ),

@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -38,8 +39,8 @@ class _ChangePasswordState extends State<ChangePassword> {
     // Check if new password matches confirmation
     if (_newPasswordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Les nouveaux mots de passe ne correspondent pas'),
+        SnackBar(
+          content: Text(lang.S.of(context).changePwMismatch),
           backgroundColor: Colors.red,
         ),
       );
@@ -60,7 +61,7 @@ class _ChangePasswordState extends State<ChangePassword> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Mot de passe mis à jour avec succès'),
+              content: Text(result['message'] ?? lang.S.of(context).changePwSuccess),
               backgroundColor: kSuccessGreen,
             ),
           );
@@ -70,7 +71,7 @@ class _ChangePasswordState extends State<ChangePassword> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? 'Échec de la mise à jour du mot de passe'),
+              content: Text(result['message'] ?? lang.S.of(context).changePwFailed),
               backgroundColor: Colors.red,
             ),
           );
@@ -81,7 +82,7 @@ class _ChangePasswordState extends State<ChangePassword> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur: ${e.toString()}'),
+            content: Text(lang.S.of(context).profileError(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -130,7 +131,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Paramètre de sécurité',
+                  lang.S.of(context).profileSecuritySettings,
                   style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontSize: 18,
@@ -172,7 +173,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'Votre nouveau mot de passe doit comporter au moins 8 caractères',
+                          lang.S.of(context).changePwInfoText,
                           style: kTextStyle.copyWith(
                             fontSize: 13,
                             color: kTitleColor,
@@ -187,7 +188,7 @@ class _ChangePasswordState extends State<ChangePassword> {
 
                 // Old Password
                 Text(
-                  'Mot de passe actuel',
+                  lang.S.of(context).changePwCurrentLabel,
                   style: kTextStyle.copyWith(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -200,7 +201,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   cursorColor: kTitleColor,
                   isPassword: !_isOldPasswordVisible,
                   decoration: kInputDecoration.copyWith(
-                    hintText: 'Entrez votre mot de passe actuel',
+                    hintText: lang.S.of(context).changePwCurrentHint,
                     prefixIcon: const Icon(IconlyLight.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -214,7 +215,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer votre mot de passe actuel';
+                      return lang.S.of(context).changePwCurrentRequired;
                     }
                     return null;
                   },
@@ -224,7 +225,7 @@ class _ChangePasswordState extends State<ChangePassword> {
 
                 // New Password
                 Text(
-                  'Nouveau mot de passe',
+                  lang.S.of(context).changePwNewLabel,
                   style: kTextStyle.copyWith(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -237,7 +238,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   cursorColor: kTitleColor,
                   isPassword: !_isNewPasswordVisible,
                   decoration: kInputDecoration.copyWith(
-                    hintText: 'Entrez votre nouveau mot de passe',
+                    hintText: lang.S.of(context).changePwNewHint,
                     prefixIcon: const Icon(IconlyLight.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -251,10 +252,10 @@ class _ChangePasswordState extends State<ChangePassword> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer un nouveau mot de passe';
+                      return lang.S.of(context).changePwNewRequired;
                     }
                     if (value.length < 8) {
-                      return 'Le mot de passe doit comporter au moins 8 caractères';
+                      return lang.S.of(context).changePwMinLength;
                     }
                     return null;
                   },
@@ -264,7 +265,7 @@ class _ChangePasswordState extends State<ChangePassword> {
 
                 // Confirm New Password
                 Text(
-                  'Confirmer le nouveau mot de passe',
+                  lang.S.of(context).changePwConfirmLabel,
                   style: kTextStyle.copyWith(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
@@ -277,7 +278,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                   cursorColor: kTitleColor,
                   isPassword: !_isConfirmPasswordVisible,
                   decoration: kInputDecoration.copyWith(
-                    hintText: 'Confirmez votre nouveau mot de passe',
+                    hintText: lang.S.of(context).changePwConfirmHint,
                     prefixIcon: const Icon(IconlyLight.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -291,10 +292,10 @@ class _ChangePasswordState extends State<ChangePassword> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez confirmer votre mot de passe';
+                      return lang.S.of(context).changePwConfirmRequired;
                     }
                     if (value != _newPasswordController.text) {
-                      return 'Les mots de passe ne correspondent pas';
+                      return lang.S.of(context).changePwNoMatch;
                     }
                     return null;
                   },
@@ -325,7 +326,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                             ),
                           )
                         : Text(
-                            'Mettre à jour',
+                            lang.S.of(context).editProfileUpdate,
                             style: kTextStyle.copyWith(
                               color: kWhite,
                               fontWeight: FontWeight.w600,

@@ -1,8 +1,27 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 
 import '../../../controllers/search_result_controller.dart';
 import '../../widgets/button_global.dart';
+
+String _getSortShortLabel(BuildContext context, String sortOption) {
+  final t = lang.S.of(context);
+  switch (sortOption) {
+    case 'cheapest':
+      return t.sortCheapestShort;
+    case 'most_expensive':
+      return t.sortExpensiveShort;
+    case 'departure_time':
+      return t.sortDepartureShort;
+    case 'arrival_time':
+      return t.sortArrivalShort;
+    case 'flight_duration':
+      return t.sortDurationShort;
+    default:
+      return t.sortDefaultShort;
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Widget 1: SearchResultHeader
@@ -304,7 +323,7 @@ class FilterSection extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      'Vol direct',
+                      lang.S.of(context).cardDirectFlight,
                       style: kTextStyle.copyWith(
                         color: kTitleColor,
                         fontSize: fontSize,
@@ -348,7 +367,7 @@ class FilterSection extends StatelessWidget {
                     ),
                     const Spacer(),
                     // Filter and Sort buttons in a row
-                    _buildCompactFilterButton(buttonPaddingH, buttonPaddingV, fontSize, iconSize),
+                    _buildCompactFilterButton(context, buttonPaddingH, buttonPaddingV, fontSize, iconSize),
                     SizedBox(width: buttonSpacing),
                     _buildCompactSortButton(buttonPaddingH, buttonPaddingV, fontSize, iconSize),
                   ],
@@ -363,7 +382,7 @@ class FilterSection extends StatelessWidget {
                 children: [
                   // Vol direct toggle with count
                   Text(
-                    'Vol direct',
+                    lang.S.of(context).cardDirectFlight,
                     style: kTextStyle.copyWith(
                       color: kTitleColor,
                       fontSize: fontSize,
@@ -430,7 +449,7 @@ class FilterSection extends StatelessWidget {
                         ),
                         SizedBox(width: isMediumScreen ? 4 : 8),
                         Text(
-                          'Filtrer',
+                          lang.S.of(context).filterTitle,
                           style: kTextStyle.copyWith(
                             color: kPrimaryColor,
                             fontSize: fontSize,
@@ -484,7 +503,7 @@ class FilterSection extends StatelessWidget {
                         ),
                         SizedBox(width: isMediumScreen ? 4 : 8),
                         Text(
-                          SearchResultController.getSortDisplayText(ctrl.selectedSortOption),
+                          _getSortShortLabel(context, ctrl.selectedSortOption),
                           style: kTextStyle.copyWith(
                             color: kPrimaryColor,
                             fontSize: fontSize,
@@ -508,7 +527,7 @@ class FilterSection extends StatelessWidget {
   }
 
   // Compact filter button for small screens
-  Widget _buildCompactFilterButton(double paddingH, double paddingV, double fontSize, double iconSize) {
+  Widget _buildCompactFilterButton(BuildContext context, double paddingH, double paddingV, double fontSize, double iconSize) {
     final hasActiveFilters = ctrl.activeFilterCount > 0;
     return SmallTapEffect(
       onTap: onFilterTap,
@@ -525,7 +544,7 @@ class FilterSection extends StatelessWidget {
             Icon(Icons.tune, color: kPrimaryColor, size: iconSize),
             const SizedBox(width: 4),
             Text(
-              'Filtrer',
+              lang.S.of(context).filterTitle,
               style: kTextStyle.copyWith(
                 color: kPrimaryColor,
                 fontSize: fontSize,
@@ -638,7 +657,7 @@ class PriceChipsRow extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Tous',
+                  lang.S.of(context).chipAll,
                   style: kTextStyle.copyWith(
                     color: ctrl.selectedAirlineCode == null ? kPrimaryColor : kTitleColor,
                     fontSize: chipFontSize,

@@ -1,4 +1,5 @@
 import 'package:flight_booking/Model/FakeFlight.dart';
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/models/flight_offer.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
@@ -286,7 +287,7 @@ class FlightSegmentRow extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          isDirect ? 'Direct' : '${stops ?? 1} esc.',
+                          isDirect ? lang.S.of(context).cardDirect : lang.S.of(context).cardStopShort((stops ?? 1).toString()),
                           style: GoogleFonts.poppins(
                             color: isDirect ? directGreen : textOrange,
                             fontSize: badgeFontSize,
@@ -305,7 +306,7 @@ class FlightSegmentRow extends StatelessWidget {
                         children: [
                           TextSpan(text: '$duration . '),
                           TextSpan(
-                            text: isDirect ? 'Direct' : '${stops ?? 1} escale',
+                            text: isDirect ? lang.S.of(context).cardDirect : lang.S.of(context).cardStop((stops ?? 1).toString()),
                             style: GoogleFonts.poppins(
                               color: isDirect ? directGreen : textOrange,
                               fontSize: badgeFontSize,
@@ -429,7 +430,7 @@ class FlightSegmentRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    isSmallScreen ? 'Détails' : 'Détails vol',
+                    isSmallScreen ? lang.S.of(context).cardDetailsText : lang.S.of(context).cardFlightDetailsText,
                     style: GoogleFonts.poppins(
                       color: detailsBlue,
                       fontSize: baggageFontSize,
@@ -462,7 +463,7 @@ class FlightSegmentRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Informations du vol',
+                  lang.S.of(context).cardFlightInfo,
                   style: GoogleFonts.poppins(
                     color: textBlack,
                     fontWeight: FontWeight.w600,
@@ -470,11 +471,11 @@ class FlightSegmentRow extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: isSmallScreen ? 4 : 6),
-                FlightDetailRow(label: 'Compagnie', value: airlineName.split(' ').first, isSmallScreen: isSmallScreen),
-                FlightDetailRow(label: 'Numéro de vol', value: airlineName.split(' ').last, isSmallScreen: isSmallScreen),
-                FlightDetailRow(label: 'Classe', value: 'Économique', isSmallScreen: isSmallScreen),
-                FlightDetailRow(label: 'Bagage cabine', value: '7 Kg inclus', isSmallScreen: isSmallScreen),
-                FlightDetailRow(label: 'Bagage soute', value: '24 Kg inclus', isSmallScreen: isSmallScreen),
+                FlightDetailRow(label: lang.S.of(context).cardAirline, value: airlineName.split(' ').first, isSmallScreen: isSmallScreen),
+                FlightDetailRow(label: lang.S.of(context).cardFlightNumber, value: airlineName.split(' ').last, isSmallScreen: isSmallScreen),
+                FlightDetailRow(label: lang.S.of(context).classTitle, value: lang.S.of(context).classEconomy, isSmallScreen: isSmallScreen),
+                FlightDetailRow(label: lang.S.of(context).detailCabinBaggage, value: lang.S.of(context).cardWeightIncluded('7 Kg'), isSmallScreen: isSmallScreen),
+                FlightDetailRow(label: lang.S.of(context).cardHoldBaggage, value: lang.S.of(context).cardWeightIncluded('24 Kg'), isSmallScreen: isSmallScreen),
               ],
             ),
           ),
@@ -549,7 +550,7 @@ class FakeFlightCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                'Recommandé',
+                lang.S.of(context).cardRecommended,
                 style: kTextStyle.copyWith(
                   color: const Color.fromRGBO(147, 133, 245, 1),
                   fontSize: 10,
@@ -626,7 +627,7 @@ class FakeFlightCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          'Réservez',
+                          lang.S.of(context).cardBook,
                           style: kTextStyle.copyWith(
                             color: kWhite,
                             fontWeight: FontWeight.w600,
@@ -825,7 +826,7 @@ class ApiFlightCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  'Recommandé',
+                  lang.S.of(context).cardRecommended,
                   style: kTextStyle.copyWith(
                     color: const Color.fromRGBO(147, 133, 245, 1),
                     fontSize: badgeFontSize,
@@ -959,7 +960,7 @@ class ApiFlightCard extends StatelessWidget {
                     if (outboundStops > 0)
                       Flexible(
                         child: Text(
-                          '$outboundStops escale${outboundStops > 1 ? 's' : ''}',
+                          outboundStops > 1 ? lang.S.of(context).cardStops(outboundStops.toString()) : lang.S.of(context).cardStop(outboundStops.toString()),
                           style: kTextStyle.copyWith(
                             color: kPrimaryColor,
                             fontSize: isSmallScreen ? 10 : 12,
@@ -970,7 +971,7 @@ class ApiFlightCard extends StatelessWidget {
                     else
                       Flexible(
                         child: Text(
-                          'Vol direct',
+                          lang.S.of(context).cardDirectFlight,
                           style: kTextStyle.copyWith(
                             color: Colors.green[700],
                             fontSize: isSmallScreen ? 10 : 12,
@@ -1000,7 +1001,7 @@ class ApiFlightCard extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    isSmallScreen ? '/pers.' : 'par personne',
+                                    isSmallScreen ? lang.S.of(context).cardPerPersonShort : lang.S.of(context).cardPerPerson,
                                     style: kTextStyle.copyWith(
                                       color: kSubTitleColor,
                                       fontSize: isSmallScreen ? 8 : 10,
@@ -1029,7 +1030,7 @@ class ApiFlightCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              isSmallScreen ? 'Réserver' : 'Réservez',
+                              lang.S.of(context).cardBook,
                               style: kTextStyle.copyWith(
                                 color: kWhite,
                                 fontWeight: FontWeight.w600,
@@ -1135,7 +1136,7 @@ class MultiDestinationCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  'Recommandé',
+                  lang.S.of(context).cardRecommended,
                   style: kTextStyle.copyWith(
                     color: const Color.fromRGBO(147, 133, 245, 1),
                     fontSize: badgeFontSize,
@@ -1156,8 +1157,8 @@ class MultiDestinationCard extends StatelessWidget {
               ),
               child: Text(
                 isSmallScreen
-                    ? 'Multi-dest. (${journeyList.length})'
-                    : 'Multi-destination (${journeyList.length} trajets)',
+                    ? lang.S.of(context).cardMultiDestShort(journeyList.length.toString())
+                    : lang.S.of(context).cardMultiDestFull(journeyList.length.toString()),
                 style: kTextStyle.copyWith(
                   color: Colors.purple[700],
                   fontSize: badgeFontSize,
@@ -1189,7 +1190,7 @@ class MultiDestinationCard extends StatelessWidget {
                             Icon(Icons.luggage, size: badgeIconSize, color: Colors.green[700]),
                             SizedBox(width: isSmallScreen ? 2 : 4),
                             Text(
-                              isSmallScreen ? 'Bagages' : 'Bagages inclus',
+                              isSmallScreen ? lang.S.of(context).cardBaggageShort : lang.S.of(context).cardBaggageIncluded,
                               style: kTextStyle.copyWith(
                                 color: Colors.green[700],
                                 fontSize: badgeFontSize,
@@ -1212,7 +1213,7 @@ class MultiDestinationCard extends StatelessWidget {
                             Icon(Icons.check_circle_outline, size: badgeIconSize, color: Colors.blue[700]),
                             SizedBox(width: isSmallScreen ? 2 : 4),
                             Text(
-                              'Remboursable',
+                              lang.S.of(context).cardRefundable,
                               style: kTextStyle.copyWith(
                                 color: Colors.blue[700],
                                 fontSize: badgeFontSize,
@@ -1270,7 +1271,7 @@ class MultiDestinationCard extends StatelessWidget {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Trajet ${journeyIndex + 1}',
+                          lang.S.of(context).cardJourney((journeyIndex + 1).toString()),
                           style: kTextStyle.copyWith(
                             color: kPrimaryColor,
                             fontSize: 11,
@@ -1319,8 +1320,8 @@ class MultiDestinationCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           isSmallScreen
-                              ? '$totalStops esc.'
-                              : '$totalStops escale${totalStops > 1 ? 's' : ''} au total',
+                              ? lang.S.of(context).cardStopShort(totalStops.toString())
+                              : totalStops > 1 ? lang.S.of(context).cardStopsTotalPlural(totalStops.toString()) : lang.S.of(context).cardStopsTotal(totalStops.toString()),
                           style: kTextStyle.copyWith(
                             color: kPrimaryColor,
                             fontSize: isSmallScreen ? 10 : 12,
@@ -1331,7 +1332,7 @@ class MultiDestinationCard extends StatelessWidget {
                     else
                       Flexible(
                         child: Text(
-                          'Vols directs',
+                          lang.S.of(context).cardDirectFlights,
                           style: kTextStyle.copyWith(
                             color: Colors.green[700],
                             fontSize: isSmallScreen ? 10 : 12,
@@ -1361,7 +1362,7 @@ class MultiDestinationCard extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    isSmallScreen ? '/pers.' : 'par personne',
+                                    isSmallScreen ? lang.S.of(context).cardPerPersonShort : lang.S.of(context).cardPerPerson,
                                     style: kTextStyle.copyWith(
                                       color: kSubTitleColor,
                                       fontSize: isSmallScreen ? 8 : 10,
@@ -1390,7 +1391,7 @@ class MultiDestinationCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              isSmallScreen ? 'Réserver' : 'Réservez',
+                              lang.S.of(context).cardBook,
                               style: kTextStyle.copyWith(
                                 color: kWhite,
                                 fontWeight: FontWeight.w600,

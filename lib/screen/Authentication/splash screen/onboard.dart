@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -18,22 +19,6 @@ class _OnBoardState extends State<OnBoard> {
   PageController pageController = PageController(initialPage: 0);
   int currentIndexPage = 0;
 
-  // Onboarding data - can be loaded from API/JSON
-  List<Map<String, dynamic>> onboardingData = [
-    {
-      "image": 'assets/onBorder0.png',
-      "title": 'Réservez maintenant\net payez sur place',
-    },
-    {
-      "image": 'assets/onBorder1.png',
-      "title": 'Trouvez les meilleurs\nvols au meilleur prix',
-    },
-    {
-      "image": 'assets/onBorder2.png',
-      "title": 'Voyagez en toute\nsérénité',
-    },
-  ];
-
   @override
   void setState(fn) {
     if (mounted) super.setState(fn);
@@ -41,6 +26,23 @@ class _OnBoardState extends State<OnBoard> {
 
   @override
   Widget build(BuildContext context) {
+    final t = lang.S.of(context);
+
+    // Onboarding data - can be loaded from API/JSON
+    final onboardingData = <Map<String, String>>[
+      {
+        "image": 'assets/onBorder0.png',
+        "title": t.onBoardTitle1,
+      },
+      {
+        "image": 'assets/onBorder1.png',
+        "title": t.onBoardTitle2,
+      },
+      {
+        "image": 'assets/onBorder2.png',
+        "title": t.onBoardTitle3,
+      },
+    ];
     return Scaffold(
       backgroundColor: kWhite,
       body: SafeArea(
@@ -57,7 +59,7 @@ class _OnBoardState extends State<OnBoard> {
                     MaterialPageRoute(builder: (context) => const WelcomeScreen()),
                   ),
                   child: Text(
-                    'Passer',
+                    t.skipButton,
                     style: GoogleFonts.poppins(
                       color: kSubTitleColor,
                       fontSize: 14,
@@ -88,7 +90,7 @@ class _OnBoardState extends State<OnBoard> {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 40),
                           child: Image.asset(
-                            onboardingData[i]['image'],
+                            onboardingData[i]['image']!,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
@@ -167,7 +169,7 @@ class _OnBoardState extends State<OnBoard> {
 
                       // Tagline
                       Text(
-                        'À vous de fixer l\'heure',
+                        t.onBoardTagline,
                         style: GoogleFonts.poppins(
                           color: kPrimaryColor,
                           fontSize: 12,
@@ -182,7 +184,7 @@ class _OnBoardState extends State<OnBoard> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 40),
                         child: Text(
-                          onboardingData[i]['title'],
+                          onboardingData[i]['title']!,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             color: kTitleColor,
@@ -217,7 +219,7 @@ class _OnBoardState extends State<OnBoard> {
                   height: 52,
                   child: Center(
                     child: Text(
-                      'Continuer',
+                      t.continueButton,
                       style: GoogleFonts.poppins(
                         color: kWhite,
                         fontSize: 16,

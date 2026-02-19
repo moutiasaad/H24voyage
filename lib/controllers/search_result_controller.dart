@@ -62,7 +62,7 @@ class SearchResultController extends ChangeNotifier {
   bool _isDirectOnly = false;
   bool get isDirectOnly => _isDirectOnly;
 
-  String _selectedSortOption = 'Le moins cher';
+  String _selectedSortOption = 'cheapest';
   String get selectedSortOption => _selectedSortOption;
 
   int _selectedFilterCategory = 2;
@@ -311,8 +311,8 @@ class SearchResultController extends ChangeNotifier {
     _sortFlights(option);
     notifyListeners();
 
-    final isPriceSort = option == 'Le moins cher' || option == 'Le plus cher';
-    final wasOldPriceSort = oldSort == 'Le moins cher' || oldSort == 'Le plus cher';
+    final isPriceSort = option == 'cheapest' || option == 'most_expensive';
+    final wasOldPriceSort = oldSort == 'cheapest' || oldSort == 'most_expensive';
     if (isPriceSort || wasOldPriceSort) {
       reloadFlightsWithFilters();
     }
@@ -387,10 +387,10 @@ class SearchResultController extends ChangeNotifier {
 
     String? sortParam;
     switch (_selectedSortOption) {
-      case 'Le moins cher':
+      case 'cheapest':
         sortParam = 'P:asc';
         break;
-      case 'Le plus cher':
+      case 'most_expensive':
         sortParam = 'P:desc';
         break;
       default:
@@ -513,25 +513,25 @@ class SearchResultController extends ChangeNotifier {
 
     _apiFlights.sort((a, b) {
       switch (sortOption) {
-        case 'Le moins cher':
+        case 'cheapest':
           return a.totalPrice.compareTo(b.totalPrice);
-        case 'Le plus cher':
+        case 'most_expensive':
           return b.totalPrice.compareTo(a.totalPrice);
-        case 'Heure de départ':
+        case 'departure_time':
           final aDep = getFlightDepartureDateTime(a);
           final bDep = getFlightDepartureDateTime(b);
           if (aDep == null && bDep == null) return 0;
           if (aDep == null) return 1;
           if (bDep == null) return -1;
           return aDep.compareTo(bDep);
-        case 'Heure d\'arrivée':
+        case 'arrival_time':
           final aArr = getFlightArrivalDateTime(a);
           final bArr = getFlightArrivalDateTime(b);
           if (aArr == null && bArr == null) return 0;
           if (aArr == null) return 1;
           if (bArr == null) return -1;
           return aArr.compareTo(bArr);
-        case 'Durée du vol':
+        case 'flight_duration':
           return getFlightTotalDuration(a).compareTo(getFlightTotalDuration(b));
         default:
           return 0;
@@ -1135,21 +1135,10 @@ class SearchResultController extends ChangeNotifier {
     return 'https://pics.avs.io/70/70/${airlineCode.toUpperCase()}.png';
   }
 
-  static String getSortDisplayText(String sortOption) {
-    switch (sortOption) {
-      case 'Le moins cher':
-        return 'Prix ↑';
-      case 'Le plus cher':
-        return 'Prix ↓';
-      case 'Heure de départ':
-        return 'Départ';
-      case 'Heure d\'arrivée':
-        return 'Arrivée';
-      case 'Durée du vol':
-        return 'Durée';
-      default:
-        return 'Trier';
-    }
+  /// Returns the fixed sort key identifier (not translated).
+  /// Use the UI layer with lang.S for translated short labels.
+  static String getSortDisplayKey(String sortOption) {
+    return sortOption;
   }
 
   static int parseDurationToMinutes(String duration) {

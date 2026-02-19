@@ -1,3 +1,4 @@
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/home/home.dart';
 import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
@@ -13,23 +14,21 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  // Example notifications list - empty for now to show empty state
   final List<NotificationItem> _notifications = [];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = lang.S.of(context);
+
     return Scaffold(
       backgroundColor: kWhite,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          _buildHeader(),
-
-          // Content
+          _buildHeader(l10n),
           Expanded(
             child: _notifications.isEmpty
-                ? _buildEmptyState()
+                ? _buildEmptyState(l10n)
                 : _buildNotificationList(),
           ),
         ],
@@ -37,7 +36,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(lang.S l10n) {
     return Container(
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + 12,
@@ -72,7 +71,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
           const SizedBox(width: 12),
           Text(
-            'Boîte de réception',
+            l10n.inboxTitle,
             style: GoogleFonts.poppins(
               color: Colors.white,
               fontSize: 18,
@@ -84,26 +83,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(lang.S l10n) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Bell icon image
             Image.asset(
               'assets/notif.JPG',
               width: 140,
               height: 140,
               fit: BoxFit.contain,
             ),
-
             const SizedBox(height: 40),
-
-            // Title
             Text(
-              'Pas encore de notifications',
+              l10n.inboxEmptyTitle,
               style: kTextStyle.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -111,12 +106,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 16),
-
-            // Description
             Text(
-              'Vous recevrez des alertes concernant vos voyages et votre compte. Avez-vous déjà choisi votre prochaine destination ?',
+              l10n.inboxEmptyDescription,
               style: kTextStyle.copyWith(
                 fontSize: 15,
                 color: kSubTitleColor,
@@ -124,14 +116,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 32),
-
-            // Explorer button
             SizedBox(
               width: double.infinity,
               child: ButtonGlobalWithoutIcon(
-                buttontext: 'Explorer',
+                buttontext: l10n.inboxExploreButton,
                 buttonDecoration: kButtonDecoration.copyWith(
                   color: kPrimaryColor,
                   borderRadius: BorderRadius.circular(30),
@@ -152,7 +141,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       itemCount: _notifications.length,
-      separatorBuilder: (context, index) => const Divider(
+      separatorBuilder: (_, __) => const Divider(
         color: kBorderColorTextField,
         height: 1,
       ),
@@ -165,15 +154,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   Widget _buildNotificationItem(NotificationItem notification) {
     return SmallTapEffect(
-      onTap: () {
-        // Handle notification tap
-      },
+      onTap: () {},
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon
             Container(
               width: 48,
               height: 48,
@@ -185,12 +171,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ),
               child: Icon(
                 notification.icon,
-                color: notification.isRead ? kSubTitleColor : kPrimaryColor,
+                color: notification.isRead
+                    ? kSubTitleColor
+                    : kPrimaryColor,
                 size: 24,
               ),
             ),
             const SizedBox(width: 12),
-            // Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,8 +186,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     notification.title,
                     style: kTextStyle.copyWith(
                       fontSize: 15,
-                      fontWeight:
-                          notification.isRead ? FontWeight.normal : FontWeight.w600,
+                      fontWeight: notification.isRead
+                          ? FontWeight.normal
+                          : FontWeight.w600,
                       color: kTitleColor,
                     ),
                   ),
@@ -225,7 +213,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ],
               ),
             ),
-            // Unread indicator
             if (!notification.isRead)
               Container(
                 width: 10,
@@ -242,7 +229,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 }
 
-// Notification model
 class NotificationItem {
   final String title;
   final String message;

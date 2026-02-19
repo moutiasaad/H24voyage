@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'constant.dart';
@@ -92,7 +93,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur de recherche: $e')),
+          SnackBar(content: Text(lang.S.of(context).loadingSearchError(e.toString()))),
         );
       }
     }
@@ -150,7 +151,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                       ),
                       Expanded(
                         child: Text(
-                          'Résultats',
+                          lang.S.of(context).loadingResults,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.jost(
                             color: kWhite,
@@ -179,7 +180,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                           ),
                         ),
                         TextSpan(
-                          text: ' vous attend!',
+                          text: lang.S.of(context).loadingAwaitsYou,
                           style: GoogleFonts.jost(
                             color: kWhite.withOpacity(0.8),
                             fontSize: 16,
@@ -242,7 +243,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
 
                       // Please wait text
                       Text(
-                        'Veuillez patienter...',
+                        lang.S.of(context).loadingPleaseWait,
                         style: GoogleFonts.jost(
                           color: kPrimaryColor,
                           fontSize: 16,
@@ -254,7 +255,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
 
                       // Searching for flights
                       Text(
-                        'Recherche de vols',
+                        lang.S.of(context).loadingSearchingFlights,
                         style: GoogleFonts.jost(
                           color: kWhite,
                           fontSize: 28,
@@ -271,9 +272,9 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                           children: [
                             Expanded(
                               child: _buildStatColumn(
-                                'CONNEXION À',
+                                lang.S.of(context).loadingConnectingTo,
                                 _providersCount.toString(),
-                                'fournisseurs',
+                                lang.S.of(context).loadingProviders,
                               ),
                             ),
                             Container(
@@ -283,9 +284,9 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                             ),
                             Expanded(
                               child: _buildStatColumn(
-                                'RÉSULTATS',
+                                lang.S.of(context).loadingResultsLabel,
                                 _combinationsCount.toString(),
-                                'vols trouvés',
+                                lang.S.of(context).loadingFlightsFound,
                               ),
                             ),
                           ],
@@ -310,7 +311,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'En attendant',
+                              lang.S.of(context).loadingMeanwhile,
                               style: GoogleFonts.jost(
                                 color: kSubTitleColor,
                                 fontSize: 12,
@@ -321,7 +322,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                               text: TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: "N'oubliez pas! Économisez jusqu'à ",
+                                    text: lang.S.of(context).loadingPromoText1,
                                     style: GoogleFonts.jost(
                                       color: kTitleColor,
                                       fontSize: 16,
@@ -337,7 +338,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                                     ),
                                   ),
                                   TextSpan(
-                                    text: ' sur votre ',
+                                    text: lang.S.of(context).loadingPromoText2,
                                     style: GoogleFonts.jost(
                                       color: kTitleColor,
                                       fontSize: 16,
@@ -345,7 +346,7 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
                                     ),
                                   ),
                                   TextSpan(
-                                    text: 'hébergement',
+                                    text: lang.S.of(context).loadingPromoAccommodation,
                                     style: GoogleFonts.jost(
                                       color: kPrimaryColor,
                                       fontSize: 16,

@@ -1,4 +1,5 @@
 import 'package:flight_booking/Model/Airport.dart';
+import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/models/flight_offer.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
@@ -64,33 +65,33 @@ class _SearchResultState extends State<SearchResult> {
   double get screenWidth => MediaQuery.of(context).size.width;
 
   /// Convert raw API error into a professional user-friendly message
-  String _getUserFriendlyError(String raw) {
+  String _getUserFriendlyError(String raw, lang.S t) {
     final lower = raw.toLowerCase();
     if (lower.contains('aucun vol') || lower.contains('no flight')) {
-      return 'Aucun vol disponible pour ces critères.\nEssayez d\'autres dates ou destinations.';
+      return t.searchErrorNoFlights;
     }
     if (lower.contains('timeout') || lower.contains('timed out')) {
-      return 'Le serveur met trop de temps à répondre.\nVeuillez réessayer dans quelques instants.';
+      return t.searchErrorTimeout;
     }
     if (lower.contains('no internet') || lower.contains('network') || lower.contains('socket') || lower.contains('connection')) {
-      return 'Connexion internet indisponible.\nVérifiez votre connexion et réessayez.';
+      return t.searchErrorNoInternet;
     }
     if (lower.contains('500') || lower.contains('server') || lower.contains('internal')) {
-      return 'Le service de recherche est temporairement indisponible.\nVeuillez réessayer plus tard.';
+      return t.searchErrorServer;
     }
     if (lower.contains('401') || lower.contains('unauthorized') || lower.contains('token')) {
-      return 'Votre session a expiré.\nVeuillez vous reconnecter et réessayer.';
+      return t.searchErrorSessionExpired;
     }
     if (lower.contains('403') || lower.contains('forbidden')) {
-      return 'Accès refusé au service de recherche.\nVeuillez vous reconnecter.';
+      return t.searchErrorForbidden;
     }
     if (lower.contains('404') || lower.contains('not found')) {
-      return 'Le service de recherche est introuvable.\nVeuillez réessayer plus tard.';
+      return t.searchErrorNotFound;
     }
     if (lower.contains('429') || lower.contains('too many')) {
-      return 'Trop de recherches en peu de temps.\nVeuillez patienter avant de réessayer.';
+      return t.searchErrorTooMany;
     }
-    return 'Une erreur inattendue est survenue.\nVeuillez réessayer ou modifier vos critères.';
+    return t.searchErrorUnexpected;
   }
 
   @override
@@ -247,7 +248,7 @@ class _SearchResultState extends State<SearchResult> {
                     searchCode: _flightController.searchCode,
                     totalOffers: _flightController.totalOffers,
                     errorMessage: _flightController.hasError
-                        ? _flightController.errorMessage ?? 'Erreur lors de la recherche'
+                        ? _flightController.errorMessage ?? lang.S.of(context).homeSearchError
                         : null,
                   ),
                 ),
@@ -273,8 +274,8 @@ class _SearchResultState extends State<SearchResult> {
     // Show loading while reloading flights with filters
     if (_ctrl.isReloading) {
       return [
-        const SliverToBoxAdapter(
-          child: PaginationLoader(message: 'Chargement des vols...'),
+        SliverToBoxAdapter(
+          child: PaginationLoader(message: lang.S.of(context).searchLoadingFlights),
         ),
       ];
     }
@@ -302,7 +303,7 @@ class _SearchResultState extends State<SearchResult> {
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Aucun vol ne correspond à vos filtres',
+                    lang.S.of(context).searchNoFlightsForFilters,
                     style: GoogleFonts.poppins(
                       color: kTitleColor,
                       fontSize: 18,
@@ -312,7 +313,7 @@ class _SearchResultState extends State<SearchResult> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Essayez de modifier ou réinitialiser\nvos filtres pour voir plus de résultats',
+                    lang.S.of(context).searchTryModifyFilters,
                     style: GoogleFonts.poppins(
                       color: kSubTitleColor,
                       fontSize: 14,
@@ -328,7 +329,7 @@ class _SearchResultState extends State<SearchResult> {
                     },
                     icon: const Icon(Icons.refresh_rounded, size: 18),
                     label: Text(
-                      'Réinitialiser les filtres',
+                      lang.S.of(context).searchResetFilters,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -383,14 +384,14 @@ class _SearchResultState extends State<SearchResult> {
       if (_ctrl.hasMorePages || _ctrl.isLoadingMore)
         SliverToBoxAdapter(
           child: _ctrl.isLoadingMore
-              ? const PaginationLoader(message: 'Chargement des vols...')
+              ? PaginationLoader(message: lang.S.of(context).searchLoadingFlights)
               : Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Center(
                     child: Text(
                       _ctrl.totalPages != null
-                          ? 'Page ${_ctrl.currentPage} / ${_ctrl.totalPages} - Faites défiler pour plus'
-                          : 'Faites défiler pour charger plus de vols',
+                          ? lang.S.of(context).searchPageInfo(_ctrl.currentPage.toString(), _ctrl.totalPages.toString())
+                          : lang.S.of(context).searchScrollForMore,
                       style: GoogleFonts.poppins(
                         color: kSubTitleColor,
                         fontSize: 12,
@@ -449,7 +450,7 @@ class _SearchResultState extends State<SearchResult> {
                           Icon(Icons.access_time_rounded, size: 18, color: kPrimaryColor),
                           const SizedBox(width: 8),
                           Text(
-                            'Durée du séjour : ${widget.dateRange!.duration.inDays} jour${widget.dateRange!.duration.inDays > 1 ? 's' : ''}',
+                            '${lang.S.of(context).searchStayDuration}${widget.dateRange!.duration.inDays} ${widget.dateRange!.duration.inDays > 1 ? lang.S.of(context).datePickerDays : lang.S.of(context).datePickerDay}',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -541,8 +542,8 @@ class _SearchResultState extends State<SearchResult> {
                                 const SizedBox(height: 20),
                                 Text(
                                   isRealError
-                                      ? 'Recherche indisponible'
-                                      : 'Aucun vol trouvé',
+                                      ? lang.S.of(context).searchUnavailable
+                                      : lang.S.of(context).searchNoFlightsFound,
                                   style: GoogleFonts.poppins(
                                     color: kTitleColor,
                                     fontSize: 18,
@@ -552,8 +553,8 @@ class _SearchResultState extends State<SearchResult> {
                                 const SizedBox(height: 10),
                                 Text(
                                   isRealError
-                                      ? _getUserFriendlyError(widget.errorMessage!)
-                                      : 'Essayez de modifier vos dates ou\nvos critères de recherche',
+                                      ? _getUserFriendlyError(widget.errorMessage!, lang.S.of(context))
+                                      : lang.S.of(context).searchTryModifyDates,
                                   style: GoogleFonts.poppins(
                                     color: kSubTitleColor,
                                     fontSize: 14,
@@ -566,7 +567,7 @@ class _SearchResultState extends State<SearchResult> {
                                   onPressed: _showEditSearchBottomSheet,
                                   icon: const Icon(Icons.edit, size: 18),
                                   label: Text(
-                                    'Modifier la recherche',
+                                    lang.S.of(context).searchEditSearch,
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
