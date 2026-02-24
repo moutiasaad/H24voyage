@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flight_booking/Model/Airport.dart';
 import 'package:flight_booking/Model/FakeFlight.dart';
 import 'package:flight_booking/models/flight_offer.dart';
+import 'package:flight_booking/models/flight_search_response.dart';
 import 'package:flight_booking/models/flight_results_request.dart';
 import 'package:flight_booking/models/flight_results_response.dart';
 import 'package:flight_booking/services/flight_service.dart';
@@ -48,6 +49,9 @@ class SearchResultController extends ChangeNotifier {
 
   List<FlightOffer> _apiFlights = [];
   List<FlightOffer> get apiFlights => _apiFlights;
+
+  List<AirlineInfo> _apiAirlines = [];
+  List<AirlineInfo> get apiAirlines => _apiAirlines;
 
   Set<int> _expandedOutbound = {};
   Set<int> get expandedOutbound => _expandedOutbound;
@@ -338,7 +342,11 @@ class SearchResultController extends ChangeNotifier {
     List<FlightOffer>? initialOffers,
     int? totalOffers,
     String? assetJsonData,
+    List<AirlineInfo>? apiAirlines,
   }) {
+    if (apiAirlines != null) {
+      _apiAirlines = apiAirlines;
+    }
     if (initialOffers != null && initialOffers.isNotEmpty) {
       _apiFlights = initialOffers;
 
@@ -766,8 +774,28 @@ class SearchResultController extends ChangeNotifier {
     return result;
   }
 
-  /// Extracts airline chips with best prices from loaded flights.
+  /// Extracts airline chips with best prices from the API airlines list,
+  /// falling back to extracting from flight segments if not available.
   List<Map<String, dynamic>> get filterChips {
+    // Use API airlines data when available (correct names & prices from server)
+    if (_apiAirlines.isNotEmpty) {
+      final chips = _apiAirlines
+          .where((a) => a.iataCode != null && a.iataCode!.isNotEmpty)
+          .map((a) => {
+                'text': '${a.price?.toInt() ?? 0} DZD',
+                'airlineName': a.name ?? a.iataCode ?? 'Airline',
+                'airlineCode': a.iataCode!,
+                'price': a.price?.toInt() ?? 0,
+                'type': 'price',
+              })
+          .toList();
+
+      chips.sort((a, b) => (a['price'] as int).compareTo(b['price'] as int));
+
+      return chips;
+    }
+
+    // Fallback: extract from flight segments
     if (!hasApiFlights) return [];
 
     final Map<String, Map<String, dynamic>> airlineData = {};
@@ -821,6 +849,19 @@ class SearchResultController extends ChangeNotifier {
   }
 
   /// Extracts filter metadata (airlines, prices, airports, stops) from loaded flights.
+  /// Lookup airline name from API airlines list, falling back to segment name.
+  String resolveAirlineName(String code, String fallback) {
+    if (_apiAirlines.isNotEmpty) {
+      final match = _apiAirlines.where(
+        (a) => a.iataCode?.toUpperCase() == code.toUpperCase(),
+      );
+      if (match.isNotEmpty && match.first.name != null && match.first.name!.isNotEmpty) {
+        return match.first.name!;
+      }
+    }
+    return fallback;
+  }
+
   Map<String, dynamic> get filterData {
     final Map<String, Map<String, dynamic>> airlinesMap = {};
     double minPrice = double.infinity;
@@ -829,6 +870,21 @@ class SearchResultController extends ChangeNotifier {
     final Map<String, Map<String, dynamic>> outArrAirportsMap = {};
     final Map<String, Map<String, dynamic>> connectionAirportsMap = {};
     int maxStopsFound = 0;
+
+    // If we have API airlines, seed the map with them first (correct names)
+    if (_apiAirlines.isNotEmpty) {
+      for (final airline in _apiAirlines) {
+        final code = airline.iataCode;
+        if (code != null && code.isNotEmpty && !airlinesMap.containsKey(code)) {
+          airlinesMap[code] = {
+            'name': airline.name ?? code,
+            'code': code,
+            'logo': getAirlineLogoUrl(code),
+            'selected': _selectedFilterAirlineCodes.contains(code.toUpperCase()),
+          };
+        }
+      }
+    }
 
     if (hasApiFlights) {
       for (final offer in _apiFlights) {
@@ -854,7 +910,7 @@ class SearchResultController extends ChangeNotifier {
                 airlineCode.isNotEmpty &&
                 !airlinesMap.containsKey(airlineCode)) {
               airlinesMap[airlineCode] = {
-                'name': airlineName,
+                'name': resolveAirlineName(airlineCode, airlineName),
                 'code': airlineCode,
                 'logo': getAirlineLogoUrl(airlineCode),
                 'selected': _selectedFilterAirlineCodes.contains(airlineCode.toUpperCase()),
@@ -961,6 +1017,21 @@ class SearchResultController extends ChangeNotifier {
         ? _selectedArrivalAirportCodes
         : _retourArrAirportCodes;
 
+    // Seed with API airlines for correct names
+    if (_apiAirlines.isNotEmpty) {
+      for (final airline in _apiAirlines) {
+        final code = airline.iataCode;
+        if (code != null && code.isNotEmpty && !airlinesMap.containsKey(code)) {
+          airlinesMap[code] = {
+            'name': airline.name ?? code,
+            'code': code,
+            'logo': getAirlineLogoUrl(code),
+            'selected': currentAirlineCodes.contains(code.toUpperCase()),
+          };
+        }
+      }
+    }
+
     if (hasApiFlights) {
       for (final offer in _apiFlights) {
         if (journeyIndex >= offer.journey.length) continue;
@@ -982,7 +1053,7 @@ class SearchResultController extends ChangeNotifier {
               airlineCode.isNotEmpty &&
               !airlinesMap.containsKey(airlineCode)) {
             airlinesMap[airlineCode] = {
-              'name': airlineName,
+              'name': resolveAirlineName(airlineCode, airlineName),
               'code': airlineCode,
               'logo': getAirlineLogoUrl(airlineCode),
               'selected': currentAirlineCodes.contains(airlineCode.toUpperCase()),
@@ -1132,7 +1203,7 @@ class SearchResultController extends ChangeNotifier {
   }
 
   static String getAirlineLogoUrl(String airlineCode) {
-    return 'https://pics.avs.io/70/70/${airlineCode.toUpperCase()}.png';
+    return 'https://pics.avs.io/200/200/${airlineCode.toUpperCase()}.png';
   }
 
   /// Returns the fixed sort key identifier (not translated).

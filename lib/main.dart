@@ -10,6 +10,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'generated/l10n.dart';
 
+import 'controllers/profile_controller.dart';
+import 'controllers/airport_controller.dart';
+import 'controllers/register_controller.dart';
+import 'screen/home/controller/home_search_controller.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -32,8 +37,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<LanguageChangeProvider>(
-      create: (context) => LanguageChangeProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LanguageChangeProvider()),
+        ChangeNotifierProvider(create: (_) => ProfileController()),
+        ChangeNotifierProvider(create: (_) => AirportController()),
+        ChangeNotifierProvider(create: (_) => RegisterController()),
+        ChangeNotifierProvider(create: (_) => HomeSearchController()),
+      ],
       child: Builder(
         builder: (context) => MaterialApp(
           locale: Provider.of<LanguageChangeProvider>(context, listen: true).currentLocale,

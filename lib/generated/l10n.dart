@@ -1664,6 +1664,16 @@ class S {
     );
   }
 
+  /// `With baggage`
+  String get homeWithBaggage {
+    return Intl.message(
+      'With baggage',
+      name: 'homeWithBaggage',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Class`
   String get homeClassLabel {
     return Intl.message('Class', name: 'homeClassLabel', desc: '', args: []);
@@ -1759,16 +1769,61 @@ class S {
     );
   }
 
-  /// `2-12 years`
+  /// `2 to 11 years at the time of travel`
   String get homeChildAge {
-    return Intl.message('2-12 years', name: 'homeChildAge', desc: '', args: []);
+    return Intl.message(
+      '2 to 11 years at the time of travel',
+      name: 'homeChildAge',
+      desc: '',
+      args: [],
+    );
   }
 
-  /// `Under 2 years`
+  /// `Under 2 years at the time of travel`
   String get homeInfantAge {
     return Intl.message(
-      'Under 2 years',
+      'Under 2 years at the time of travel',
       name: 'homeInfantAge',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Young`
+  String get homeYoung {
+    return Intl.message('Young', name: 'homeYoung', desc: '', args: []);
+  }
+
+  /// `Between 12 and 24 years old, domestic flights only`
+  String get homeYoungTooltip {
+    return Intl.message(
+      'Between 12 and 24 years old, domestic flights only',
+      name: 'homeYoungTooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Senior`
+  String get homeSenior {
+    return Intl.message('Senior', name: 'homeSenior', desc: '', args: []);
+  }
+
+  /// `Men 55+ and women 60+, AIR ALGERIE to FRANCE only`
+  String get homeSeniorTooltip {
+    return Intl.message(
+      'Men 55+ and women 60+, AIR ALGERIE to FRANCE only',
+      name: 'homeSeniorTooltip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Children and infants must be accompanied by an adult during the flight.`
+  String get homePassengerNote {
+    return Intl.message(
+      'Children and infants must be accompanied by an adult during the flight.',
+      name: 'homePassengerNote',
       desc: '',
       args: [],
     );

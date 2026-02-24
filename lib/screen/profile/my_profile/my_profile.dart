@@ -3,6 +3,7 @@ import 'package:flight_booking/screen/profile/my_profile/edit_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import '../../../controllers/profile_controller.dart';
@@ -25,7 +26,7 @@ class _MyProfileState extends State<MyProfile> {
   XFile? image;
 
   // controller
-  final ProfileController _profileController = ProfileController.instance;
+  late final ProfileController _profileController;
 
   // local fallbacks
   String fullName = 'John Doe';
@@ -41,6 +42,7 @@ class _MyProfileState extends State<MyProfile> {
   @override
   void initState() {
     super.initState();
+    _profileController = context.read<ProfileController>();
     // listen for changes and fetch profile
     _profileController.addListener(_onProfileChanged);
     _profileController.fetchProfile();

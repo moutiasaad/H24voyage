@@ -1,6 +1,7 @@
 import 'package:flight_booking/Model/Airport.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/models/flight_offer.dart';
+import 'package:flight_booking/models/flight_search_response.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -11,6 +12,7 @@ import '../../controllers/flight_controller.dart';
 import '../../controllers/search_result_controller.dart';
 import '../../models/flight_bound.dart';
 import '../widgets/orange_dots_loader.dart';
+import '../home/models/multi_destination_leg.dart';
 import '../widgets/EditSearchBottomSheet.dart';
 import '../widgets/flight_search_loading.dart';
 import 'widgets/flight_card_widgets.dart';
@@ -30,6 +32,7 @@ class SearchResult extends StatefulWidget {
   final String? searchCode;
   final int? totalOffers;
   final String? errorMessage;
+  final List<AirlineInfo>? apiAirlines;
 
   const SearchResult({
     Key? key,
@@ -45,6 +48,7 @@ class SearchResult extends StatefulWidget {
     this.searchCode,
     this.totalOffers,
     this.errorMessage,
+    this.apiAirlines,
   }) : super(key: key);
 
   @override
@@ -119,6 +123,7 @@ class _SearchResultState extends State<SearchResult> {
         initialOffers: widget.flightOffers,
         totalOffers: widget.totalOffers,
         assetJsonData: assetData,
+        apiAirlines: widget.apiAirlines,
       );
     });
   }
@@ -250,6 +255,7 @@ class _SearchResultState extends State<SearchResult> {
                     errorMessage: _flightController.hasError
                         ? _flightController.errorMessage ?? lang.S.of(context).homeSearchError
                         : null,
+                    apiAirlines: _flightController.availableAirlines,
                   ),
                 ),
               );

@@ -4,6 +4,7 @@ import 'package:flight_booking/screen/home/home.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
+import 'package:provider/provider.dart';
 import '../widgets/constant.dart';
 import '../widgets/button_global.dart';
 import '../../controllers/register_controller.dart';
@@ -125,7 +126,7 @@ class _OtpVerificationState extends State<OtpVerification> {
       _errorMessage = null;
     });
 
-    final controller = RegisterController();
+    final controller = context.read<RegisterController>();
 
     try {
       if (widget.isLogin) {
@@ -154,7 +155,7 @@ class _OtpVerificationState extends State<OtpVerification> {
         }
 
         // Fetch user profile (same as app startup in splash screen)
-        await ProfileController.instance.fetchProfile();
+        await context.read<ProfileController>().fetchProfile();
 
         if (!mounted) return;
 

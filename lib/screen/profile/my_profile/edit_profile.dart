@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:provider/provider.dart';
 import 'dart:io';
 import '../../../controllers/profile_controller.dart';
 import '../../widgets/constant.dart';
@@ -20,7 +21,7 @@ class EditProfile extends StatefulWidget {
 class _EditProfileState extends State<EditProfile> {
   final ImagePicker _picker = ImagePicker();
   XFile? image;
-  final ProfileController _profileController = ProfileController.instance;
+  late final ProfileController _profileController;
 
   late TextEditingController _fullNameController;
   late TextEditingController _emailController;
@@ -48,6 +49,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     super.initState();
+    _profileController = context.read<ProfileController>();
 
     final customer = _profileController.customer;
     final first = customer != null ? (customer['firstName'] ?? '') : '';
@@ -156,7 +158,7 @@ class _EditProfileState extends State<EditProfile> {
 
                     if (res != null && res['success'] == true) {
                       toast(lang.S.of(context).editProfileUpdated);
-                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const MyProfile()));
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const EditProfile()));
                     } else {
                       final msg = res != null ? (res['message'] ?? lang.S.of(context).editProfileUpdateError) : (_profileController.error ?? lang.S.of(context).editProfileErrorGeneric);
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));

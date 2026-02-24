@@ -6,9 +6,6 @@ import '../services/auth_service.dart';
 import '../services/post_images_service.dart';
 
 class ProfileController extends ChangeNotifier {
-  ProfileController._internal();
-
-  static final ProfileController instance = ProfileController._internal();
 
   bool _isLoading = false;
   String? _error;

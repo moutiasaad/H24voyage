@@ -2,6 +2,7 @@ import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/support/support.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../controllers/profile_controller.dart';
 import '../Authentication/sign_up_screen.dart';
 import '../my_boking_screen/my_boking.dart';
@@ -26,6 +27,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late int _currentPage;
+  late final ProfileController _profileController;
 
   late final List<Widget> _widgetOptions;
 
@@ -33,9 +35,10 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _currentPage = widget.initialIndex;
+    _profileController = context.read<ProfileController>();
 
     // Listen to profile changes to update UI
-    ProfileController.instance.addListener(_onProfileChanged);
+    _profileController.addListener(_onProfileChanged);
 
     _widgetOptions = <Widget>[
       const HomeScreen(),
@@ -47,7 +50,7 @@ class _HomeState extends State<Home> {
 
   @override
   void dispose() {
-    ProfileController.instance.removeListener(_onProfileChanged);
+    _profileController.removeListener(_onProfileChanged);
     super.dispose();
   }
 
@@ -56,10 +59,9 @@ class _HomeState extends State<Home> {
   }
 
   String get _userName {
-    final profile = ProfileController.instance;
-    if (profile.customer != null) {
-      final first = profile.firstName;
-      final last = profile.lastName;
+    if (_profileController.customer != null) {
+      final first = _profileController.firstName;
+      final last = _profileController.lastName;
       if (first.isNotEmpty || last.isNotEmpty) {
         return '$first $last'.trim();
       }
@@ -68,7 +70,7 @@ class _HomeState extends State<Home> {
   }
 
   String? get _userProfileImage {
-    final customer = ProfileController.instance.customer;
+    final customer = _profileController.customer;
     if (customer != null) {
       final image = customer['profileImage'] ?? customer['profileImageUrl'] ?? customer['avatar'];
       if (image is String && image.isNotEmpty) return image;
@@ -76,7 +78,7 @@ class _HomeState extends State<Home> {
     return null;
   }
 
-  bool get _isLoggedIn => ProfileController.instance.customer != null;
+  bool get _isLoggedIn => _profileController.customer != null;
 
   void _onNavTap(int index) {
     // Tabs 1 (Réservations), 2 (Support), 3 (Profile) require login

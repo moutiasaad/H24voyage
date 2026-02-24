@@ -2,6 +2,7 @@ import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 
 import '../../controllers/profile_controller.dart';
@@ -115,11 +116,12 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  final ProfileController _profileController = ProfileController.instance;
+  late final ProfileController _profileController;
 
   @override
   void initState() {
     super.initState();
+    _profileController = context.read<ProfileController>();
     _profileController.addListener(_onProfileChanged);
   }
 
@@ -398,7 +400,7 @@ class _ProfileState extends State<Profile> {
     }
 
     // Clear profile data in memory
-    ProfileController.instance.clearCustomer();
+    context.read<ProfileController>().clearCustomer();
 
     if (!mounted) return;
 

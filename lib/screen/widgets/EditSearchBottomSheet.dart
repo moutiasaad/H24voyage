@@ -9,19 +9,7 @@ import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:intl/intl.dart';
 import '../../generated/l10n.dart' as lang;
-
-/// Model for multi-destination flight leg
-class MultiDestinationLeg {
-  Airport? fromAirport;
-  Airport? toAirport;
-  DateTime? departureDate;
-
-  MultiDestinationLeg({
-    this.fromAirport,
-    this.toAirport,
-    this.departureDate,
-  });
-}
+import '../home/models/multi_destination_leg.dart';
 
 class EditSearchBottomSheet extends StatefulWidget {
   final Airport fromAirport;
@@ -232,9 +220,10 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (BuildContext context, setStated) {
+            final bottomNav = MediaQuery.of(context).viewPadding.bottom;
             return Container(
               constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.65,
+                maxHeight: MediaQuery.of(context).size.height * 0.75,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -473,7 +462,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                   ),
                   // Fixed Done Button at bottom
                   Container(
-                    padding: const EdgeInsets.all(20.0),
+                    padding: EdgeInsets.fromLTRB(20.0, 12.0, 20.0, bottomNav > 0 ? bottomNav : 20.0),
                     decoration: const BoxDecoration(
                       color: kWhite,
                       boxShadow: [
@@ -485,16 +474,14 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                         ),
                       ],
                     ),
-                    child: SafeArea(
-                      child: ButtonGlobal(
-                        buttontext: lang.S.of(context).homeDone,
-                        buttonDecoration: kButtonDecoration.copyWith(
-                          color: kPrimaryColor,
-                        ),
-                        onPressed: () {
-                          finish(context);
-                        },
+                    child: ButtonGlobal(
+                      buttontext: lang.S.of(context).homeDone,
+                      buttonDecoration: kButtonDecoration.copyWith(
+                        color: kPrimaryColor,
                       ),
+                      onPressed: () {
+                        finish(context);
+                      },
                     ),
                   ),
                 ],
@@ -818,13 +805,17 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
 
   @override
   Widget build(BuildContext context) {
-    // Use larger height for multi-destination to accommodate extra flight legs
-    final double sheetHeight = selectedIndex == 2
-        ? MediaQuery.of(context).size.height * 0.80
-        : MediaQuery.of(context).size.height * 0.60;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+    final isSmallScreen = screenHeight < 700;
+
+    // Use max available height, capped sensibly
+    final double sheetMaxHeight = selectedIndex == 2
+        ? screenHeight * 0.90
+        : screenHeight * (isSmallScreen ? 0.85 : 0.75);
 
     return Container(
-      height: sheetHeight,
+      constraints: BoxConstraints(maxHeight: sheetMaxHeight),
       decoration: const BoxDecoration(
         color: kWhite,
         borderRadius: BorderRadius.only(
@@ -833,6 +824,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Header with drag handle
           Padding(
@@ -857,7 +849,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                 Text(
                   lang.S.of(context).searchEditSearch,
                   style: kTextStyle.copyWith(
-                    fontSize: 18,
+                    fontSize: isSmallScreen ? 16 : 18,
                     fontWeight: FontWeight.bold,
                     color: kTitleColor,
                   ),
@@ -870,12 +862,16 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isSmallScreen ? 10 : 16),
 
           // Scrollable content
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.only(
+                left: 20.0,
+                right: 20.0,
+                bottom: 10.0,
+              ),
               child: Column(
                 children: [
                   // Tab bar for trip type
@@ -883,8 +879,8 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                     controller: _tabController,
                     labelColor: kTitleColor,
                     unselectedLabelColor: kSubTitleColor,
-                    labelStyle: kTextStyle.copyWith(fontWeight: FontWeight.bold),
-                    unselectedLabelStyle: kTextStyle,
+                    labelStyle: kTextStyle.copyWith(fontWeight: FontWeight.bold, fontSize: isSmallScreen ? 12 : 14),
+                    unselectedLabelStyle: kTextStyle.copyWith(fontSize: isSmallScreen ? 12 : 14),
                     dividerColor: const Color(0xFFE2E2E2),
                     indicator: UnderlineTabIndicator(
                       borderSide: BorderSide(
@@ -907,9 +903,12 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           alignment: Alignment.center,
-                          child: Text(
-                            lang.S.of(context).tab2,
-                            textAlign: TextAlign.center,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              lang.S.of(context).tab2,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
@@ -917,9 +916,12 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           alignment: Alignment.center,
-                          child: Text(
-                            lang.S.of(context).tab1,
-                            textAlign: TextAlign.center,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              lang.S.of(context).tab1,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
@@ -927,15 +929,18 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
                           alignment: Alignment.center,
-                          child: Text(
-                            lang.S.of(context).tab3,
-                            textAlign: TextAlign.center,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              lang.S.of(context).tab3,
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20.0),
+                  SizedBox(height: isSmallScreen ? 12.0 : 20.0),
 
                   // Content based on selected tab
                   if (selectedIndex != 2) ...[
@@ -947,6 +952,20 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                   ],
                 ],
               ),
+            ),
+          ),
+
+          // Fixed search button at bottom
+          Container(
+            padding: EdgeInsets.fromLTRB(20.0, 12.0, 20.0, bottomPadding > 0 ? bottomPadding : 12.0),
+            child: ButtonGlobalWithoutIcon(
+              buttontext: lang.S.of(context).homeSearchFlights,
+              buttonDecoration: kButtonDecoration.copyWith(
+                color: kPrimaryColor,
+                borderRadius: BorderRadius.circular(100.0),
+              ),
+              buttonTextColor: kWhite,
+              onPressed: _onSearch,
             ),
           ),
         ],
@@ -1196,7 +1215,7 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
         _buildPassengerClassField(),
         const SizedBox(height: 15.0),
 
-        // Direct flight toggle
+        // Direct flight & baggage toggles
         Row(
           children: [
             Expanded(
@@ -1233,19 +1252,41 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                 ],
               ),
             ),
+            Expanded(
+              child: Row(
+                children: [
+                  SizedBox(
+                    height: 24,
+                    child: Switch(
+                      value: withBaggage,
+                      onChanged: (value) {
+                        setState(() {
+                          withBaggage = value;
+                        });
+                      },
+                      activeColor: kPrimaryColor,
+                      activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                      inactiveThumbColor: kWhite,
+                      inactiveTrackColor: const Color(0xFFE0E0E0),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      lang.S.of(context).homeWithBaggage,
+                      style: kTextStyle.copyWith(
+                        color: kTitleColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
-        const SizedBox(height: 15.0),
-
-        // Search button
-        ButtonGlobalWithoutIcon(
-          buttontext: lang.S.of(context).homeSearchFlights,
-          buttonDecoration: kButtonDecoration.copyWith(
-            color: kPrimaryColor,
-            borderRadius: BorderRadius.circular(100.0),
-          ),
-          buttonTextColor: kWhite,
-          onPressed: _onSearch,
         ),
       ],
     );
@@ -1487,39 +1528,40 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
         ),
         const SizedBox(height: 10.0),
 
-        // Add flight button
-        ButtonGlobalWithoutIcon(
-          buttontext: lang.S.of(context).addFightButton,
-          buttonDecoration: kButtonDecoration.copyWith(
-            color: kWhite,
-            border: Border.all(color: kPrimaryColor),
-            borderRadius: BorderRadius.circular(30.0),
+        // Add flight button (max 4 flights total = 3 extra legs)
+        if (multiDestinationLegs.length < 3)
+          ButtonGlobalWithoutIcon(
+            buttontext: lang.S.of(context).addFightButton,
+            buttonDecoration: kButtonDecoration.copyWith(
+              color: kWhite,
+              border: Border.all(color: kPrimaryColor),
+              borderRadius: BorderRadius.circular(30.0),
+            ),
+            onPressed: () {
+              if (multiDestinationLegs.length >= 3) return;
+              setState(() {
+                Airport? newFromAirport;
+                if (multiDestinationLegs.isNotEmpty) {
+                  newFromAirport = multiDestinationLegs.last.toAirport;
+                } else {
+                  newFromAirport = toAirport;
+                }
+                multiDestinationLegs.add(MultiDestinationLeg(
+                  fromAirport: newFromAirport,
+                  toAirport: null,
+                  departureDate: null,
+                ));
+              });
+            },
+            buttonTextColor: kPrimaryColor,
           ),
-          onPressed: () {
-            setState(() {
-              // Add a new leg with the previous leg's destination as the new origin
-              Airport? newFromAirport;
-              if (multiDestinationLegs.isNotEmpty) {
-                newFromAirport = multiDestinationLegs.last.toAirport;
-              } else {
-                newFromAirport = toAirport;
-              }
-              multiDestinationLegs.add(MultiDestinationLeg(
-                fromAirport: newFromAirport,
-                toAirport: null,
-                departureDate: null,
-              ));
-            });
-          },
-          buttonTextColor: kPrimaryColor,
-        ),
         const SizedBox(height: 10.0),
 
         // Passengers & Class
         _buildPassengerClassField(),
         const SizedBox(height: 15.0),
 
-        // Direct flight toggle
+        // Direct flight & baggage toggles
         Row(
           children: [
             Expanded(
@@ -1556,19 +1598,41 @@ class _EditSearchBottomSheetState extends State<EditSearchBottomSheet> with Sing
                 ],
               ),
             ),
+            Expanded(
+              child: Row(
+                children: [
+                  SizedBox(
+                    height: 24,
+                    child: Switch(
+                      value: withBaggage,
+                      onChanged: (value) {
+                        setState(() {
+                          withBaggage = value;
+                        });
+                      },
+                      activeColor: kPrimaryColor,
+                      activeTrackColor: kPrimaryColor.withOpacity(0.3),
+                      inactiveThumbColor: kWhite,
+                      inactiveTrackColor: const Color(0xFFE0E0E0),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      lang.S.of(context).homeWithBaggage,
+                      style: kTextStyle.copyWith(
+                        color: kTitleColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
-        ),
-        const SizedBox(height: 15.0),
-
-        // Search button
-        ButtonGlobalWithoutIcon(
-          buttontext: lang.S.of(context).homeSearchFlights,
-          buttonDecoration: kButtonDecoration.copyWith(
-            color: kPrimaryColor,
-            borderRadius: BorderRadius.circular(100.0),
-          ),
-          buttonTextColor: kWhite,
-          onPressed: _onSearch,
         ),
       ],
     );

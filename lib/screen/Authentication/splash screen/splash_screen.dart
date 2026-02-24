@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'onboard.dart';
@@ -72,9 +73,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
         // Fetch user profile to verify authentication
         debugPrint('Fetching user profile...');
-        await ProfileController.instance.fetchProfile();
+        await context.read<ProfileController>().fetchProfile();
 
-        if (ProfileController.instance.customer != null) {
+        if (context.read<ProfileController>().customer != null) {
           debugPrint('Profile loaded - user authenticated');
           await prefs.setBool('is_logged_in', true);
 

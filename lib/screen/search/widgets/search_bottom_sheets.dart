@@ -852,10 +852,96 @@ Widget _buildFilterContent(
     case 2: // Escale
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: escaleOptions.map((option) {
-          final isSelected = escaleOption == option;
-          return _buildRadioOption(option, isSelected, () => onEscaleChanged(option));
-        }).toList(),
+        children: [
+          // Route info
+          if (departureAirportName.isNotEmpty || arrivalAirportName.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text(
+                '${departureAirportName.isNotEmpty ? departureAirportName : lang.S.of(context).filterDepartureDefault}'
+                ' → '
+                '${arrivalAirportName.isNotEmpty ? arrivalAirportName : lang.S.of(context).filterArrivalDefault}',
+                style: GoogleFonts.poppins(
+                  color: kSubTitleColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
+          // Stop chips
+          Row(
+            children: escaleOptions.where((o) => o != 'Tous').map((option) {
+              final isSelected = escaleOption == option;
+              final int stopCount = option == 'Direct' ? 0
+                  : option.contains('1') ? 1
+                  : 2;
+              final Color activeColor = isSelected ? kPrimaryColor : kSubTitleColor;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () => onEscaleChanged(isSelected ? 'Tous' : option),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isSelected ? kPrimaryColor.withValues(alpha: 0.06) : kWhite,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? kPrimaryColor : kBorderColorTextField,
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Flight path icon
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.flight_land, size: 14, color: activeColor),
+                            ...List.generate(stopCount > 0 ? stopCount : 0, (i) => Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('····', style: TextStyle(color: activeColor, fontSize: 9, height: 1, letterSpacing: 1)),
+                                Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: activeColor, width: 1.2),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: TextStyle(color: activeColor, fontSize: 8, fontWeight: FontWeight.w600, height: 1.1),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )),
+                            Text('········', style: TextStyle(color: activeColor, fontSize: 9, height: 1, letterSpacing: 1)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          stopCount == 0
+                              ? lang.S.of(context).cardDirectFlight
+                              : (stopCount == 1
+                                  ? lang.S.of(context).cardStop('1')
+                                  : lang.S.of(context).cardStops('2')),
+                          style: GoogleFonts.poppins(
+                            color: isSelected ? kPrimaryColor : kTitleColor,
+                            fontSize: 11,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       );
 
     case 3: // Horaires
@@ -1983,7 +2069,11 @@ class _FlightSegmentCard extends StatelessWidget {
     final depTerminal = seg.departureTerminal;
     final arrTerminal = seg.arrivalTerminal;
     final airlineCode = seg.marketingAirline ?? seg.operatingAirline ?? '';
-    final airlineName = seg.marketingAirlineName ?? seg.operatingAirlineName ?? airlineCode;
+    final segAirlineName = seg.marketingAirlineName ?? seg.operatingAirlineName ?? airlineCode;
+    // Resolve correct name from API airlines list
+    final airlineName = airlineCode.isNotEmpty
+        ? ctrl.resolveAirlineName(airlineCode, segAirlineName)
+        : segAirlineName;
     final flightNum = seg.flightNumber?.toString() ?? '';
     final seats = seg.seatsAvailable;
     final cabinClass = seg.cabinClass ?? lang.S.of(context).classEconomy;
@@ -2956,3 +3046,4 @@ class _FakeFlightJourneyContent extends StatelessWidget {
     );
   }
 }
+

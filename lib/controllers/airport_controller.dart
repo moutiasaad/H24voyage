@@ -4,16 +4,6 @@ import '../Model/Airport.dart';
 import '../services/airport_service.dart';
 
 class AirportController extends ChangeNotifier {
-  // Singleton instance for preloading
-  static final AirportController _instance = AirportController._internal();
-  static AirportController get instance => _instance;
-
-  // Factory constructor returns singleton
-  factory AirportController() => _instance;
-
-  // Private constructor
-  AirportController._internal();
-
   List<Airport> _suggestions = [];
   List<Airport> _initialAirports = [];
   String _searchQuery = '';
@@ -29,8 +19,8 @@ class AirportController extends ChangeNotifier {
   bool get initialLoaded => _initialLoaded;
 
   /// Preload Algerian airports - call this when home page loads
-  static Future<void> preloadAirports() async {
-    await _instance.fetchInitialAirports();
+  Future<void> preloadAirports() async {
+    await fetchInitialAirports();
   }
 
   /// Fetch initial airports (Algerian airports)

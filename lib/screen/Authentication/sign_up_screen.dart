@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:provider/provider.dart';
 
 import 'otp_verication.dart';
 import '../../controllers/register_controller.dart';
@@ -25,7 +26,13 @@ class _SignUpState extends State<SignUp> {
   final FocusNode _emailFocusNode = FocusNode();
   bool _isButtonPressed = false;
   String? _emailError;
-  final RegisterController _controller = RegisterController();
+  late final RegisterController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = context.read<RegisterController>();
+  }
 
   bool _validateEmail(lang.S t) {
     final email = _emailController.text.trim();
@@ -280,7 +287,7 @@ class _SignUpState extends State<SignUp> {
                                   );
                                 } else if (response.success && !response.requiresOTP) {
                                   // login succeeded without OTP -> fetch profile then navigate to Home
-                                  await ProfileController.instance.fetchProfile();
+                                  await context.read<ProfileController>().fetchProfile();
                                   if (!mounted) return;
                                   Navigator.pushAndRemoveUntil(
                                     context,

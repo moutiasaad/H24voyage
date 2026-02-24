@@ -627,11 +627,11 @@ class PriceChipsRow extends StatelessWidget {
     }
 
     // Responsive values
-    final chipHeight = isSmallScreen ? 30.0 : 36.0;
-    final chipPaddingH = isSmallScreen ? 10.0 : 16.0;
-    final chipFontSize = isSmallScreen ? 12.0 : 14.0;
-    final chipMargin = isSmallScreen ? 6.0 : 10.0;
-    final logoSize = isSmallScreen ? 18.0 : 22.0;
+    final chipHeight = isSmallScreen ? 38.0 : 42.0;
+    final chipPaddingH = isSmallScreen ? 10.0 : 14.0;
+    final chipFontSize = isSmallScreen ? 11.0 : 12.0;
+    final chipMargin = isSmallScreen ? 5.0 : 8.0;
+    final logoSize = isSmallScreen ? 28.0 : 32.0;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -649,7 +649,7 @@ class PriceChipsRow extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: chipPaddingH),
               decoration: BoxDecoration(
                 color: ctrl.selectedAirlineCode == null ? kPrimaryColor.withOpacity(0.1) : kWhite,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: ctrl.selectedAirlineCode == null ? kPrimaryColor : kBorderColorTextField,
                   width: 1,
@@ -678,14 +678,14 @@ class PriceChipsRow extends StatelessWidget {
                 ctrl.selectAirlineChip(airlineCode);
               },
               child: Tooltip(
-                message: airlineName.isNotEmpty ? airlineName : airlineCode,
+                message: '${airlineName.isNotEmpty ? airlineName : airlineCode} - ${chip['text']}',
                 child: Container(
                   height: chipHeight,
                   margin: EdgeInsets.only(right: chipMargin),
-                  padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 8 : 12),
+                  padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 14),
                   decoration: BoxDecoration(
                     color: isSelected ? kPrimaryColor.withOpacity(0.1) : kWhite,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected ? kPrimaryColor : kBorderColorTextField,
                       width: 1,
@@ -736,9 +736,9 @@ class PriceChipsRow extends StatelessWidget {
                         ),
                       ),
                       SizedBox(width: isSmallScreen ? 4 : 8),
-                      // Price text
+                      // Airline name
                       Text(
-                        chip['text'],
+                        chip['airlineName'] as String? ?? chip['text'],
                         style: kTextStyle.copyWith(
                           color: kTitleColor,
                           fontSize: chipFontSize,

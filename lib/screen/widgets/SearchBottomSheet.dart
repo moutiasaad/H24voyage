@@ -6,6 +6,7 @@ import 'package:flight_booking/services/location_service.dart';
 import 'package:flight_booking/Model/Airport.dart';
 import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
 import 'package:flutter_iconly/flutter_iconly.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,7 +27,7 @@ class SearchBottomSheet extends StatefulWidget {
 }
 
 class _SearchBottomSheetState extends State<SearchBottomSheet> {
-  final AirportController _controller = AirportController.instance;
+  late final AirportController _controller;
   final LocationService _locationService = LocationService.instance;
   final TextEditingController _textController = TextEditingController();
 
@@ -42,6 +43,7 @@ class _SearchBottomSheetState extends State<SearchBottomSheet> {
   @override
   void initState() {
     super.initState();
+    _controller = context.read<AirportController>();
     _controller.addListener(_onControllerUpdate);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

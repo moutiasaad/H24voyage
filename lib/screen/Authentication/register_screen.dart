@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 import '../widgets/constant.dart';
 import '../../controllers/register_controller.dart';
@@ -22,9 +23,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final RegisterController _controller = RegisterController();
+  late final RegisterController _controller;
   bool _obscurePassword = true;
   bool _isButtonPressed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = context.read<RegisterController>();
+  }
 
   @override
   void dispose() {

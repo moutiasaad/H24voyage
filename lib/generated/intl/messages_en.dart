@@ -580,7 +580,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Our advantages",
     ),
     "homeBookFlight": MessageLookupByLibrary.simpleMessage("Book your flight"),
-    "homeChildAge": MessageLookupByLibrary.simpleMessage("2-12 years"),
+    "homeChildAge": MessageLookupByLibrary.simpleMessage(
+      "2 to 11 years at the time of travel",
+    ),
     "homeClassBusiness": MessageLookupByLibrary.simpleMessage("Business Class"),
     "homeClassBusinessShort": MessageLookupByLibrary.simpleMessage("Business"),
     "homeClassEconomy": MessageLookupByLibrary.simpleMessage("Economy"),
@@ -607,7 +609,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "homeDone": MessageLookupByLibrary.simpleMessage("Done"),
     "homeErrorPrefix": m26,
     "homeGreeting": m27,
-    "homeInfantAge": MessageLookupByLibrary.simpleMessage("Under 2 years"),
+    "homeInfantAge": MessageLookupByLibrary.simpleMessage(
+      "Under 2 years at the time of travel",
+    ),
     "homeMultiMinFlights": MessageLookupByLibrary.simpleMessage(
       "Please add at least 2 flights for multi-destination search.",
     ),
@@ -618,6 +622,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Passenger & Class",
     ),
     "homePassengerCount": m28,
+    "homePassengerNote": MessageLookupByLibrary.simpleMessage(
+      "Children and infants must be accompanied by an adult during the flight.",
+    ),
     "homeReturn": MessageLookupByLibrary.simpleMessage("Return"),
     "homeSearchError": MessageLookupByLibrary.simpleMessage("Search error"),
     "homeSearchFlights": MessageLookupByLibrary.simpleMessage("Search flights"),
@@ -642,7 +649,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "homeSelectReturnDate": MessageLookupByLibrary.simpleMessage(
       "Please select a return date.",
     ),
+    "homeSenior": MessageLookupByLibrary.simpleMessage("Senior"),
+    "homeSeniorTooltip": MessageLookupByLibrary.simpleMessage(
+      "Men 55+ and women 60+, AIR ALGERIE to FRANCE only",
+    ),
     "homeWelcome": MessageLookupByLibrary.simpleMessage("Welcome"),
+    "homeWithBaggage": MessageLookupByLibrary.simpleMessage("With baggage"),
+    "homeYoung": MessageLookupByLibrary.simpleMessage("Young"),
+    "homeYoungTooltip": MessageLookupByLibrary.simpleMessage(
+      "Between 12 and 24 years old, domestic flights only",
+    ),
     "inFlight": m31,
     "inboxEmptyDescription": MessageLookupByLibrary.simpleMessage(
       "You will receive alerts about your trips and your account. Have you chosen your next destination yet?",
