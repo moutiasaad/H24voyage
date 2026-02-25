@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -16,19 +15,12 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
-  late AnimationController _animationController;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+    // Wait for the full GIF duration (5 seconds) then navigate
+    Future.delayed(const Duration(milliseconds: 5000), () => _onAnimationFinished());
   }
 
   Future<void> _onAnimationFinished() async {
@@ -122,19 +114,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color(0xFFFFDDD3),
-        body: Center(
-          child: Lottie.asset(
-            'assets/splash.json',
-            controller: _animationController,
-            repeat: false,
-            onLoaded: (composition) {
-              _animationController.duration = composition.duration;
-              _animationController.forward().then((_) => _onAnimationFinished());
-            },
-          ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFFF6A00),
+      body: SizedBox.expand(
+        child: Image.asset(
+          'assets/splash_screen.gif',
+          fit: BoxFit.cover,
         ),
       ),
     );
