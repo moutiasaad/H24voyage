@@ -307,6 +307,11 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
           final headerPadding = isSheetSmall ? 14.0 : 20.0;
           final headerFontSize = isSheetSmall ? 16.0 : 18.0;
 
+          // Force Aller tab for Prix (0) and Airlines (1) categories
+          if (tempSelectedCategory <= 1) {
+            tempSelectedTab = 0;
+          }
+
           // Select the correct state based on current tab
           final isAllerTab = tempSelectedTab == 0;
           final currentEscaleOption = isAllerTab ? allerEscaleOption : retourEscaleOption;
@@ -386,7 +391,13 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                               final isSelected = tempSelectedCategory == index;
                               return GestureDetector(
                                 onTap: () {
-                                  setModalState(() => tempSelectedCategory = index);
+                                  setModalState(() {
+                                    tempSelectedCategory = index;
+                                    // Reset to Aller tab when selecting Prix or Airlines
+                                    if (index <= 1) {
+                                      tempSelectedTab = 0;
+                                    }
+                                  });
                                 },
                                 child: Container(
                                   width: double.infinity,
@@ -422,8 +433,9 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Tabs: Aller / Retour
-                              if (showRetourTab)
+                              // Tabs: Aller / Retour (only show for categories OTHER than Price and Airlines)
+                              // tempSelectedCategory 0 = Prix, 1 = Compagnies (Airlines)
+                              if (showRetourTab && tempSelectedCategory > 1)
                                 Row(
                                   children: [
                                     GestureDetector(
@@ -475,7 +487,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                     ),
                                   ],
                                 ),
-                              if (showRetourTab) const SizedBox(height: 16),
+                              if (showRetourTab && tempSelectedCategory > 1) const SizedBox(height: 16),
 
                               // Filter content based on selected category + tab
                               Expanded(
@@ -665,6 +677,10 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                 ? slotsToRange(retourArrivalSlots)
                                 : retourArrTimeRange;
 
+                            // Clear retour values for Prix (0) and Airlines (1) categories
+                            // since we don't show Retour tab for these
+                            final shouldClearRetour = tempSelectedCategory <= 1;
+
                             Navigator.pop(context);
                             ctrl.applyFilters(
                               filterCategory: tempSelectedCategory,
@@ -679,15 +695,15 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                               priceRange: priceToApply,
                               depTimeSlots: allerDepartureSlots,
                               arrTimeSlots: allerArrivalSlots,
-                              // Retour
-                              retourEscaleOption: retourEscaleOption,
-                              retourAirlineCodes: retourAirlineCodes,
-                              retourDepartureAirportCodes: retourDepAirportCodesSet,
-                              retourArrivalAirportCodes: retourArrAirportCodesSet,
-                              retourDepTimeRange: retourDepTime,
-                              retourArrTimeRange: retourArrTime,
-                              retourDepTimeSlots: retourDepartureSlots,
-                              retourArrTimeSlots: retourArrivalSlots,
+                              // Retour (cleared for Prix and Airlines)
+                              retourEscaleOption: shouldClearRetour ? 'Tous' : retourEscaleOption,
+                              retourAirlineCodes: shouldClearRetour ? {} : retourAirlineCodes,
+                              retourDepartureAirportCodes: shouldClearRetour ? {} : retourDepAirportCodesSet,
+                              retourArrivalAirportCodes: shouldClearRetour ? {} : retourArrAirportCodesSet,
+                              retourDepTimeRange: shouldClearRetour ? const RangeValues(0, 24) : retourDepTime,
+                              retourArrTimeRange: shouldClearRetour ? const RangeValues(0, 24) : retourArrTime,
+                              retourDepTimeSlots: shouldClearRetour ? {} : retourDepartureSlots,
+                              retourArrTimeSlots: shouldClearRetour ? {} : retourArrivalSlots,
                             );
                           },
                           child: Container(

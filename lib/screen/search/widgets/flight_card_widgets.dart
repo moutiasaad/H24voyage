@@ -540,23 +540,49 @@ class FakeFlightCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Recommandé badge
+          // Top badges row: Recommended (left) and Flight Number (right)
           Padding(
-            padding: const EdgeInsets.only(left: 12, top: 10),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(221, 225, 255, 1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                '${lang.S.of(context).cardRecommended} ${index + 1}',
-                style: kTextStyle.copyWith(
-                  color: const Color.fromRGBO(147, 133, 245, 1),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Recommandé badge (left)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color.fromRGBO(221, 225, 255, 1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    '${lang.S.of(context).cardRecommended} ${index + 1}',
+                    style: kTextStyle.copyWith(
+                      color: const Color.fromRGBO(147, 133, 245, 1),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
+                // Flight number badge (right)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: kPrimaryColor.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '#${index + 1}',
+                    style: kTextStyle.copyWith(
+                      color: kPrimaryColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -815,26 +841,58 @@ class ApiFlightCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Recommandé badge
-          if (index == 0)
-            Padding(
-              padding: EdgeInsets.only(left: cardPadding, top: isSmallScreen ? 8 : 10),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
-                decoration: BoxDecoration(
-                  color: const Color.fromRGBO(221, 225, 255, 1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  '${lang.S.of(context).cardRecommended} ${index + 1}',
-                  style: kTextStyle.copyWith(
-                    color: const Color.fromRGBO(147, 133, 245, 1),
-                    fontSize: badgeFontSize,
-                    fontWeight: FontWeight.w500,
+          // Top badges row: Recommended (left) and Flight Number (right)
+          Padding(
+            padding: EdgeInsets.only(
+              left: cardPadding,
+              right: cardPadding,
+              top: isSmallScreen ? 8 : 10,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Recommandé badge (left)
+                if (index == 0)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(221, 225, 255, 1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      '${lang.S.of(context).cardRecommended} ${index + 1}',
+                      style: kTextStyle.copyWith(
+                        color: const Color.fromRGBO(147, 133, 245, 1),
+                        fontSize: badgeFontSize,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                else
+                  const SizedBox.shrink(),
+                // Flight number badge (right)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: badgePaddingH + 2, vertical: badgePaddingV),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: kPrimaryColor.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '#${index + 1}',
+                    style: kTextStyle.copyWith(
+                      color: kPrimaryColor,
+                      fontSize: badgeFontSize,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
+          ),
 
           Padding(
             padding: EdgeInsets.all(cardPadding),
@@ -1125,30 +1183,62 @@ class MultiDestinationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Recommandé badge
-          if (index == 0)
-            Padding(
-              padding: EdgeInsets.only(left: cardPadding, top: isSmallScreen ? 8 : 10),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
-                decoration: BoxDecoration(
-                  color: const Color.fromRGBO(221, 225, 255, 1),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  '${lang.S.of(context).cardRecommended} ${index + 1}',
-                  style: kTextStyle.copyWith(
-                    color: const Color.fromRGBO(147, 133, 245, 1),
-                    fontSize: badgeFontSize,
-                    fontWeight: FontWeight.w500,
+          // Top badges row: Recommended (left) and Flight Number (right)
+          Padding(
+            padding: EdgeInsets.only(
+              left: cardPadding,
+              right: cardPadding,
+              top: isSmallScreen ? 8 : 10,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Recommandé badge (left)
+                if (index == 0)
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(221, 225, 255, 1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Text(
+                      '${lang.S.of(context).cardRecommended} ${index + 1}',
+                      style: kTextStyle.copyWith(
+                        color: const Color.fromRGBO(147, 133, 245, 1),
+                        fontSize: badgeFontSize,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  )
+                else
+                  const SizedBox.shrink(),
+                // Flight number badge (right)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: badgePaddingH + 2, vertical: badgePaddingV),
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: kPrimaryColor.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '#${index + 1}',
+                    style: kTextStyle.copyWith(
+                      color: kPrimaryColor,
+                      fontSize: badgeFontSize,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
+          ),
 
           // Multi-destination badge
           Padding(
-            padding: EdgeInsets.only(left: cardPadding, top: index == 0 ? (isSmallScreen ? 4 : 6) : (isSmallScreen ? 8 : 10)),
+            padding: EdgeInsets.only(left: cardPadding, top: isSmallScreen ? 4 : 6),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
               decoration: BoxDecoration(
