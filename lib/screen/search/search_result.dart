@@ -18,6 +18,10 @@ import '../widgets/flight_search_loading.dart';
 import 'widgets/flight_card_widgets.dart';
 import 'widgets/search_bottom_sheets.dart';
 import 'widgets/search_filter_widgets.dart';
+import 'widgets/animated_flight_card.dart';
+import 'widgets/shimmer_flight_card.dart';
+// import 'widgets/animated_total_counter.dart'; // Available for future use
+import 'widgets/flight_status_pill.dart';
 
 class SearchResult extends StatefulWidget {
   final Airport fromAirport;
@@ -33,6 +37,8 @@ class SearchResult extends StatefulWidget {
   final int? totalOffers;
   final String? errorMessage;
   final List<AirlineInfo>? apiAirlines;
+  final double? apiMinPrice;
+  final double? apiMaxPrice;
 
   const SearchResult({
     Key? key,
@@ -49,19 +55,47 @@ class SearchResult extends StatefulWidget {
     this.totalOffers,
     this.errorMessage,
     this.apiAirlines,
+    this.apiMinPrice,
+    this.apiMaxPrice,
   }) : super(key: key);
 
   @override
   State<SearchResult> createState() => _SearchResultState();
 }
 
-class _SearchResultState extends State<SearchResult> {
+class _SearchResultState extends State<SearchResult>
+    with TickerProviderStateMixin {
   // ── Controller (owns all state, filters, pagination, sorting) ──
   late final SearchResultController _ctrl;
 
   // ── UI-only state ──
   final ScrollController _scrollController = ScrollController();
   final FlightController _flightController = FlightController();
+
+  // ── Panel slide-up animation (plays once on page open) ──
+  late final AnimationController _panelController;
+  late final Animation<Offset> _panelSlide;
+  late final Animation<double> _panelOpacity;
+
+  // ── Stagger animation for flight cards ──
+  late final AnimationController _staggerController;
+  bool _previousIsReloading = false;
+  bool _initialStaggerPlayed = false;
+  int _staggerItemCount = 15;
+
+  // ── Shimmer animation for loading skeleton cards ──
+  late final AnimationController _shimmerController;
+
+  // ── Fade-out animation for filter change ──
+  late final AnimationController _fadeController;
+
+  // ── Bounce animation for empty state icon ──
+  late final AnimationController _bounceController;
+  late final Animation<double> _bounceScale;
+
+  // ── Bottom status pill ──
+  final GlobalKey<FlightStatusPillState> _pillKey = GlobalKey();
+  bool _pillDismissed = false;
 
   // Responsive breakpoints (need BuildContext)
   bool get isSmallScreen => MediaQuery.of(context).size.width < 360;
@@ -107,11 +141,61 @@ class _SearchResultState extends State<SearchResult> {
       fromAirport: widget.fromAirport,
       toAirport: widget.toAirport,
     );
-    _ctrl.addListener(() {
-      if (mounted) setState(() {});
-    });
 
+    // Panel slide-up animation: Offset(0,1) → Offset(0,0), 350ms
+    _panelController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _panelSlide = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _panelController,
+      curve: Curves.easeOutCubic,
+    ));
+    _panelOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _panelController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
+
+    // Stagger animation controller (duration set dynamically per batch)
+    _staggerController = AnimationController(
+      vsync: this,
+      duration: _computeStaggerDuration(_staggerItemCount),
+    );
+
+    _shimmerController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat();
+
+    // Fade-out for filter change
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+      value: 1.0,
+    );
+
+    // Bounce for empty state icon
+    _bounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _bounceScale = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.2), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.2, end: 0.95), weight: 20),
+      TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.0), weight: 30),
+    ]).animate(_bounceController);
+
+    _ctrl.addListener(_onControllerChanged);
     _scrollController.addListener(_onScroll);
+
+    // Start panel slide-up after a short delay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (mounted) _panelController.forward();
+      });
+    });
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       String? assetData;
@@ -124,14 +208,73 @@ class _SearchResultState extends State<SearchResult> {
         totalOffers: widget.totalOffers,
         assetJsonData: assetData,
         apiAirlines: widget.apiAirlines,
+        apiMinPrice: widget.apiMinPrice,
+        apiMaxPrice: widget.apiMaxPrice,
       );
     });
   }
 
+  /// Detects data load and filter reload completion to trigger animations.
+  void _onControllerChanged() {
+    if (!mounted) return;
+
+    // Detect reload START → restart pill, fade out existing cards
+    if (!_previousIsReloading && _ctrl.isReloading) {
+      _fadeController.reverse();
+      _pillDismissed = false;
+      _pillKey.currentState?.restartForReload();
+    }
+
+    // Detect reload COMPLETE → complete pill, play stagger or bounce
+    if (_previousIsReloading && !_ctrl.isReloading) {
+      _pillKey.currentState?.completeWithTotal(_ctrl.totalFlights);
+      if (_ctrl.hasApiFlights) {
+        _fadeController.value = 1.0;
+        _playStaggerAnimation();
+      } else if (_ctrl.hasActiveFilters) {
+        _bounceController.reset();
+        _bounceController.forward();
+      }
+    }
+    _previousIsReloading = _ctrl.isReloading;
+
+    // Trigger initial stagger when first data arrives
+    if (!_initialStaggerPlayed &&
+        !_ctrl.isReloading &&
+        _ctrl.filteredApiFlights.isNotEmpty) {
+      _initialStaggerPlayed = true;
+      _pillKey.currentState?.completeWithTotal(_ctrl.totalFlights);
+      _playStaggerAnimation();
+    }
+
+    setState(() {});
+  }
+
+  /// Computes total stagger duration: (itemCount-1)*80 + 250 ms
+  Duration _computeStaggerDuration(int itemCount) {
+    final capped = itemCount.clamp(1, 15);
+    return Duration(milliseconds: (capped - 1) * 80 + 250);
+  }
+
+  /// Resets and plays the stagger animation for the current batch of cards.
+  void _playStaggerAnimation() {
+    final count = _ctrl.filteredApiFlights.length.clamp(1, 15);
+    _staggerItemCount = count;
+    _staggerController.duration = _computeStaggerDuration(count);
+    _staggerController.reset();
+    _staggerController.forward();
+  }
+
   @override
   void dispose() {
+    _panelController.dispose();
+    _staggerController.dispose();
+    _shimmerController.dispose();
+    _fadeController.dispose();
+    _bounceController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _ctrl.removeListener(_onControllerChanged);
     _ctrl.dispose();
     super.dispose();
   }
@@ -235,7 +378,7 @@ class _SearchResultState extends State<SearchResult> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SearchResult(
+                  builder: (_) => SearchResult(
                     fromAirport: fromAirport,
                     toAirport: toAirport,
                     adultCount: adultCount,
@@ -256,6 +399,8 @@ class _SearchResultState extends State<SearchResult> {
                         ? _flightController.errorMessage ?? lang.S.of(context).homeSearchError
                         : null,
                     apiAirlines: _flightController.availableAirlines,
+                    apiMinPrice: _flightController.minPrice,
+                    apiMaxPrice: _flightController.maxPrice,
                   ),
                 ),
               );
@@ -277,11 +422,14 @@ class _SearchResultState extends State<SearchResult> {
   List<Widget> _buildPaginatedApiFlightsList(String fromCode, String toCode) {
     final allFilteredFlights = _ctrl.filteredApiFlights;
 
-    // Show loading while reloading flights with filters
+    // Show shimmer skeleton cards while reloading flights
     if (_ctrl.isReloading) {
       return [
-        SliverToBoxAdapter(
-          child: PaginationLoader(message: lang.S.of(context).searchLoadingFlights),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => ShimmerFlightCard(animation: _shimmerController),
+            childCount: 3,
+          ),
         ),
       ];
     }
@@ -294,17 +442,20 @@ class _SearchResultState extends State<SearchResult> {
             child: Center(
               child: Column(
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.filter_alt_off_rounded,
-                      size: 40,
-                      color: kSubTitleColor,
+                  ScaleTransition(
+                    scale: _bounceScale,
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.filter_alt_off_rounded,
+                        size: 40,
+                        color: kSubTitleColor,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -364,7 +515,7 @@ class _SearchResultState extends State<SearchResult> {
         delegate: SliverChildBuilderDelegate(
           (context, i) {
             final offer = allFilteredFlights[i];
-            return Padding(
+            final card = Padding(
               padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 10 : 16),
               child: ApiFlightCard(
                 offer: offer,
@@ -382,6 +533,17 @@ class _SearchResultState extends State<SearchResult> {
                 onBaggageDetailsTap: (ctx, b) => showBaggageDetailsBottomSheet(ctx, b),
               ),
             );
+
+            // Stagger-animate the first batch; pagination items appear instantly
+            if (i < _staggerItemCount) {
+              return AnimatedFlightCard(
+                animation: _staggerController,
+                index: i,
+                itemCount: _staggerItemCount,
+                child: card,
+              );
+            }
+            return card;
           },
           childCount: allFilteredFlights.length,
         ),
@@ -419,68 +581,110 @@ class _SearchResultState extends State<SearchResult> {
 
     return Scaffold(
       backgroundColor: kWhite,
-      body: Column(
+      body: Stack(
         children: [
-          // Header Section with orange gradient
-          SearchResultHeader(
-            fromCity: fromCity,
-            toCity: toCity,
-            totalPassengers: totalPassengers,
-            infantCount: widget.infantCount,
-            dateRange: widget.dateRange,
-            isSmallScreen: isSmallScreen,
-            isMediumScreen: isMediumScreen,
-            onBack: () => Navigator.pop(context),
-            onEdit: _showEditSearchBottomSheet,
-          ),
+          // Main content
+          Column(
+            children: [
+              // Header Section with orange gradient
+              SearchResultHeader(
+                fromCity: fromCity,
+                toCity: toCity,
+                totalPassengers: totalPassengers,
+                infantCount: widget.infantCount,
+                dateRange: widget.dateRange,
+                isSmallScreen: isSmallScreen,
+                isMediumScreen: isMediumScreen,
+                onBack: () => Navigator.pop(context),
+                onEdit: _showEditSearchBottomSheet,
+              ),
 
-          // Scrollable Content with Pagination
-          Expanded(
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // Duration banner (only for round-trip with both dates)
-                if (widget.dateRange != null && widget.dateRange!.start != widget.dateRange!.end)
-                  SliverToBoxAdapter(
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: kPrimaryColor.withOpacity(0.2)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.access_time_rounded, size: 18, color: kPrimaryColor),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${lang.S.of(context).searchStayDuration}${widget.dateRange!.duration.inDays} ${widget.dateRange!.duration.inDays > 1 ? lang.S.of(context).datePickerDays : lang.S.of(context).datePickerDay}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: kPrimaryColor,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            '${DateFormat('dd MMM', 'fr').format(widget.dateRange!.start)} - ${DateFormat('dd MMM', 'fr').format(widget.dateRange!.end)}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: kPrimaryColor.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      ),
+              // Animated content panel — slides up from bottom on page open
+              Expanded(
+            child: SlideTransition(
+              position: _panelSlide,
+              child: FadeTransition(
+                opacity: _panelOpacity,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: kWhite,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(0x1A000000),
+                        blurRadius: 16,
+                        offset: Offset(0, -4),
+                      ),
+                    ],
                   ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      topRight: Radius.circular(28),
+                    ),
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        // Drag indicator
+                        SliverToBoxAdapter(
+                          child: Center(
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 12, bottom: 4),
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                        ),
 
-                // Top spacing
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 16),
-                ),
+                        // Duration banner (only for round-trip with both dates)
+                        if (widget.dateRange != null && widget.dateRange!.start != widget.dateRange!.end)
+                          SliverToBoxAdapter(
+                            child: Container(
+                              margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: kPrimaryColor.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: kPrimaryColor.withOpacity(0.2)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.access_time_rounded, size: 18, color: kPrimaryColor),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${lang.S.of(context).searchStayDuration}${widget.dateRange!.duration.inDays} ${widget.dateRange!.duration.inDays > 1 ? lang.S.of(context).datePickerDays : lang.S.of(context).datePickerDay}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: kPrimaryColor,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${DateFormat('dd MMM', 'fr').format(widget.dateRange!.start)} - ${DateFormat('dd MMM', 'fr').format(widget.dateRange!.end)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: kPrimaryColor.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // Top spacing
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 12),
+                        ),
 
                 // Vol direct toggle + Filter buttons
                 SliverToBoxAdapter(
@@ -627,13 +831,35 @@ class _SearchResultState extends State<SearchResult> {
                     ),
                   ),
 
-                // Bottom spacing
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 20),
+                        // Bottom spacing for pill clearance
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 70),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ],
+              ),
             ),
           ),
+            ],
+          ),
+
+          // Bottom status pill overlay
+          if (!_pillDismissed)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              child: FlightStatusPill(
+                key: _pillKey,
+                totalFlights: _ctrl.totalFlights,
+                isComplete: !_ctrl.isReloading && _ctrl.hasApiFlights,
+                onDismissed: () {
+                  if (mounted) setState(() => _pillDismissed = true);
+                },
+              ),
+            ),
         ],
       ),
     );

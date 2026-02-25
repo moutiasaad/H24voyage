@@ -13,6 +13,7 @@ import 'generated/l10n.dart';
 import 'controllers/profile_controller.dart';
 import 'controllers/airport_controller.dart';
 import 'controllers/register_controller.dart';
+import 'controllers/booking_controller.dart';
 import 'screen/home/controller/home_search_controller.dart';
 
 Future<void> main() async {
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AirportController()),
         ChangeNotifierProvider(create: (_) => RegisterController()),
         ChangeNotifierProvider(create: (_) => HomeSearchController()),
+        ChangeNotifierProvider(create: (_) => BookingController()),
       ],
       child: Builder(
         builder: (context) => MaterialApp(

@@ -4279,6 +4279,261 @@ class S {
     );
   }
 
+  /// `Pending`
+  String get statusPending {
+    return Intl.message('Pending', name: 'statusPending', desc: '', args: []);
+  }
+
+  /// `PNR pending`
+  String get statusPnrPending {
+    return Intl.message(
+      'PNR pending',
+      name: 'statusPnrPending',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failure Ticket`
+  String get statusFailureTicket {
+    return Intl.message(
+      'Failure Ticket',
+      name: 'statusFailureTicket',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unable to load bookings`
+  String get bookingLoadError {
+    return Intl.message(
+      'Unable to load bookings',
+      name: 'bookingLoadError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retry`
+  String get bookingRetry {
+    return Intl.message('Retry', name: 'bookingRetry', desc: '', args: []);
+  }
+
+  /// `Please log in to see your bookings`
+  String get bookingLoginRequired {
+    return Intl.message(
+      'Please log in to see your bookings',
+      name: 'bookingLoginRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `PNR`
+  String get bookingPnr {
+    return Intl.message('PNR', name: 'bookingPnr', desc: '', args: []);
+  }
+
+  /// `passengers`
+  String get bookingPassengers {
+    return Intl.message(
+      'passengers',
+      name: 'bookingPassengers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reservation details`
+  String get bookingDetailTitle {
+    return Intl.message(
+      'Reservation details',
+      name: 'bookingDetailTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Booking ID`
+  String get bookingDetailBookingId {
+    return Intl.message(
+      'Booking ID',
+      name: 'bookingDetailBookingId',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Booking date`
+  String get bookingDetailBookingDate {
+    return Intl.message(
+      'Booking date',
+      name: 'bookingDetailBookingDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Status`
+  String get bookingDetailStatus {
+    return Intl.message(
+      'Status',
+      name: 'bookingDetailStatus',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Trip type`
+  String get bookingDetailTripType {
+    return Intl.message(
+      'Trip type',
+      name: 'bookingDetailTripType',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Round trip`
+  String get bookingDetailRoundtrip {
+    return Intl.message(
+      'Round trip',
+      name: 'bookingDetailRoundtrip',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `One way`
+  String get bookingDetailOneway {
+    return Intl.message(
+      'One way',
+      name: 'bookingDetailOneway',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Multi-destination`
+  String get bookingDetailMulti {
+    return Intl.message(
+      'Multi-destination',
+      name: 'bookingDetailMulti',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passenger`
+  String get bookingDetailPassenger {
+    return Intl.message(
+      'Passenger',
+      name: 'bookingDetailPassenger',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Adults`
+  String get bookingDetailAdults {
+    return Intl.message(
+      'Adults',
+      name: 'bookingDetailAdults',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Children`
+  String get bookingDetailChildren {
+    return Intl.message(
+      'Children',
+      name: 'bookingDetailChildren',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Infants`
+  String get bookingDetailInfants {
+    return Intl.message(
+      'Infants',
+      name: 'bookingDetailInfants',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Class`
+  String get bookingDetailClass {
+    return Intl.message(
+      'Class',
+      name: 'bookingDetailClass',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Flight segments`
+  String get bookingDetailSegments {
+    return Intl.message(
+      'Flight segments',
+      name: 'bookingDetailSegments',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Segment`
+  String get bookingDetailSegment {
+    return Intl.message(
+      'Segment',
+      name: 'bookingDetailSegment',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Departure`
+  String get bookingDetailDeparture {
+    return Intl.message(
+      'Departure',
+      name: 'bookingDetailDeparture',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Arrival`
+  String get bookingDetailArrival {
+    return Intl.message(
+      'Arrival',
+      name: 'bookingDetailArrival',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last ticket date`
+  String get bookingDetailLastTicketDate {
+    return Intl.message(
+      'Last ticket date',
+      name: 'bookingDetailLastTicketDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total price`
+  String get bookingDetailTotalPrice {
+    return Intl.message(
+      'Total price',
+      name: 'bookingDetailTotalPrice',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Customer support`
   String get supportTitle {
     return Intl.message(
@@ -5147,6 +5402,161 @@ class S {
       desc: '',
       args: [],
     );
+  }
+
+  /// `Getting all available flights`
+  String get pillLoading {
+    return Intl.message(
+      'Getting all available flights',
+      name: 'pillLoading',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} flights available`
+  String pillFlightsAvailable(Object count) {
+    return Intl.message(
+      '$count flights available',
+      name: 'pillFlightsAvailable',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Flights`
+  String get bookingCategoryFlights {
+    return Intl.message(
+      'Flights',
+      name: 'bookingCategoryFlights',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Hotels`
+  String get bookingCategoryHotels {
+    return Intl.message(
+      'Hotels',
+      name: 'bookingCategoryHotels',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bus`
+  String get bookingCategoryBus {
+    return Intl.message('Bus', name: 'bookingCategoryBus', desc: '', args: []);
+  }
+
+  /// `Cars`
+  String get bookingCategoryCars {
+    return Intl.message(
+      'Cars',
+      name: 'bookingCategoryCars',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No trips yet`
+  String get bookingEmptyStateTitle {
+    return Intl.message(
+      'No trips yet',
+      name: 'bookingEmptyStateTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `When you book a trip, it will appear here.`
+  String get bookingEmptyStateSubtitle {
+    return Intl.message(
+      'When you book a trip, it will appear here.',
+      name: 'bookingEmptyStateSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Search flights`
+  String get bookingSearchFlights {
+    return Intl.message(
+      'Search flights',
+      name: 'bookingSearchFlights',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Balance`
+  String get bookingBalance {
+    return Intl.message('Balance', name: 'bookingBalance', desc: '', args: []);
+  }
+
+  /// `Check-in`
+  String get bookingHotelCheckIn {
+    return Intl.message(
+      'Check-in',
+      name: 'bookingHotelCheckIn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Check-out`
+  String get bookingHotelCheckOut {
+    return Intl.message(
+      'Check-out',
+      name: 'bookingHotelCheckOut',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `nights`
+  String get bookingHotelNights {
+    return Intl.message(
+      'nights',
+      name: 'bookingHotelNights',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `room`
+  String get bookingHotelRoom {
+    return Intl.message('room', name: 'bookingHotelRoom', desc: '', args: []);
+  }
+
+  /// `guests`
+  String get bookingHotelGuests {
+    return Intl.message(
+      'guests',
+      name: 'bookingHotelGuests',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Seat`
+  String get bookingBusSeat {
+    return Intl.message('Seat', name: 'bookingBusSeat', desc: '', args: []);
+  }
+
+  /// `Pickup`
+  String get bookingCarPickup {
+    return Intl.message('Pickup', name: 'bookingCarPickup', desc: '', args: []);
+  }
+
+  /// `Return`
+  String get bookingCarReturn {
+    return Intl.message('Return', name: 'bookingCarReturn', desc: '', args: []);
+  }
+
+  /// `days`
+  String get bookingCarDays {
+    return Intl.message('days', name: 'bookingCarDays', desc: '', args: []);
   }
 }
 

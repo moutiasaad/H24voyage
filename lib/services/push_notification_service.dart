@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
+
+import '../config/api_config.dart';
 
 /// Top-level function for handling background messages.
 /// Must be a top-level function (not a class method).
@@ -77,13 +81,13 @@ class PushNotificationService {
       _handleMessageOpenedApp(initialMessage);
     }
 
-    // Listen for token refresh
+    // Listen for token refresh and send to backend
     _messaging.onTokenRefresh.listen((newToken) {
       debugPrint('╔══════════════════════════════════════════════════════════');
       debugPrint('║ FCM TOKEN REFRESHED');
       debugPrint('║ Token: $newToken');
       debugPrint('╚══════════════════════════════════════════════════════════');
-      // TODO: Send the new token to your backend API
+      _registerTokenWithBackend(newToken);
     });
   }
 
@@ -101,7 +105,7 @@ class PushNotificationService {
     debugPrint('Notification permission status: ${settings.authorizationStatus}');
   }
 
-  /// Get the FCM token for this device.
+  /// Get the FCM token for this device and register it with the backend.
   /// Call this after successful authentication.
   Future<String?> getToken() async {
     try {
@@ -110,11 +114,62 @@ class PushNotificationService {
       debugPrint('║ FCM TOKEN (after authentication)');
       debugPrint('║ Token: $token');
       debugPrint('╚══════════════════════════════════════════════════════════');
-      // TODO: Send token to your backend API when endpoint is ready
+
+      if (token != null) {
+        await _registerTokenWithBackend(token);
+      }
+
       return token;
     } catch (e) {
       debugPrint('Failed to get FCM token: $e');
       return null;
+    }
+  }
+
+  /// Send the FCM token to the Laravel backend API.
+  Future<void> _registerTokenWithBackend(String fcmToken) async {
+    try {
+      // Detect platform
+      String platform = 'web';
+      String deviceName = 'Unknown Device';
+      if (!kIsWeb) {
+        if (Platform.isAndroid) {
+          platform = 'android';
+          deviceName = 'Android Device';
+        } else if (Platform.isIOS) {
+          platform = 'ios';
+          deviceName = 'iOS Device';
+        }
+      }
+
+      final url = Uri.parse('${ApiConfig.fcmBaseUrl}/device-tokens');
+      final body = jsonEncode({
+        'fcm_token': fcmToken,
+        'device_name': deviceName,
+        'platform': platform,
+      });
+
+      debugPrint('╔══════════════════════════════════════════════════════════');
+      debugPrint('║ REGISTERING FCM TOKEN WITH BACKEND');
+      debugPrint('║ URL: $url');
+      debugPrint('║ Platform: $platform');
+      debugPrint('╚══════════════════════════════════════════════════════════');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        debugPrint('✅ FCM token registered with backend successfully');
+        debugPrint('   Response: ${response.body}');
+      } else {
+        debugPrint('❌ Failed to register FCM token: ${response.statusCode}');
+        debugPrint('   Response: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('❌ Error registering FCM token with backend: $e');
     }
   }
 

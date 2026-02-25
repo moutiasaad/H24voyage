@@ -601,6 +601,33 @@
     "statusConfirmed": "Confirmé",
     "statusCompleted": "Terminé",
     "statusCancelled": "Annulé",
+    "statusPending": "En attente",
+    "statusPnrPending": "PNR en attente",
+    "statusFailureTicket": "Échec d'émission",
+    "bookingLoadError": "Impossible de charger les réservations",
+    "bookingRetry": "Réessayer",
+    "bookingLoginRequired": "Veuillez vous connecter pour voir vos réservations",
+    "bookingPnr": "PNR",
+    "bookingPassengers": "passagers",
+    "bookingDetailTitle": "Détails de la réservation",
+    "bookingDetailBookingId": "N° réservation",
+    "bookingDetailBookingDate": "Date de réservation",
+    "bookingDetailStatus": "Statut",
+    "bookingDetailTripType": "Type de voyage",
+    "bookingDetailRoundtrip": "Aller-retour",
+    "bookingDetailOneway": "Aller simple",
+    "bookingDetailMulti": "Multi-destination",
+    "bookingDetailPassenger": "Passager",
+    "bookingDetailAdults": "Adultes",
+    "bookingDetailChildren": "Enfants",
+    "bookingDetailInfants": "Bébés",
+    "bookingDetailClass": "Classe",
+    "bookingDetailSegments": "Segments de vol",
+    "bookingDetailSegment": "Segment",
+    "bookingDetailDeparture": "Départ",
+    "bookingDetailArrival": "Arrivée",
+    "bookingDetailLastTicketDate": "Date limite d'émission",
+    "bookingDetailTotalPrice": "Prix total",
 
     "supportTitle": "Support client",
     "supportTabAll": "Toutes",
@@ -702,6 +729,35 @@
     "faqQ14": "Que faire si mon bagage est perdu ?",
     "faqA14": "Si votre bagage est perdu :\n\n1. Signalez-le immédiatement au comptoir bagages de l'aéroport\n2. Remplissez un formulaire PIR (Property Irregularity Report)\n3. Conservez votre numéro de dossier\n4. Contactez notre support avec ces informations\n\nNous vous accompagnerons dans vos démarches.",
     "faqQ15": "Puis-je transporter des objets spéciaux ?",
-    "faqA15": "Certains objets nécessitent une déclaration préalable :\n\n• Équipements sportifs (vélo, ski, golf)\n• Instruments de musique\n• Animaux de compagnie\n• Équipements médicaux\n\nContactez-nous au moins 48h avant votre vol pour organiser le transport."
+    "faqA15": "Certains objets nécessitent une déclaration préalable :\n\n• Équipements sportifs (vélo, ski, golf)\n• Instruments de musique\n• Animaux de compagnie\n• Équipements médicaux\n\nContactez-nous au moins 48h avant votre vol pour organiser le transport.",
+
+    "pillLoading": "Recherche de tous les vols disponibles",
+    "pillFlightsAvailable": "{count} vols disponibles",
+    "@pillFlightsAvailable": {
+      "placeholders": {
+        "count": {}
+      }
+    },
+
+    "bookingCategoryFlights": "Vols",
+    "bookingCategoryHotels": "Hôtels",
+    "bookingCategoryBus": "Bus",
+    "bookingCategoryCars": "Voitures",
+    "bookingEmptyStateTitle": "Aucun voyage pour l'instant",
+    "bookingEmptyStateSubtitle": "Lorsque vous réservez un voyage, il apparaîtra ici.",
+    "bookingSearchFlights": "Rechercher des vols",
+    "bookingBalance": "Solde",
+
+    "bookingHotelCheckIn": "Arrivée",
+    "bookingHotelCheckOut": "Départ",
+    "bookingHotelNights": "nuits",
+    "bookingHotelRoom": "chambre",
+    "bookingHotelGuests": "voyageurs",
+
+    "bookingBusSeat": "Siège",
+
+    "bookingCarPickup": "Prise en charge",
+    "bookingCarReturn": "Retour",
+    "bookingCarDays": "jours"
 
 }

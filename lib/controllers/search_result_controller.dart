@@ -99,8 +99,12 @@ class SearchResultController extends ChangeNotifier {
   RangeValues? _selectedPriceRange;
   RangeValues? get selectedPriceRange => _selectedPriceRange;
 
-  RangeValues? _retourPriceRange;
-  RangeValues? get retourPriceRange => _retourPriceRange;
+  // API-provided price range from filterDependencies (minRate/maxRate)
+  double? _apiMinPrice;
+  double? get apiMinPrice => _apiMinPrice;
+
+  double? _apiMaxPrice;
+  double? get apiMaxPrice => _apiMaxPrice;
 
   // ── Retour journey filter state ──
   String _retourEscaleOption = 'Tous';
@@ -121,6 +125,19 @@ class SearchResultController extends ChangeNotifier {
   Set<String> _retourArrAirportCodes = {};
   Set<String> get retourArrAirportCodes => _retourArrAirportCodes;
 
+  // ── Time slot state (indices 0,1,2 → API S1,S2,S3) ──
+  Set<int> _selectedDepTimeSlots = {};
+  Set<int> get selectedDepTimeSlots => _selectedDepTimeSlots;
+
+  Set<int> _selectedArrTimeSlots = {};
+  Set<int> get selectedArrTimeSlots => _selectedArrTimeSlots;
+
+  Set<int> _retourDepTimeSlots = {};
+  Set<int> get retourDepTimeSlots => _retourDepTimeSlots;
+
+  Set<int> _retourArrTimeSlots = {};
+  Set<int> get retourArrTimeSlots => _retourArrTimeSlots;
+
   // ── Pagination state ──
   int _currentPage = 1;
   int get currentPage => _currentPage;
@@ -136,6 +153,9 @@ class SearchResultController extends ChangeNotifier {
 
   bool _hasMorePages = true;
   bool get hasMorePages => _hasMorePages;
+
+  int _totalFlights = 0;
+  int get totalFlights => _totalFlights;
 
   // ═══════════════════════════════════════════════════════════
   //  PUBLIC SETTERS / MUTATORS
@@ -202,10 +222,6 @@ class SearchResultController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setRetourPriceRange(RangeValues? range) {
-    _retourPriceRange = range;
-    notifyListeners();
-  }
 
   void toggleExpandedOutbound(int index) {
     if (_expandedOutbound.contains(index)) {
@@ -248,7 +264,6 @@ class SearchResultController extends ChangeNotifier {
     _selectedDepTimeRange = const RangeValues(0, 24);
     _selectedArrTimeRange = const RangeValues(0, 24);
     _selectedPriceRange = null;
-    _retourPriceRange = null;
     // Retour filters
     _retourEscaleOption = 'Tous';
     _retourAirlineCodes = {};
@@ -256,6 +271,11 @@ class SearchResultController extends ChangeNotifier {
     _retourArrTimeRange = const RangeValues(0, 24);
     _retourDepAirportCodes = {};
     _retourArrAirportCodes = {};
+    // Time slots
+    _selectedDepTimeSlots = {};
+    _selectedArrTimeSlots = {};
+    _retourDepTimeSlots = {};
+    _retourArrTimeSlots = {};
     notifyListeners();
   }
 
@@ -270,6 +290,9 @@ class SearchResultController extends ChangeNotifier {
     required RangeValues depTimeRange,
     required RangeValues arrTimeRange,
     required RangeValues? priceRange,
+    // Time slot selections (indices 0,1,2)
+    Set<int>? depTimeSlots,
+    Set<int>? arrTimeSlots,
     // Retour journey filters (optional, for round-trip)
     String? retourEscaleOption,
     Set<String>? retourAirlineCodes,
@@ -277,7 +300,8 @@ class SearchResultController extends ChangeNotifier {
     Set<String>? retourArrivalAirportCodes,
     RangeValues? retourDepTimeRange,
     RangeValues? retourArrTimeRange,
-    RangeValues? retourPriceRange,
+    Set<int>? retourDepTimeSlots,
+    Set<int>? retourArrTimeSlots,
   }) {
     _selectedFilterCategory = filterCategory;
     _selectedFilterTab = filterTab;
@@ -290,7 +314,8 @@ class SearchResultController extends ChangeNotifier {
     _selectedDepTimeRange = depTimeRange;
     _selectedArrTimeRange = arrTimeRange;
     _selectedPriceRange = priceRange;
-    _retourPriceRange = retourPriceRange;
+    _selectedDepTimeSlots = depTimeSlots ?? {};
+    _selectedArrTimeSlots = arrTimeSlots ?? {};
 
     // Retour filters
     _retourEscaleOption = retourEscaleOption ?? 'Tous';
@@ -299,6 +324,8 @@ class SearchResultController extends ChangeNotifier {
     _retourArrTimeRange = retourArrTimeRange ?? const RangeValues(0, 24);
     _retourDepAirportCodes = retourDepartureAirportCodes ?? {};
     _retourArrAirportCodes = retourArrivalAirportCodes ?? {};
+    _retourDepTimeSlots = retourDepTimeSlots ?? {};
+    _retourArrTimeSlots = retourArrTimeSlots ?? {};
 
     // Clear the quick chip filter when applying dialog airline filters
     if (_selectedFilterAirlineCodes.isNotEmpty || _retourAirlineCodes.isNotEmpty) {
@@ -310,15 +337,17 @@ class SearchResultController extends ChangeNotifier {
 
   /// Sets sort option, re-sorts, and reloads from API if price-based sort.
   void applySortAndReload(String option) {
-    final oldSort = _selectedSortOption;
     _selectedSortOption = option;
-    _sortFlights(option);
     notifyListeners();
 
     final isPriceSort = option == 'cheapest' || option == 'most_expensive';
-    final wasOldPriceSort = oldSort == 'cheapest' || oldSort == 'most_expensive';
-    if (isPriceSort || wasOldPriceSort) {
+    if (isPriceSort) {
+      // Price sort is handled by the API (sort=P:asc / sort=P:desc)
       reloadFlightsWithFilters();
+    } else {
+      // Non-price sorts are client-side only
+      _sortFlights(option);
+      notifyListeners();
     }
   }
 
@@ -343,12 +372,17 @@ class SearchResultController extends ChangeNotifier {
     int? totalOffers,
     String? assetJsonData,
     List<AirlineInfo>? apiAirlines,
+    double? apiMinPrice,
+    double? apiMaxPrice,
   }) {
     if (apiAirlines != null) {
       _apiAirlines = apiAirlines;
     }
+    _apiMinPrice = apiMinPrice;
+    _apiMaxPrice = apiMaxPrice;
     if (initialOffers != null && initialOffers.isNotEmpty) {
       _apiFlights = initialOffers;
+      _totalFlights = totalOffers ?? initialOffers.length;
 
       const int perPage = 15;
       final int currentCount = _apiFlights.length;
@@ -380,6 +414,21 @@ class SearchResultController extends ChangeNotifier {
   //  API / PAGINATION
   // ═══════════════════════════════════════════════════════════
 
+  /// Maps an escale option string to the API stop code for a given bound.
+  /// boundPrefix: "B1" for Aller, "B2" for Retour.
+  String? _escaleToStopCode(String escaleOption, String boundPrefix) {
+    switch (escaleOption) {
+      case 'Direct':
+        return '$boundPrefix:S0';
+      case 'Jusqu\'à 1 escale':
+        return '$boundPrefix:S1';
+      case 'Jusqu\'à 2 escales':
+        return '$boundPrefix:S2';
+      default:
+        return null; // 'Tous' = no filter
+    }
+  }
+
   /// Builds a [FlightResultsRequest] with all currently active filters applied.
   FlightResultsRequest buildFilteredRequest({required int page}) {
     String? airlineParam;
@@ -405,6 +454,69 @@ class SearchResultController extends ChangeNotifier {
         sortParam = null;
     }
 
+    // Build stops param from escale options (Aller=B1, Retour=B2)
+    String? stopsParam;
+    final stopCodes = <String>[];
+    final allerStop = _escaleToStopCode(_selectedEscaleOption, 'B1');
+    if (allerStop != null) stopCodes.add(allerStop);
+    final retourStop = _escaleToStopCode(_retourEscaleOption, 'B2');
+    if (retourStop != null) stopCodes.add(retourStop);
+    if (stopCodes.isNotEmpty) {
+      stopsParam = stopCodes.join(',');
+    }
+
+    // Build depAirport param (Aller=B1:CODE, Retour=B2:CODE)
+    String? depAirportParam;
+    final depCodes = <String>[];
+    for (final code in _selectedDepartureAirportCodes) {
+      depCodes.add('B1:$code');
+    }
+    for (final code in _retourDepAirportCodes) {
+      depCodes.add('B2:$code');
+    }
+    if (depCodes.isNotEmpty) {
+      depAirportParam = depCodes.join(',');
+    }
+
+    // Build arrAirport param (Aller=B1:CODE, Retour=B2:CODE)
+    String? arrAirportParam;
+    final arrCodes = <String>[];
+    for (final code in _selectedArrivalAirportCodes) {
+      arrCodes.add('B1:$code');
+    }
+    for (final code in _retourArrAirportCodes) {
+      arrCodes.add('B2:$code');
+    }
+    if (arrCodes.isNotEmpty) {
+      arrAirportParam = arrCodes.join(',');
+    }
+
+    // Build depTime param (slot index 0→S1, 1→S2, 2→S3)
+    String? depTimeParam;
+    final depTimeCodes = <String>[];
+    for (final slot in _selectedDepTimeSlots) {
+      depTimeCodes.add('B1:S${slot + 1}');
+    }
+    for (final slot in _retourDepTimeSlots) {
+      depTimeCodes.add('B2:S${slot + 1}');
+    }
+    if (depTimeCodes.isNotEmpty) {
+      depTimeParam = depTimeCodes.join(',');
+    }
+
+    // Build arrTime param (slot index 0→S1, 1→S2, 2→S3)
+    String? arrTimeParam;
+    final arrTimeCodes = <String>[];
+    for (final slot in _selectedArrTimeSlots) {
+      arrTimeCodes.add('B1:S${slot + 1}');
+    }
+    for (final slot in _retourArrTimeSlots) {
+      arrTimeCodes.add('B2:S${slot + 1}');
+    }
+    if (arrTimeCodes.isNotEmpty) {
+      arrTimeParam = arrTimeCodes.join(',');
+    }
+
     return FlightResultsRequest(
       searchCode: searchCode!,
       page: page,
@@ -412,6 +524,11 @@ class SearchResultController extends ChangeNotifier {
       sort: sortParam,
       minPrice: _selectedPriceRange?.start,
       maxPrice: _selectedPriceRange?.end,
+      stops: stopsParam,
+      depAirport: depAirportParam,
+      arrAirport: arrAirportParam,
+      depTime: depTimeParam,
+      arrTime: arrTimeParam,
     );
   }
 
@@ -439,9 +556,14 @@ class SearchResultController extends ChangeNotifier {
 
         _currentPage = response.currentPage ?? (_currentPage + 1);
         _totalPages = response.totalPages;
+        if (response.total != null) _totalFlights = response.total!;
         _updateHasMorePages(response);
         _isLoadingMore = false;
-        _sortFlights(_selectedSortOption);
+        // Only apply client-side sort for non-price sorts (price is API-sorted)
+        final isPriceSort = _selectedSortOption == 'cheapest' || _selectedSortOption == 'most_expensive';
+        if (!isPriceSort) {
+          _sortFlights(_selectedSortOption);
+        }
 
         debugPrint(
           'Pagination loaded: page=$_currentPage, newOffers=${newOffers.length}, '
@@ -491,10 +613,15 @@ class SearchResultController extends ChangeNotifier {
         _apiFlights = response.offers;
         _currentPage = response.currentPage ?? 1;
         _totalPages = response.totalPages;
+        _totalFlights = response.total ?? response.offers.length;
         _updateHasMorePages(response);
         _isReloading = false;
         _isLoadingMore = false;
-        _sortFlights(_selectedSortOption);
+        // Only apply client-side sort for non-price sorts (price is API-sorted)
+        final isPriceSort = _selectedSortOption == 'cheapest' || _selectedSortOption == 'most_expensive';
+        if (!isPriceSort) {
+          _sortFlights(_selectedSortOption);
+        }
 
         debugPrint(
           'Reload complete: page=$_currentPage, offers=${_apiFlights.length}, '
@@ -589,7 +716,6 @@ class SearchResultController extends ChangeNotifier {
       _retourAirlineCodes.isNotEmpty ||
       _retourDepAirportCodes.isNotEmpty ||
       _retourArrAirportCodes.isNotEmpty ||
-      _retourPriceRange != null ||
       _retourDepTimeRange.start > 0 ||
       _retourDepTimeRange.end < 24 ||
       _retourArrTimeRange.start > 0 ||
@@ -605,7 +731,6 @@ class SearchResultController extends ChangeNotifier {
     if (_selectedDepTimeRange.start > 0 || _selectedDepTimeRange.end < 24) count++;
     if (_selectedArrTimeRange.start > 0 || _selectedArrTimeRange.end < 24) count++;
     // Retour filters
-    if (_retourPriceRange != null) count++;
     if (_retourAirlineCodes.isNotEmpty) count++;
     if (_retourDepAirportCodes.isNotEmpty) count++;
     if (_retourArrAirportCodes.isNotEmpty) count++;
@@ -727,13 +852,7 @@ class SearchResultController extends ChangeNotifier {
       }).toList();
     }
 
-    // Price range (global)
-    if (_selectedPriceRange != null) {
-      result = result.where((offer) {
-        final price = offer.totalPrice;
-        return price >= _selectedPriceRange!.start && price <= _selectedPriceRange!.end;
-      }).toList();
-    }
+    // Price range is now handled by the API (minP/maxP params)
 
     // Aller journey filters (journey index 0)
     final hasAllerFilters =
@@ -977,8 +1096,8 @@ class SearchResultController extends ChangeNotifier {
       'categories': ['Compagnies', 'Prix', 'Escale', 'Horaires', 'Aéroport'],
       'compagnies': airlinesMap.values.toList(),
       'prix': {
-        'min': minPrice == double.infinity ? 0 : minPrice,
-        'max': maxPrice == 0 ? 50000 : maxPrice,
+        'min': _apiMinPrice ?? (minPrice == double.infinity ? 0 : minPrice),
+        'max': _apiMaxPrice ?? (maxPrice == 0 ? 50000 : maxPrice),
         'currency': _apiFlights.isNotEmpty ? _apiFlights.first.currency : 'DZD',
       },
       'escale': escaleOptions,

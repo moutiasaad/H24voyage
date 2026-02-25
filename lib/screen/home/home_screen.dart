@@ -198,6 +198,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? fc.errorMessage ?? lang.S.of(context).homeSearchError
                   : null,
               apiAirlines: fc.availableAirlines,
+              apiMinPrice: fc.minPrice,
+              apiMaxPrice: fc.maxPrice,
             ).launch(context);
           },
         ),
@@ -242,6 +244,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ? fc.errorMessage ?? lang.S.of(context).homeSearchError
                   : null,
               apiAirlines: fc.availableAirlines,
+              apiMinPrice: fc.minPrice,
+              apiMaxPrice: fc.maxPrice,
             ).launch(context);
           },
         ),
@@ -309,6 +313,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         totalOffers: fc.totalOffers,
         errorMessage: fc.hasError ? fc.errorMessage ?? t.homeSearchError : null,
         apiAirlines: fc.availableAirlines,
+        apiMinPrice: fc.minPrice,
+        apiMaxPrice: fc.maxPrice,
       ).launch(context);
     } catch (e) {
       SearchResult(

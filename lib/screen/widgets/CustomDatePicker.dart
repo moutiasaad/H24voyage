@@ -24,12 +24,33 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   DateTime? departureDate;
   DateTime? returnDate;
 
+  // 6 months in the past + current month + 12 months ahead = 19 months total
+  static final _startMonth = DateTime(DateTime.now().year, DateTime.now().month - 6);
+  static const _totalMonths = 19;
+  static const _currentMonthIndex = 6; // index of today's month in the list
+
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     departureDate = widget.initialStartDate;
     // Only set return date if it's a round trip
     returnDate = widget.isRoundTrip ? widget.initialEndDate : null;
+
+    // Scroll to current month after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        // Approximate height per month block (~350px)
+        _scrollController.jumpTo(_currentMonthIndex * 350.0);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   String _getFormattedDate(DateTime date) {
@@ -213,14 +234,16 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
           // Calendar
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  _buildMonthCalendar(DateTime.now()),
-                  _buildMonthCalendar(DateTime(DateTime.now().year, DateTime.now().month + 1)),
-                  _buildMonthCalendar(DateTime(DateTime.now().year, DateTime.now().month + 2)),
-                ],
-              ),
+            child: ListView.builder(
+              controller: _scrollController,
+              itemCount: _totalMonths,
+              itemBuilder: (context, index) {
+                final month = DateTime(
+                  _startMonth.year,
+                  _startMonth.month + index,
+                );
+                return _buildMonthCalendar(month);
+              },
             ),
           ),
 
@@ -343,7 +366,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   final isToday = date.year == today.year &&
                       date.month == today.month &&
                       date.day == today.day;
-                  final isBeforeToday = date.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+                  final isPastDate = date.isBefore(DateTime(today.year, today.month, today.day));
                   final isDeparture = departureDate != null &&
                       date.year == departureDate!.year &&
                       date.month == departureDate!.month &&
@@ -360,7 +383,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
                   return Expanded(
                     child: SmallTapEffect(
-                      onTap: isBeforeToday ? null : () => _onDaySelected(date),
+                      onTap: () => _onDaySelected(date),
                       child: Stack(
                         children: [
                           // Background with left/right split
@@ -405,10 +428,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                                   '$dayNumber',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: isBeforeToday
-                                        ? Colors.grey.shade400
-                                        : (isDeparture || isReturn)
-                                            ? Colors.white
+                                    color: (isDeparture || isReturn)
+                                        ? Colors.white
+                                        : isPastDate
+                                            ? Colors.grey.shade400
                                             : Colors.black,
                                     fontWeight: (isDeparture || isReturn) ? FontWeight.bold : FontWeight.normal,
                                   ),

@@ -104,30 +104,32 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m39(name) => "${name} (Male)";
 
-  static String m40(type) => "Taxes per ${type}";
+  static String m40(count) => "${count} flights available";
 
-  static String m41(error) => "Error: ${error}";
+  static String m41(type) => "Taxes per ${type}";
 
-  static String m42(current, total) =>
+  static String m42(error) => "Error: ${error}";
+
+  static String m43(current, total) =>
       "Page ${current} / ${total} - Scroll for more";
 
-  static String m43(code) => "Airport ${code}";
+  static String m44(code) => "Airport ${code}";
 
-  static String m44(bag) => "Cabin baggage: ${bag}";
+  static String m45(bag) => "Cabin baggage: ${bag}";
 
-  static String m45(bag) => "Checked baggage: ${bag}";
+  static String m46(bag) => "Checked baggage: ${bag}";
 
-  static String m46(code, number) => "Flight ${code} ${number}";
+  static String m47(code, number) => "Flight ${code} ${number}";
 
-  static String m47(count) => "${count} seats";
+  static String m48(count) => "${count} seats";
 
-  static String m48(terminal) => "Terminal ${terminal}";
+  static String m49(terminal) => "Terminal ${terminal}";
 
-  static String m49(price, currency) => "${price} ${currency}/ pers";
+  static String m50(price, currency) => "${price} ${currency}/ pers";
 
-  static String m50(count) => "${count} stop";
+  static String m51(count) => "${count} stop";
 
-  static String m51(created, updated) =>
+  static String m52(created, updated) =>
       "Created on ${created} · Updated ${updated}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -157,6 +159,50 @@ class MessageLookup extends MessageLookupByLibrary {
     "bookFlightTitle": MessageLookupByLibrary.simpleMessage(
       "Book your flight with confidence",
     ),
+    "bookingBalance": MessageLookupByLibrary.simpleMessage("Balance"),
+    "bookingBusSeat": MessageLookupByLibrary.simpleMessage("Seat"),
+    "bookingCarDays": MessageLookupByLibrary.simpleMessage("days"),
+    "bookingCarPickup": MessageLookupByLibrary.simpleMessage("Pickup"),
+    "bookingCarReturn": MessageLookupByLibrary.simpleMessage("Return"),
+    "bookingCategoryBus": MessageLookupByLibrary.simpleMessage("Bus"),
+    "bookingCategoryCars": MessageLookupByLibrary.simpleMessage("Cars"),
+    "bookingCategoryFlights": MessageLookupByLibrary.simpleMessage("Flights"),
+    "bookingCategoryHotels": MessageLookupByLibrary.simpleMessage("Hotels"),
+    "bookingDetailAdults": MessageLookupByLibrary.simpleMessage("Adults"),
+    "bookingDetailArrival": MessageLookupByLibrary.simpleMessage("Arrival"),
+    "bookingDetailBookingDate": MessageLookupByLibrary.simpleMessage(
+      "Booking date",
+    ),
+    "bookingDetailBookingId": MessageLookupByLibrary.simpleMessage(
+      "Booking ID",
+    ),
+    "bookingDetailChildren": MessageLookupByLibrary.simpleMessage("Children"),
+    "bookingDetailClass": MessageLookupByLibrary.simpleMessage("Class"),
+    "bookingDetailDeparture": MessageLookupByLibrary.simpleMessage("Departure"),
+    "bookingDetailInfants": MessageLookupByLibrary.simpleMessage("Infants"),
+    "bookingDetailLastTicketDate": MessageLookupByLibrary.simpleMessage(
+      "Last ticket date",
+    ),
+    "bookingDetailMulti": MessageLookupByLibrary.simpleMessage(
+      "Multi-destination",
+    ),
+    "bookingDetailOneway": MessageLookupByLibrary.simpleMessage("One way"),
+    "bookingDetailPassenger": MessageLookupByLibrary.simpleMessage("Passenger"),
+    "bookingDetailRoundtrip": MessageLookupByLibrary.simpleMessage(
+      "Round trip",
+    ),
+    "bookingDetailSegment": MessageLookupByLibrary.simpleMessage("Segment"),
+    "bookingDetailSegments": MessageLookupByLibrary.simpleMessage(
+      "Flight segments",
+    ),
+    "bookingDetailStatus": MessageLookupByLibrary.simpleMessage("Status"),
+    "bookingDetailTitle": MessageLookupByLibrary.simpleMessage(
+      "Reservation details",
+    ),
+    "bookingDetailTotalPrice": MessageLookupByLibrary.simpleMessage(
+      "Total price",
+    ),
+    "bookingDetailTripType": MessageLookupByLibrary.simpleMessage("Trip type"),
     "bookingDetails": MessageLookupByLibrary.simpleMessage("Details"),
     "bookingEmptyActive": MessageLookupByLibrary.simpleMessage(
       "No active bookings",
@@ -166,6 +212,29 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "bookingEmptyDefault": MessageLookupByLibrary.simpleMessage("No bookings"),
     "bookingEmptyPast": MessageLookupByLibrary.simpleMessage("No past trips"),
+    "bookingEmptyStateSubtitle": MessageLookupByLibrary.simpleMessage(
+      "When you book a trip, it will appear here.",
+    ),
+    "bookingEmptyStateTitle": MessageLookupByLibrary.simpleMessage(
+      "No trips yet",
+    ),
+    "bookingHotelCheckIn": MessageLookupByLibrary.simpleMessage("Check-in"),
+    "bookingHotelCheckOut": MessageLookupByLibrary.simpleMessage("Check-out"),
+    "bookingHotelGuests": MessageLookupByLibrary.simpleMessage("guests"),
+    "bookingHotelNights": MessageLookupByLibrary.simpleMessage("nights"),
+    "bookingHotelRoom": MessageLookupByLibrary.simpleMessage("room"),
+    "bookingLoadError": MessageLookupByLibrary.simpleMessage(
+      "Unable to load bookings",
+    ),
+    "bookingLoginRequired": MessageLookupByLibrary.simpleMessage(
+      "Please log in to see your bookings",
+    ),
+    "bookingPassengers": MessageLookupByLibrary.simpleMessage("passengers"),
+    "bookingPnr": MessageLookupByLibrary.simpleMessage("PNR"),
+    "bookingRetry": MessageLookupByLibrary.simpleMessage("Retry"),
+    "bookingSearchFlights": MessageLookupByLibrary.simpleMessage(
+      "Search flights",
+    ),
     "bookingTabActive": MessageLookupByLibrary.simpleMessage("Active"),
     "bookingTabCancelled": MessageLookupByLibrary.simpleMessage("Cancelled"),
     "bookingTabPast": MessageLookupByLibrary.simpleMessage("Past"),
@@ -806,13 +875,17 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enter your phone number",
     ),
     "phoneLabel": MessageLookupByLibrary.simpleMessage("Phone"),
+    "pillFlightsAvailable": m40,
+    "pillLoading": MessageLookupByLibrary.simpleMessage(
+      "Getting all available flights",
+    ),
     "priceAdultFallback": MessageLookupByLibrary.simpleMessage("1x Adult"),
     "priceBaseFare": MessageLookupByLibrary.simpleMessage("Base fare"),
     "priceDetailsTitle": MessageLookupByLibrary.simpleMessage("Price details"),
     "priceNonRefundable": MessageLookupByLibrary.simpleMessage(
       "Non-refundable",
     ),
-    "priceTaxesPer": m40,
+    "priceTaxesPer": m41,
     "priceTaxesPerAdult": MessageLookupByLibrary.simpleMessage(
       "Taxes per adult",
     ),
@@ -873,7 +946,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "profileDisableSuccess": MessageLookupByLibrary.simpleMessage(
       "Account disabled successfully",
     ),
-    "profileError": m41,
+    "profileError": m42,
     "profileFaq": MessageLookupByLibrary.simpleMessage("FAQ"),
     "profileHelpSection": MessageLookupByLibrary.simpleMessage("Help"),
     "profileLanguages": MessageLookupByLibrary.simpleMessage("Languages"),
@@ -984,7 +1057,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "searchNoFlightsFound": MessageLookupByLibrary.simpleMessage(
       "No flights found",
     ),
-    "searchPageInfo": m42,
+    "searchPageInfo": m43,
     "searchResetFilters": MessageLookupByLibrary.simpleMessage("Reset filters"),
     "searchScreenTitle": MessageLookupByLibrary.simpleMessage("Where from?"),
     "searchScrollForMore": MessageLookupByLibrary.simpleMessage(
@@ -1009,13 +1082,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "searchUnavailable": MessageLookupByLibrary.simpleMessage(
       "Search unavailable",
     ),
-    "segmentAirportFallback": m43,
+    "segmentAirportFallback": m44,
     "segmentBaggage": MessageLookupByLibrary.simpleMessage("Baggage"),
-    "segmentCabinBag": m44,
-    "segmentCheckedBag": m45,
-    "segmentFlightInfo": m46,
-    "segmentSeats": m47,
-    "segmentTerminal": m48,
+    "segmentCabinBag": m45,
+    "segmentCheckedBag": m46,
+    "segmentFlightInfo": m47,
+    "segmentSeats": m48,
+    "segmentTerminal": m49,
     "selectGenderTitle": MessageLookupByLibrary.simpleMessage("Select Gender"),
     "selectService": MessageLookupByLibrary.simpleMessage("Select Services"),
     "settingTitle": MessageLookupByLibrary.simpleMessage("Setting"),
@@ -1025,7 +1098,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Flight details",
     ),
     "sheetOneWay": MessageLookupByLibrary.simpleMessage("One way flight"),
-    "sheetPricePerPerson": m49,
+    "sheetPricePerPerson": m50,
     "sheetRoundTrip": MessageLookupByLibrary.simpleMessage("Round trip flight"),
     "signUpButton": MessageLookupByLibrary.simpleMessage("Sign Up"),
     "signUpEmailEmpty": MessageLookupByLibrary.simpleMessage(
@@ -1066,8 +1139,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "statusCancelled": MessageLookupByLibrary.simpleMessage("Cancelled"),
     "statusCompleted": MessageLookupByLibrary.simpleMessage("Completed"),
     "statusConfirmed": MessageLookupByLibrary.simpleMessage("Confirmed"),
+    "statusFailureTicket": MessageLookupByLibrary.simpleMessage(
+      "Failure Ticket",
+    ),
     "statusInProgress": MessageLookupByLibrary.simpleMessage("In progress"),
-    "stopCount": m50,
+    "statusPending": MessageLookupByLibrary.simpleMessage("Pending"),
+    "statusPnrPending": MessageLookupByLibrary.simpleMessage("PNR pending"),
+    "stopCount": m51,
     "supportBanner": MessageLookupByLibrary.simpleMessage(
       "Manage and track your requests in real time",
     ),
@@ -1097,7 +1175,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "ticketDetailCloseWarning": MessageLookupByLibrary.simpleMessage(
       "You will no longer be able to send messages once the ticket is closed.",
     ),
-    "ticketDetailCreatedUpdated": m51,
+    "ticketDetailCreatedUpdated": m52,
     "ticketDetailMessageHint": MessageLookupByLibrary.simpleMessage(
       "Write a message...",
     ),

@@ -550,7 +550,7 @@ class FakeFlightCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                lang.S.of(context).cardRecommended,
+                '${lang.S.of(context).cardRecommended} ${index + 1}',
                 style: kTextStyle.copyWith(
                   color: const Color.fromRGBO(147, 133, 245, 1),
                   fontSize: 10,
@@ -826,7 +826,7 @@ class ApiFlightCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  lang.S.of(context).cardRecommended,
+                  '${lang.S.of(context).cardRecommended} ${index + 1}',
                   style: kTextStyle.copyWith(
                     color: const Color.fromRGBO(147, 133, 245, 1),
                     fontSize: badgeFontSize,
@@ -1136,7 +1136,7 @@ class MultiDestinationCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  lang.S.of(context).cardRecommended,
+                  '${lang.S.of(context).cardRecommended} ${index + 1}',
                   style: kTextStyle.copyWith(
                     color: const Color.fromRGBO(147, 133, 245, 1),
                     fontSize: badgeFontSize,

@@ -29,7 +29,8 @@
       "Bash(git commit:*)",
       "Bash(flutter pub run:*)",
       "Bash(tail:*)",
-      "Bash(cd \"C:\\\\Users\\\\mouti\\\\AndroidStudioProjects\\\\flight-booking-flutter-app-ui-kit-master\" && flutter gen-l10n 2>&1 || flutter pub run intl_utils:generate 2>&1)"
+      "Bash(cd \"C:\\\\Users\\\\mouti\\\\AndroidStudioProjects\\\\flight-booking-flutter-app-ui-kit-master\" && flutter gen-l10n 2>&1 || flutter pub run intl_utils:generate 2>&1)",
+      "Bash(head:*)"
     ]
   }
 }

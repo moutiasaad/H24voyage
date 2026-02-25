@@ -597,6 +597,33 @@
    "statusConfirmed": "Confirmed",
    "statusCompleted": "Completed",
    "statusCancelled": "Cancelled",
+   "statusPending": "Pending",
+   "statusPnrPending": "PNR pending",
+   "statusFailureTicket": "Failure Ticket",
+   "bookingLoadError": "Unable to load bookings",
+   "bookingRetry": "Retry",
+   "bookingLoginRequired": "Please log in to see your bookings",
+   "bookingPnr": "PNR",
+   "bookingPassengers": "passengers",
+   "bookingDetailTitle": "Reservation details",
+   "bookingDetailBookingId": "Booking ID",
+   "bookingDetailBookingDate": "Booking date",
+   "bookingDetailStatus": "Status",
+   "bookingDetailTripType": "Trip type",
+   "bookingDetailRoundtrip": "Round trip",
+   "bookingDetailOneway": "One way",
+   "bookingDetailMulti": "Multi-destination",
+   "bookingDetailPassenger": "Passenger",
+   "bookingDetailAdults": "Adults",
+   "bookingDetailChildren": "Children",
+   "bookingDetailInfants": "Infants",
+   "bookingDetailClass": "Class",
+   "bookingDetailSegments": "Flight segments",
+   "bookingDetailSegment": "Segment",
+   "bookingDetailDeparture": "Departure",
+   "bookingDetailArrival": "Arrival",
+   "bookingDetailLastTicketDate": "Last ticket date",
+   "bookingDetailTotalPrice": "Total price",
 
    "supportTitle": "Customer support",
    "supportTabAll": "All",
@@ -698,6 +725,35 @@
    "faqQ14": "What should I do if my baggage is lost?",
    "faqA14": "If your baggage is lost:\n\n1. Report it immediately at the airport baggage counter\n2. Fill in a PIR form (Property Irregularity Report)\n3. Keep your case number\n4. Contact our support with this information\n\nWe will assist you throughout the process.",
    "faqQ15": "Can I transport special items?",
-   "faqA15": "Some items require prior declaration:\n\n• Sports equipment (bicycle, ski, golf)\n• Musical instruments\n• Pets\n• Medical equipment\n\nContact us at least 48h before your flight to arrange transport."
+   "faqA15": "Some items require prior declaration:\n\n• Sports equipment (bicycle, ski, golf)\n• Musical instruments\n• Pets\n• Medical equipment\n\nContact us at least 48h before your flight to arrange transport.",
+
+   "pillLoading": "Getting all available flights",
+   "pillFlightsAvailable": "{count} flights available",
+   "@pillFlightsAvailable": {
+     "placeholders": {
+       "count": {}
+     }
+   },
+
+   "bookingCategoryFlights": "Flights",
+   "bookingCategoryHotels": "Hotels",
+   "bookingCategoryBus": "Bus",
+   "bookingCategoryCars": "Cars",
+   "bookingEmptyStateTitle": "No trips yet",
+   "bookingEmptyStateSubtitle": "When you book a trip, it will appear here.",
+   "bookingSearchFlights": "Search flights",
+   "bookingBalance": "Balance",
+
+   "bookingHotelCheckIn": "Check-in",
+   "bookingHotelCheckOut": "Check-out",
+   "bookingHotelNights": "nights",
+   "bookingHotelRoom": "room",
+   "bookingHotelGuests": "guests",
+
+   "bookingBusSeat": "Seat",
+
+   "bookingCarPickup": "Pickup",
+   "bookingCarReturn": "Return",
+   "bookingCarDays": "days"
 
 }

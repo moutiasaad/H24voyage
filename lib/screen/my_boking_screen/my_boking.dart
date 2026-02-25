@@ -1,10 +1,16 @@
+import 'package:flight_booking/controllers/booking_controller.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
+import 'package:flight_booking/models/booking_flight.dart';
 import 'package:flight_booking/screen/widgets/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-import '../ticket status/ticket_status.dart';
+import 'booking_detail_screen.dart';
 import '../widgets/button_global.dart';
+
+const _kBgColor = Color(0xFFF7F7F9);
 
 class MyBooking extends StatefulWidget {
   final VoidCallback? onBack;
@@ -15,87 +21,39 @@ class MyBooking extends StatefulWidget {
   State<MyBooking> createState() => _MyBookingState();
 }
 
-class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMixin {
+class _MyBookingState extends State<MyBooking>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int _selectedCategoryIndex = 0;
   int _selectedTabIndex = 0;
 
-  // Sample reservation data
-  final List<Reservation> _activeReservations = [
-    Reservation(
-      id: '#123456',
-      status: ReservationStatus.enCours,
-      departureTime: '17:35',
-      departureCity: 'Tunis',
-      departureCode: 'TUN',
-      departureDate: 'Sam. 17 Janv.',
-      arrivalTime: '20:25',
-      arrivalCity: 'Istanbul',
-      arrivalCode: 'IST',
-      airlineName: 'Turkish Airlines',
-      airlineLogo: 'https://pics.avs.io/70/70/TK.png',
-      flightNumber: 'TK 123456',
-      duration: '2h50min',
-      price: 16316,
-      currency: 'DZD',
+  // ── Hotel data (fake) ──
+  final List<HotelBooking> _activeHotels = [
+    HotelBooking(
+      id: '#H-2041', status: ReservationStatus.confirme,
+      hotelName: 'Sofitel Algiers Hamma Garden', city: 'Alger',
+      checkIn: '20 Janv. 2025', checkOut: '24 Janv. 2025',
+      nights: 4, rooms: 1, guests: 2,
+      price: 72000, currency: 'DZD',
     ),
-    Reservation(
-      id: '#789012',
-      status: ReservationStatus.confirme,
-      departureTime: '08:15',
-      departureCity: 'Alger',
-      departureCode: 'ALG',
-      departureDate: 'Lun. 20 Janv.',
-      arrivalTime: '12:45',
-      arrivalCity: 'Paris',
-      arrivalCode: 'CDG',
-      airlineName: 'Air Algérie',
-      airlineLogo: 'https://pics.avs.io/70/70/AH.png',
-      flightNumber: 'AH 1024',
-      duration: '2h30min',
-      price: 45200,
-      currency: 'DZD',
+    HotelBooking(
+      id: '#H-2055', status: ReservationStatus.enCours,
+      hotelName: 'Hilton Istanbul Bosphorus', city: 'Istanbul',
+      checkIn: '18 Fév. 2025', checkOut: '22 Fév. 2025',
+      nights: 4, rooms: 1, guests: 2,
+      price: 134500, currency: 'DZD',
     ),
   ];
-
-  final List<Reservation> _pastReservations = [
-    Reservation(
-      id: '#654321',
-      status: ReservationStatus.termine,
-      departureTime: '14:00',
-      departureCity: 'Oran',
-      departureCode: 'ORN',
-      departureDate: 'Ven. 10 Janv.',
-      arrivalTime: '16:30',
-      arrivalCity: 'Casablanca',
-      arrivalCode: 'CMN',
-      airlineName: 'Royal Air Maroc',
-      airlineLogo: 'https://pics.avs.io/70/70/AT.png',
-      flightNumber: 'AT 456',
-      duration: '2h30min',
-      price: 28500,
-      currency: 'DZD',
+  final List<HotelBooking> _pastHotels = [
+    HotelBooking(
+      id: '#H-1899', status: ReservationStatus.termine,
+      hotelName: 'Sheraton Oran Hotel', city: 'Oran',
+      checkIn: '5 Déc. 2024', checkOut: '8 Déc. 2024',
+      nights: 3, rooms: 1, guests: 1,
+      price: 45000, currency: 'DZD',
     ),
   ];
-
-  final List<Reservation> _cancelledReservations = [
-    Reservation(
-      id: '#111222',
-      status: ReservationStatus.annule,
-      departureTime: '09:00',
-      departureCity: 'Alger',
-      departureCode: 'ALG',
-      departureDate: 'Mer. 5 Janv.',
-      arrivalTime: '11:30',
-      arrivalCity: 'Tunis',
-      arrivalCode: 'TUN',
-      airlineName: 'Tunisair',
-      airlineLogo: 'https://pics.avs.io/70/70/TU.png',
-      flightNumber: 'TU 789',
-      duration: '1h30min',
-      price: 12800,
-      currency: 'DZD',
-    ),
-  ];
+  final List<HotelBooking> _cancelledHotels = [];
 
   @override
   void initState() {
@@ -103,10 +61,12 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
-        setState(() {
-          _selectedTabIndex = _tabController.index;
-        });
+        setState(() => _selectedTabIndex = _tabController.index);
       }
+    });
+    // Fetch flight bookings from API
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BookingController>().fetchFlightBookings();
     });
   }
 
@@ -116,119 +76,191 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
     super.dispose();
   }
 
-  List<Reservation> get _currentReservations {
-    switch (_selectedTabIndex) {
-      case 0:
-        return _activeReservations;
-      case 1:
-        return _pastReservations;
-      case 2:
-        return _cancelledReservations;
+  List<dynamic> _currentItems(BookingController ctrl) {
+    switch (_selectedCategoryIndex) {
+      case 0: // Flights
+        return [ctrl.activeFlights, ctrl.pastFlights, ctrl.cancelledFlights][_selectedTabIndex];
+      case 1: // Hotels
+        return [_activeHotels, _pastHotels, _cancelledHotels][_selectedTabIndex];
       default:
-        return _activeReservations;
+        return [];
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final statusBarHeight = MediaQuery.of(context).padding.top;
+    return Consumer<BookingController>(
+      builder: (context, ctrl, _) {
+        final items = _currentItems(ctrl);
 
-    return Scaffold(
-      backgroundColor: kWhite,
-      body: Column(
+        return Scaffold(
+          backgroundColor: _kBgColor,
+          body: Column(
+            children: [
+              _buildHeader(),
+              _buildCategoryTabs(),
+              _buildStatusTabs(),
+              Expanded(
+                child: _selectedCategoryIndex == 0 && ctrl.isLoading
+                    ? _buildLoadingState()
+                    : _selectedCategoryIndex == 0 && ctrl.hasError
+                        ? _buildErrorState(ctrl)
+                        : items.isEmpty
+                            ? _buildEmptyState()
+                            : RefreshIndicator(
+                                color: kPrimaryColor,
+                                onRefresh: () => ctrl.refresh(),
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.only(top: 8, bottom: 20),
+                                  physics: const AlwaysScrollableScrollPhysics(
+                                    parent: BouncingScrollPhysics(),
+                                  ),
+                                  itemCount: items.length,
+                                  itemBuilder: (context, index) {
+                                    final item = items[index];
+                                    if (item is BookingFlight) return _buildApiFlightCard(item);
+                                    if (item is HotelBooking) return _buildHotelCard(item);
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ══════════════════════════════════════════════════
+  //  LOADING STATE
+  // ══════════════════════════════════════════════════
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Custom Header
-          _buildHeader(statusBarHeight),
-
-          // Tab Selector
-          _buildTabSelector(),
-
-          // Reservation List
-          Expanded(
-            child: _currentReservations.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.only(top: 8, bottom: 20),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: _currentReservations.length,
-                    itemBuilder: (context, index) {
-                      return _buildReservationCard(_currentReservations[index]);
-                    },
-                  ),
+          const SizedBox(
+            width: 40, height: 40,
+            child: CircularProgressIndicator(
+              color: kPrimaryColor, strokeWidth: 3,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            lang.S.of(context).bookingLoadError.split('.').first + '...',
+            style: GoogleFonts.inter(
+              fontSize: 14, color: kSubTitleColor,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(double statusBarHeight) {
+  // ══════════════════════════════════════════════════
+  //  ERROR STATE
+  // ══════════════════════════════════════════════════
+  Widget _buildErrorState(BookingController ctrl) {
+    final t = lang.S.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 64, height: 64,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEBEE), shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.error_outline_rounded,
+                color: Color(0xFFF44336), size: 32),
+            ),
+            const SizedBox(height: 16),
+            Text(t.bookingLoadError, textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 14, color: kSubTitleColor, height: 1.5)),
+            const SizedBox(height: 20),
+            SmallTapEffect(
+              onTap: () => ctrl.refresh(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [kPrimaryColor, kAccentOrange]),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Text(t.bookingRetry, style: GoogleFonts.poppins(
+                  color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════
+  //  HEADER (no balance)
+  // ══════════════════════════════════════════════════
+  Widget _buildHeader() {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    final t = lang.S.of(context);
+
     return Container(
       padding: EdgeInsets.only(
-        top: statusBarHeight + 16,
-        left: 16,
-        right: 16,
-        bottom: 20,
+        top: statusBarHeight + 18, left: 20, right: 20, bottom: 28,
       ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFF8C42),
-            Color(0xFFFF6B35),
-            kPrimaryColor,
-          ],
+          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          colors: [Color(0xFFFF8C42), kAccentOrange, kPrimaryColor],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
+          bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24),
         ),
+        boxShadow: [
+          BoxShadow(color: Color(0x33FF5722), blurRadius: 12, offset: Offset(0, 4)),
+        ],
       ),
       child: Row(
         children: [
-          // Back button -> go to home screen
           SmallTapEffect(
             onTap: () {
-              if (widget.onBack != null) {
-                widget.onBack!();
-              } else {
-                Navigator.pop(context);
-              }
-            },
-            child: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Title
-          Text(
-            lang.S.of(context).bookingTitle,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const Spacer(),
-          // Add button in circle
-          SmallTapEffect(
-            onTap: () {
-              // Navigate to add reservation
+              if (widget.onBack != null) { widget.onBack!(); }
+              else { Navigator.pop(context); }
             },
             child: Container(
-              width: 32,
-              height: 32,
+              width: 38, height: 38,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.add,
-                size: 18,
-                color: Colors.white,
+              child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Container(
+            width: 36, height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.flight, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 10),
+          Text(t.bookingTitle, style: GoogleFonts.poppins(
+            color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600,
+          )),
+          const Spacer(),
+          SmallTapEffect(
+            onTap: () {},
+            child: Container(
+              width: 38, height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
               ),
+              child: const Icon(Icons.notifications_outlined, color: Colors.white, size: 20),
             ),
           ),
         ],
@@ -236,50 +268,93 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildTabSelector() {
+  // ══════════════════════════════════════════════════
+  //  CATEGORY TABS (Flights + Hotels only)
+  // ══════════════════════════════════════════════════
+  Widget _buildCategoryTabs() {
+    final t = lang.S.of(context);
+    final categories = [
+      _CategoryItem(Icons.flight, t.bookingCategoryFlights),
+      _CategoryItem(Icons.hotel, t.bookingCategoryHotels),
+    ];
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(categories.length, (index) {
+          final isSelected = _selectedCategoryIndex == index;
+          return SmallTapEffect(
+            onTap: () => setState(() {
+              _selectedCategoryIndex = index;
+              _selectedTabIndex = 0;
+              _tabController.animateTo(0);
+            }),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? kPrimaryColor.withValues(alpha: 0.1) : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected ? kPrimaryColor.withValues(alpha: 0.3) : Colors.transparent,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(categories[index].icon, size: 22,
+                    color: isSelected ? kPrimaryColor : const Color(0xFF999999)),
+                  const SizedBox(height: 4),
+                  Text(categories[index].label, style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? kPrimaryColor : const Color(0xFF999999),
+                  )),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════
+  //  STATUS TABS
+  // ══════════════════════════════════════════════════
+  Widget _buildStatusTabs() {
     final t = lang.S.of(context);
     final tabs = [t.bookingTabActive, t.bookingTabPast, t.bookingTabCancelled];
 
     return Container(
-      margin: const EdgeInsets.only(top: 8),
+      color: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFF1F1F1), width: 1),
-        ),
-      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: List.generate(tabs.length, (index) {
           final isSelected = _selectedTabIndex == index;
           return SmallTapEffect(
-            onTap: () {
-              setState(() {
-                _selectedTabIndex = index;
-                _tabController.animateTo(index);
-              });
-            },
+            onTap: () => setState(() {
+              _selectedTabIndex = index;
+              _tabController.animateTo(index);
+            }),
             child: Container(
               margin: const EdgeInsets.only(right: 8),
               child: Column(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                    child: Text(
-                      tabs[index],
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected ? const Color(0xFFFF6A00) : const Color(0xFF999999),
-                      ),
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    child: Text(tabs[index], style: GoogleFonts.inter(
+                      fontSize: 13.5, fontWeight: FontWeight.w600,
+                      color: isSelected ? kPrimaryColor : const Color(0xFF999999),
+                    )),
                   ),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    height: 3,
-                    width: 40,
+                    height: 3, width: 40,
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFFF6A00) : Colors.transparent,
+                      color: isSelected ? kPrimaryColor : Colors.transparent,
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
@@ -292,432 +367,482 @@ class _MyBookingState extends State<MyBooking> with SingleTickerProviderStateMix
     );
   }
 
+  // ══════════════════════════════════════════════════
+  //  EMPTY STATE
+  // ══════════════════════════════════════════════════
   Widget _buildEmptyState() {
     final t = lang.S.of(context);
-    String message;
-    IconData icon;
-
-    switch (_selectedTabIndex) {
-      case 0:
-        message = t.bookingEmptyActive;
-        icon = Icons.flight_takeoff;
-        break;
-      case 1:
-        message = t.bookingEmptyPast;
-        icon = Icons.history;
-        break;
-      case 2:
-        message = t.bookingEmptyCancelled;
-        icon = Icons.cancel_outlined;
-        break;
-      default:
-        message = t.bookingEmptyDefault;
-        icon = Icons.flight;
-    }
+    final icons = [Icons.flight_takeoff_rounded, Icons.hotel_rounded];
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            size: 64,
-            color: const Color(0xFFCCCCCC),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            message,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: const Color(0xFF999999),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReservationCard(Reservation reservation) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: TappableCard(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const TicketStatus(),
-            ),
-          );
-        },
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE8E8E8)),
-        ),
-        padding: const EdgeInsets.all(14),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Card Header Row
-            _buildCardHeader(reservation),
-            const SizedBox(height: 14),
-
-            // Flight Info Row
-            _buildFlightInfo(reservation),
-            const SizedBox(height: 14),
-
-            // Divider
-            Container(
-              height: 1,
-              color: const Color(0xFFF1F1F1),
+            SizedBox(
+              width: 180, height: 140,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Positioned(top: 20, child: Transform.rotate(angle: 0.08,
+                    child: Container(width: 140, height: 90, decoration: BoxDecoration(
+                      color: kLightNeutralColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: kLightNeutralColor.withValues(alpha: 0.2)),
+                    )),
+                  )),
+                  Positioned(top: 10, child: Transform.rotate(angle: -0.05,
+                    child: Container(width: 150, height: 95, decoration: BoxDecoration(
+                      color: kLightNeutralColor.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: kLightNeutralColor.withValues(alpha: 0.3)),
+                    )),
+                  )),
+                  Positioned(top: 0, child: Container(
+                    width: 160, height: 100,
+                    decoration: BoxDecoration(
+                      color: Colors.white, borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4))],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(icons[_selectedCategoryIndex], size: 32,
+                          color: kPrimaryColor.withValues(alpha: 0.5)),
+                        const SizedBox(height: 6),
+                        Container(width: 60, height: 4, decoration: BoxDecoration(
+                          color: const Color(0xFFE8E8E8), borderRadius: BorderRadius.circular(2))),
+                        const SizedBox(height: 4),
+                        Container(width: 40, height: 4, decoration: BoxDecoration(
+                          color: const Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(2))),
+                      ],
+                    ),
+                  )),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-
-            // Price Row
-            _buildPriceRow(reservation),
+            const SizedBox(height: 28),
+            Text(t.bookingEmptyStateTitle, style: GoogleFonts.poppins(
+              fontSize: 18, fontWeight: FontWeight.w600, color: kTitleColor)),
+            const SizedBox(height: 8),
+            Text(t.bookingEmptyStateSubtitle, textAlign: TextAlign.center,
+              style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w400, color: kSubTitleColor, height: 1.5)),
+            const SizedBox(height: 28),
+            SmallTapEffect(
+              onTap: () { if (widget.onBack != null) widget.onBack!(); },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [kPrimaryColor, kAccentOrange]),
+                  borderRadius: BorderRadius.circular(50),
+                  boxShadow: [BoxShadow(color: kPrimaryColor.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 4))],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.search_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(t.bookingSearchFlights, style: GoogleFonts.poppins(
+                      color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCardHeader(Reservation reservation) {
+  // ══════════════════════════════════════════════════
+  //  FLIGHT CARD (API model)
+  // ══════════════════════════════════════════════════
+  Widget _buildApiFlightCard(BookingFlight f) {
+    final t = lang.S.of(context);
+    final statusLabel = _getStatusLabel(f.statusId, t);
+    final statusBg = _getStatusBgColor(f.statusId);
+    final statusFg = _getStatusTextColor(f.statusId);
+
+    final depTime = f.segments.isNotEmpty ? f.segments.first.depTimeFormatted : '--:--';
+    final arrTime = f.segments.isNotEmpty ? f.segments.last.arrTimeFormatted : '--:--';
+    final depDate = f.depDate != null ? DateFormat('EEE d MMM', 'fr_FR').format(f.depDate!) : '';
+
+    return _cardWrapper(
+      onTap: () => Navigator.push(context,
+        MaterialPageRoute(builder: (_) => BookingDetailScreen(flight: f))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: kPrimaryColor.withValues(alpha: 0.2)),
+                ),
+                child: Text('#${f.bookingId}', style: GoogleFonts.inter(
+                  fontSize: 12, fontWeight: FontWeight.w600, color: kPrimaryColor)),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: statusBg, borderRadius: BorderRadius.circular(8)),
+                child: Text(statusLabel, style: GoogleFonts.inter(
+                  fontSize: 12, fontWeight: FontWeight.w600, color: statusFg)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(depTime, style: _timeSt),
+                  const SizedBox(height: 2),
+                  Text(f.originCity, style: _citySt),
+                  Text(f.originCode, style: _codeSt),
+                  const SizedBox(height: 2),
+                  Text(depDate, style: _dateSt),
+                ],
+              )),
+              Expanded(child: Column(children: [
+                ClipOval(child: Image.network(f.airlineLogo, width: 36, height: 36, fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => _airlineFallback(f.airline))),
+                const SizedBox(height: 4),
+                Text(f.airline, style: _smallSt, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 4),
+                _routeArrow(Icons.flight),
+                const SizedBox(height: 4),
+                Text(f.tripType == 'roundtrip' ? 'A/R' : f.tripType == 'oneway' ? 'A/S' : 'Multi', style: _durationSt),
+              ])),
+              Expanded(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(arrTime, style: _timeSt),
+                  const SizedBox(height: 2),
+                  Text(f.destinationCity, style: _citySt),
+                  Text(f.destinationCode, style: _codeSt),
+                ],
+              )),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(children: [
+            if (f.pnr.isNotEmpty) ...[
+              _infoChip('${t.bookingPnr}: ${f.pnr}'),
+              const SizedBox(width: 8),
+            ],
+            _infoChip('${f.totalPassengers} ${t.bookingPassengers}'),
+          ]),
+          const SizedBox(height: 12),
+          _divider,
+          const SizedBox(height: 12),
+          _priceDetailsRow(f.salePrice, f.currency, f),
+        ],
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════
+  //  HOTEL CARD
+  // ══════════════════════════════════════════════════
+  Widget _buildHotelCard(HotelBooking h) {
+    final t = lang.S.of(context);
+    return _cardWrapper(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _statusRow(h.id, h.status),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: kPrimaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.hotel_rounded, color: kPrimaryColor, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(h.hotelName, style: GoogleFonts.inter(
+                    fontSize: 14, fontWeight: FontWeight.w600, color: const Color(0xFF111111)),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(h.city, style: _codeSt),
+                ],
+              )),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F8F8), borderRadius: BorderRadius.circular(10)),
+            child: Row(
+              children: [
+                Expanded(child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(t.bookingHotelCheckIn, style: _labelSt),
+                    const SizedBox(height: 2),
+                    Text(h.checkIn, style: _valueSt),
+                  ],
+                )),
+                Container(width: 1, height: 30, color: const Color(0xFFE0E0E0)),
+                Expanded(child: Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(t.bookingHotelCheckOut, style: _labelSt),
+                      const SizedBox(height: 2),
+                      Text(h.checkOut, style: _valueSt),
+                    ],
+                  ),
+                )),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(children: [
+            _infoChip('${h.nights} ${t.bookingHotelNights}'),
+            const SizedBox(width: 8),
+            _infoChip('${h.rooms} ${t.bookingHotelRoom}'),
+            const SizedBox(width: 8),
+            _infoChip('${h.guests} ${t.bookingHotelGuests}'),
+          ]),
+          const SizedBox(height: 12),
+          _divider,
+          const SizedBox(height: 12),
+          _priceDetailsRowSimple(h.price, h.currency),
+        ],
+      ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════
+  //  SHARED WIDGETS
+  // ══════════════════════════════════════════════════
+  Widget _cardWrapper({required Widget child, VoidCallback? onTap}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: TappableCard(
+        onTap: onTap ?? () {},
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFE8E8E8)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
+        ),
+        padding: const EdgeInsets.all(14),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _statusRow(String id, ReservationStatus status) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Booking ID Badge with border
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF3FF),
+            color: kPrimaryColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFF1D6FFF).withOpacity(0.3)),
+            border: Border.all(color: kPrimaryColor.withValues(alpha: 0.2)),
           ),
-          child: Text(
-            reservation.id,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1D6FFF),
-            ),
-          ),
+          child: Text(id, style: GoogleFonts.inter(
+            fontSize: 12, fontWeight: FontWeight.w600, color: kPrimaryColor)),
         ),
-        // Status as plain text
-        Text(
-          reservation.status.labelTranslated(context),
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: reservation.status.textColor,
-          ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: status.backgroundColor, borderRadius: BorderRadius.circular(8)),
+          child: Text(status.labelTranslated(context), style: GoogleFonts.inter(
+            fontSize: 12, fontWeight: FontWeight.w600, color: status.textColor)),
         ),
       ],
     );
   }
 
-  Widget _buildFlightInfo(Reservation reservation) {
+  Widget _routeArrow(IconData icon) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Departure Block
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                reservation.departureTime,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111111),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                reservation.departureCity,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF111111),
-                ),
-              ),
-              Text(
-                reservation.departureCode,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF999999),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                reservation.departureDate,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF666666),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Center Block (Airline & Duration)
-        Expanded(
-          child: Column(
-            children: [
-              // Airline Logo
-              ClipOval(
-                child: Image.network(
-                  reservation.airlineLogo,
-                  width: 36,
-                  height: 36,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFFF6A00).withOpacity(0.1),
-                      ),
-                      child: Center(
-                        child: Text(
-                          reservation.airlineName.isNotEmpty
-                              ? reservation.airlineName[0]
-                              : 'A',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFFFF6A00),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                reservation.flightNumber,
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF666666),
-                ),
-              ),
-              const SizedBox(height: 4),
-              // Arrow with duration
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 20,
-                    height: 1,
-                    color: const Color(0xFFCCCCCC),
-                  ),
-                  Transform.rotate(
-                    angle: 1.5708, // 90 degrees in radians
-                    child: const Icon(
-                      Icons.flight,
-                      size: 14,
-                      color: Color(0xFFFF6A00),
-                    ),
-                  ),
-                  Container(
-                    width: 20,
-                    height: 1,
-                    color: const Color(0xFFCCCCCC),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                reservation.duration,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF999999),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        // Arrival Block
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                reservation.arrivalTime,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF111111),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                reservation.arrivalCity,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF111111),
-                ),
-              ),
-              Text(
-                reservation.arrivalCode,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: const Color(0xFF999999),
-                ),
-              ),
-            ],
-          ),
-        ),
+        Container(width: 20, height: 1, color: const Color(0xFFCCCCCC)),
+        Transform.rotate(angle: 1.5708, child: Icon(icon, size: 14, color: kPrimaryColor)),
+        Container(width: 20, height: 1, color: const Color(0xFFCCCCCC)),
       ],
     );
   }
 
-  Widget _buildPriceRow(Reservation reservation) {
+  Widget _priceDetailsRow(double price, String currency, BookingFlight f) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Price
-        Text(
-          '${_formatPrice(reservation.price)} ${reservation.currency}',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF111111),
-          ),
-        ),
-        // Details link
+        Text('${_formatPrice(price)} $currency', style: GoogleFonts.inter(
+          fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF111111))),
         SmallTapEffect(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const TicketStatus(),
-              ),
-            );
-          },
-          child: Row(
-            children: [
-              Text(
-                lang.S.of(context).bookingDetails,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1D6FFF),
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(
-                Icons.keyboard_arrow_right,
-                size: 18,
-                color: Color(0xFF1D6FFF),
-              ),
-            ],
-          ),
+          onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => BookingDetailScreen(flight: f))),
+          child: Row(children: [
+            Text(lang.S.of(context).bookingDetails, style: GoogleFonts.inter(
+              fontSize: 13, fontWeight: FontWeight.w500, color: kPrimaryColor)),
+            const SizedBox(width: 4),
+            const Icon(Icons.keyboard_arrow_right, size: 18, color: kPrimaryColor),
+          ]),
         ),
       ],
     );
   }
 
+  Widget _priceDetailsRowSimple(double price, String currency) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('${_formatPrice(price)} $currency', style: GoogleFonts.inter(
+          fontSize: 16, fontWeight: FontWeight.w700, color: const Color(0xFF111111))),
+        Row(children: [
+          Text(lang.S.of(context).bookingDetails, style: GoogleFonts.inter(
+            fontSize: 13, fontWeight: FontWeight.w500, color: kPrimaryColor)),
+          const SizedBox(width: 4),
+          const Icon(Icons.keyboard_arrow_right, size: 18, color: kPrimaryColor),
+        ]),
+      ],
+    );
+  }
+
+  Widget _airlineFallback(String name) {
+    return Container(
+      width: 36, height: 36,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: kPrimaryColor.withValues(alpha: 0.1)),
+      child: Center(child: Text(
+        name.isNotEmpty ? name[0] : 'A',
+        style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: kPrimaryColor),
+      )),
+    );
+  }
+
+  Widget _infoChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3F3F3), borderRadius: BorderRadius.circular(8)),
+      child: Text(text, style: GoogleFonts.inter(
+        fontSize: 11, fontWeight: FontWeight.w500, color: const Color(0xFF666666))),
+    );
+  }
+
+  static const _divider = SizedBox(height: 1, child: ColoredBox(color: Color(0xFFF1F1F1)));
+
+  String _getStatusLabel(int statusId, lang.S t) {
+    switch (statusId) {
+      case 0: return t.statusPending;
+      case 4: return t.statusCancelled;
+      case 8: return t.statusPnrPending;
+      case 12: return t.statusFailureTicket;
+      default: return t.statusInProgress;
+    }
+  }
+
+  Color _getStatusBgColor(int statusId) {
+    switch (statusId) {
+      case 0: return const Color(0xFFFFF0E8);
+      case 4: return const Color(0xFFFFEBEE);
+      case 8: return const Color(0xFFE3F2FD);
+      case 12: return const Color(0xFFFFEBEE);
+      default: return const Color(0xFFE8F5E9);
+    }
+  }
+
+  Color _getStatusTextColor(int statusId) {
+    switch (statusId) {
+      case 0: return const Color(0xFFFF6A00);
+      case 4: return const Color(0xFFF44336);
+      case 8: return const Color(0xFF2196F3);
+      case 12: return const Color(0xFFF44336);
+      default: return const Color(0xFF4CAF50);
+    }
+  }
+
+  static final _timeSt = GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: const Color(0xFF111111));
+  static final _citySt = GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: const Color(0xFF111111));
+  static final _codeSt = GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w400, color: const Color(0xFF999999));
+  static final _dateSt = GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w400, color: const Color(0xFF666666));
+  static final _smallSt = GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w500, color: const Color(0xFF666666));
+  static final _durationSt = GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w400, color: const Color(0xFF999999));
+  static final _labelSt = GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500, color: const Color(0xFF999999));
+  static final _valueSt = GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF111111));
+
   String _formatPrice(double price) {
     return price.toStringAsFixed(0).replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]} ',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]} ');
   }
 }
 
-// Reservation Status Enum
-enum ReservationStatus {
-  enCours,
-  confirme,
-  termine,
-  annule,
+// ══════════════════════════════════════════════════
+//  HELPER CLASSES
+// ══════════════════════════════════════════════════
+class _CategoryItem {
+  final IconData icon;
+  final String label;
+  const _CategoryItem(this.icon, this.label);
 }
+
+enum ReservationStatus { enCours, confirme, termine, annule }
 
 extension ReservationStatusExtension on ReservationStatus {
   String labelTranslated(BuildContext context) {
     final t = lang.S.of(context);
     switch (this) {
-      case ReservationStatus.enCours:
-        return t.statusInProgress;
-      case ReservationStatus.confirme:
-        return t.statusConfirmed;
-      case ReservationStatus.termine:
-        return t.statusCompleted;
-      case ReservationStatus.annule:
-        return t.statusCancelled;
+      case ReservationStatus.enCours: return t.statusInProgress;
+      case ReservationStatus.confirme: return t.statusConfirmed;
+      case ReservationStatus.termine: return t.statusCompleted;
+      case ReservationStatus.annule: return t.statusCancelled;
     }
   }
 
   Color get backgroundColor {
     switch (this) {
-      case ReservationStatus.enCours:
-        return const Color(0xFFFFF0E8);
-      case ReservationStatus.confirme:
-        return const Color(0xFFE8F5E9);
-      case ReservationStatus.termine:
-        return const Color(0xFFE3F2FD);
-      case ReservationStatus.annule:
-        return const Color(0xFFFFEBEE);
+      case ReservationStatus.enCours: return const Color(0xFFFFF0E8);
+      case ReservationStatus.confirme: return const Color(0xFFE8F5E9);
+      case ReservationStatus.termine: return const Color(0xFFE3F2FD);
+      case ReservationStatus.annule: return const Color(0xFFFFEBEE);
     }
   }
 
   Color get textColor {
     switch (this) {
-      case ReservationStatus.enCours:
-        return const Color(0xFFFF6A00);
-      case ReservationStatus.confirme:
-        return const Color(0xFF4CAF50);
-      case ReservationStatus.termine:
-        return const Color(0xFF2196F3);
-      case ReservationStatus.annule:
-        return const Color(0xFFF44336);
+      case ReservationStatus.enCours: return const Color(0xFFFF6A00);
+      case ReservationStatus.confirme: return const Color(0xFF4CAF50);
+      case ReservationStatus.termine: return const Color(0xFF2196F3);
+      case ReservationStatus.annule: return const Color(0xFFF44336);
     }
   }
 }
 
-// Reservation Model
-class Reservation {
+class HotelBooking {
   final String id;
   final ReservationStatus status;
-  final String departureTime;
-  final String departureCity;
-  final String departureCode;
-  final String departureDate;
-  final String arrivalTime;
-  final String arrivalCity;
-  final String arrivalCode;
-  final String airlineName;
-  final String airlineLogo;
-  final String flightNumber;
-  final String duration;
+  final String hotelName, city, checkIn, checkOut;
+  final int nights, rooms, guests;
   final double price;
   final String currency;
 
-  Reservation({
-    required this.id,
-    required this.status,
-    required this.departureTime,
-    required this.departureCity,
-    required this.departureCode,
-    required this.departureDate,
-    required this.arrivalTime,
-    required this.arrivalCity,
-    required this.arrivalCode,
-    required this.airlineName,
-    required this.airlineLogo,
-    required this.flightNumber,
-    required this.duration,
-    required this.price,
-    required this.currency,
+  HotelBooking({
+    required this.id, required this.status,
+    required this.hotelName, required this.city,
+    required this.checkIn, required this.checkOut,
+    required this.nights, required this.rooms, required this.guests,
+    required this.price, required this.currency,
   });
 }

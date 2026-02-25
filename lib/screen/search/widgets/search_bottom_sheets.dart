@@ -217,14 +217,13 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
   int tempSelectedTab = ctrl.selectedFilterTab;
   final bool showRetourTab = ctrl.isRoundTrip;
 
-  // Prix filter: per journey (Aller / Retour)
+  // Prix filter: single global range from API filterDependencies (minRate/maxRate)
   final fData = ctrl.filterData;
   final prixData = fData['prix'] as Map<String, dynamic>;
   final double prixMin = (prixData['min'] as num).toDouble();
   final double prixMax = (prixData['max'] as num).toDouble();
   final String currency = prixData['currency'] as String? ?? 'DZD';
-  RangeValues allerPriceRange = ctrl.selectedPriceRange ?? RangeValues(prixMin, prixMax);
-  RangeValues retourPriceRange = ctrl.retourPriceRange ?? RangeValues(prixMin, prixMax);
+  RangeValues priceRange = ctrl.selectedPriceRange ?? RangeValues(prixMin, prixMax);
 
   final List<String> filterCategories = List<String>.from(fData['categories']);
 
@@ -316,7 +315,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
           final currentAeroports = isAllerTab ? allerAeroports : retourAeroports;
           final currentDepTimeRange = isAllerTab ? allerDepTimeRange : retourDepTimeRange;
           final currentArrTimeRange = isAllerTab ? allerArrTimeRange : retourArrTimeRange;
-          final currentPriceRange = isAllerTab ? allerPriceRange : retourPriceRange;
+          final currentPriceRange = priceRange; // Single global price filter
           final currentDepartureSlots = isAllerTab ? allerDepartureSlots : retourDepartureSlots;
           final currentArrivalSlots = isAllerTab ? allerArrivalSlots : retourArrivalSlots;
 
@@ -522,11 +521,7 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                     priceMax: prixMax,
                                     priceCurrency: currency,
                                     onPriceRangeChanged: (v) => setModalState(() {
-                                      if (isAllerTab) {
-                                        allerPriceRange = v;
-                                      } else {
-                                        retourPriceRange = v;
-                                      }
+                                      priceRange = v;
                                     }),
                                     departureAirportName: currentAeroports['depart']['city'] as String? ?? '',
                                     arrivalAirportName: currentAeroports['arrivee']['city'] as String? ?? '',
@@ -638,11 +633,9 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                                 .toSet();
 
                             // Price range per journey: null if full range (no filter)
-                            final allerPriceToApply = (allerPriceRange.start > prixMin || allerPriceRange.end < prixMax)
-                                ? allerPriceRange
-                                : null;
-                            final retourPriceToApply = (retourPriceRange.start > prixMin || retourPriceRange.end < prixMax)
-                                ? retourPriceRange
+                            // Price: single global filter (not per journey)
+                            final priceToApply = (priceRange.start > prixMin || priceRange.end < prixMax)
+                                ? priceRange
                                 : null;
 
                             // Convert time slot selections to RangeValues
@@ -683,7 +676,9 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                               arrivalAirportCodes: allerArrAirportCodes,
                               depTimeRange: allerDepTime,
                               arrTimeRange: allerArrTime,
-                              priceRange: allerPriceToApply,
+                              priceRange: priceToApply,
+                              depTimeSlots: allerDepartureSlots,
+                              arrTimeSlots: allerArrivalSlots,
                               // Retour
                               retourEscaleOption: retourEscaleOption,
                               retourAirlineCodes: retourAirlineCodes,
@@ -691,7 +686,8 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                               retourArrivalAirportCodes: retourArrAirportCodesSet,
                               retourDepTimeRange: retourDepTime,
                               retourArrTimeRange: retourArrTime,
-                              retourPriceRange: retourPriceToApply,
+                              retourDepTimeSlots: retourDepartureSlots,
+                              retourArrTimeSlots: retourArrivalSlots,
                             );
                           },
                           child: Container(
@@ -869,73 +865,72 @@ Widget _buildFilterContent(
               ),
             ),
           // Stop chips
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
             children: escaleOptions.where((o) => o != 'Tous').map((option) {
               final isSelected = escaleOption == option;
               final int stopCount = option == 'Direct' ? 0
                   : option.contains('1') ? 1
                   : 2;
               final Color activeColor = isSelected ? kPrimaryColor : kSubTitleColor;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: GestureDetector(
-                  onTap: () => onEscaleChanged(isSelected ? 'Tous' : option),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected ? kPrimaryColor.withValues(alpha: 0.06) : kWhite,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSelected ? kPrimaryColor : kBorderColorTextField,
-                        width: 1,
-                      ),
+              return GestureDetector(
+                onTap: () => onEscaleChanged(isSelected ? 'Tous' : option),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? kPrimaryColor.withValues(alpha: 0.06) : kWhite,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected ? kPrimaryColor : kBorderColorTextField,
+                      width: 1,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Flight path icon
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.flight_land, size: 14, color: activeColor),
-                            ...List.generate(stopCount > 0 ? stopCount : 0, (i) => Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text('····', style: TextStyle(color: activeColor, fontSize: 9, height: 1, letterSpacing: 1)),
-                                Container(
-                                  width: 14,
-                                  height: 14,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: activeColor, width: 1.2),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      '${i + 1}',
-                                      style: TextStyle(color: activeColor, fontSize: 8, fontWeight: FontWeight.w600, height: 1.1),
-                                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Flight path icon
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.flight_land, size: 14, color: activeColor),
+                          ...List.generate(stopCount > 0 ? stopCount : 0, (i) => Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('····', style: TextStyle(color: activeColor, fontSize: 9, height: 1, letterSpacing: 1)),
+                              Container(
+                                width: 14,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: activeColor, width: 1.2),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: TextStyle(color: activeColor, fontSize: 8, fontWeight: FontWeight.w600, height: 1.1),
                                   ),
                                 ),
-                              ],
-                            )),
-                            Text('········', style: TextStyle(color: activeColor, fontSize: 9, height: 1, letterSpacing: 1)),
-                          ],
+                              ),
+                            ],
+                          )),
+                          Text('········', style: TextStyle(color: activeColor, fontSize: 9, height: 1, letterSpacing: 1)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        stopCount == 0
+                            ? lang.S.of(context).cardDirectFlight
+                            : (stopCount == 1
+                                ? lang.S.of(context).cardStop('1')
+                                : lang.S.of(context).cardStops('2')),
+                        style: GoogleFonts.poppins(
+                          color: isSelected ? kPrimaryColor : kTitleColor,
+                          fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          stopCount == 0
-                              ? lang.S.of(context).cardDirectFlight
-                              : (stopCount == 1
-                                  ? lang.S.of(context).cardStop('1')
-                                  : lang.S.of(context).cardStops('2')),
-                          style: GoogleFonts.poppins(
-                            color: isSelected ? kPrimaryColor : kTitleColor,
-                            fontSize: 11,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               );
