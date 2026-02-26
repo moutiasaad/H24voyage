@@ -468,7 +468,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "exemple@domaine.com",
     ),
     "editProfileEmailLabel": MessageLookupByLibrary.simpleMessage("E-mail"),
-    "editProfileErrorGeneric": MessageLookupByLibrary.simpleMessage("Erreur"),
+    "editProfileErrorGeneric": MessageLookupByLibrary.simpleMessage(
+      "Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.",
+    ),
     "editProfileFillNameEmail": MessageLookupByLibrary.simpleMessage(
       "Veuillez remplir le nom et l\'email",
     ),
@@ -485,6 +487,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "editProfilePostCodeLabel": MessageLookupByLibrary.simpleMessage(
       "Code postal",
     ),
+    "editProfileSelectCivility": MessageLookupByLibrary.simpleMessage(
+      "Veuillez sélectionner une civilité.",
+    ),
     "editProfileSelectOption": MessageLookupByLibrary.simpleMessage(
       "Sélectionnez",
     ),
@@ -493,16 +498,19 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "editProfileUpdate": MessageLookupByLibrary.simpleMessage("Mettre à jour"),
     "editProfileUpdateError": MessageLookupByLibrary.simpleMessage(
-      "Erreur lors de la mise à jour",
+      "Une erreur est survenue lors de la mise à jour. Veuillez réessayer.",
     ),
     "editProfileUpdated": MessageLookupByLibrary.simpleMessage(
-      "Profil mis à jour",
+      "Vos informations ont été mises à jour avec succès.",
     ),
     "editProfileUploadFailed": MessageLookupByLibrary.simpleMessage(
-      "Échec du téléchargement de l\'image. Réessayez.",
+      "Impossible de télécharger l\'image. Veuillez réessayer.",
     ),
     "editProfileUploadingImage": MessageLookupByLibrary.simpleMessage(
-      "Téléchargement de l\'image...",
+      "Téléchargement de l\'image en cours...",
+    ),
+    "editProfileValidationError": MessageLookupByLibrary.simpleMessage(
+      "Certaines informations sont incorrectes. Veuillez vérifier et réessayer.",
     ),
     "editRouteInfo": m20,
     "editSelect": MessageLookupByLibrary.simpleMessage("Sélectionner"),

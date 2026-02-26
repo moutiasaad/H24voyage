@@ -97,6 +97,7 @@ class HomeHeader extends StatelessWidget {
                       final profile = context.read<ProfileController>();
                       final isLoggedIn = profile.customer != null;
                       final firstName = profile.firstName;
+                      final lastName = profile.lastName;
                       final profileImage = profile.customer?['profileImage']
                           ?? profile.customer?['profileImageUrl']
                           ?? profile.customer?['avatar'];
@@ -142,9 +143,9 @@ class HomeHeader extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (isLoggedIn && firstName.isNotEmpty)
+                              if (isLoggedIn && lastName.isNotEmpty)
                                 Text(
-                                  lang.S.of(context).homeGreeting(firstName),
+                                  lang.S.of(context).homeGreeting(lastName),
                                   style: kTextStyle.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,

@@ -8,12 +8,14 @@ class CustomDatePicker extends StatefulWidget {
   final DateTime? initialStartDate;
   final DateTime? initialEndDate;
   final bool isRoundTrip;
+  final DateTime? minDate;
 
   const CustomDatePicker({
     Key? key,
     this.initialStartDate,
     this.initialEndDate,
     this.isRoundTrip = true,
+    this.minDate,
   }) : super(key: key);
 
   @override
@@ -62,6 +64,11 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   }
 
   void _onDaySelected(DateTime day) {
+    // Block selection of dates before minDate
+    final today = DateTime.now();
+    if (day.isBefore(DateTime(today.year, today.month, today.day))) return;
+    if (widget.minDate != null && day.isBefore(DateTime(widget.minDate!.year, widget.minDate!.month, widget.minDate!.day))) return;
+
     setState(() {
       if (!widget.isRoundTrip) {
         // For one-way trip (Aller simple), only select departure and close
@@ -366,7 +373,8 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                   final isToday = date.year == today.year &&
                       date.month == today.month &&
                       date.day == today.day;
-                  final isPastDate = date.isBefore(DateTime(today.year, today.month, today.day));
+                  final isPastDate = date.isBefore(DateTime(today.year, today.month, today.day)) ||
+                      (widget.minDate != null && date.isBefore(DateTime(widget.minDate!.year, widget.minDate!.month, widget.minDate!.day)));
                   final isDeparture = departureDate != null &&
                       date.year == departureDate!.year &&
                       date.month == departureDate!.month &&

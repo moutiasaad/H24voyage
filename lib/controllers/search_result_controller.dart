@@ -163,7 +163,7 @@ class SearchResultController extends ChangeNotifier {
 
   void setDirectOnly(bool value) {
     _isDirectOnly = value;
-    notifyListeners();
+    reloadFlightsWithFilters();
   }
 
   void setSelectedAirlineCode(String? code) {
@@ -358,6 +358,9 @@ class SearchResultController extends ChangeNotifier {
     } else {
       _selectedAirlineCode = code;
     }
+    // Clear airline filters from filter bottom sheet (Aller + Retour)
+    _selectedFilterAirlineCodes = {};
+    _retourAirlineCodes = {};
     notifyListeners();
     reloadFlightsWithFilters();
   }
@@ -455,14 +458,22 @@ class SearchResultController extends ChangeNotifier {
     }
 
     // Build stops param from escale options (Aller=B1, Retour=B2)
+    // When "Vol direct" toggle is ON, force B1:S0 (and B2:S0 for round-trip)
     String? stopsParam;
     final stopCodes = <String>[];
-    final allerStop = _escaleToStopCode(_selectedEscaleOption, 'B1');
-    if (allerStop != null) stopCodes.add(allerStop);
-    final retourStop = _escaleToStopCode(_retourEscaleOption, 'B2');
-    if (retourStop != null) stopCodes.add(retourStop);
+    if (_isDirectOnly) {
+      stopCodes.add('B1:S0');
+      if (isRoundTrip) {
+        stopCodes.add('B2:S0');
+      }
+    } else {
+      final allerStop = _escaleToStopCode(_selectedEscaleOption, 'B1');
+      if (allerStop != null) stopCodes.add(allerStop);
+      final retourStop = _escaleToStopCode(_retourEscaleOption, 'B2');
+      if (retourStop != null) stopCodes.add(retourStop);
+    }
     if (stopCodes.isNotEmpty) {
-      stopsParam = stopCodes.join(',');
+      stopsParam = stopCodes.join('|');
     }
 
     // Build depAirport param (Aller=B1:CODE, Retour=B2:CODE)
@@ -832,10 +843,7 @@ class SearchResultController extends ChangeNotifier {
   List<FlightOffer> get filteredApiFlights {
     List<FlightOffer> result = _apiFlights;
 
-    // Direct-only toggle (global)
-    if (_isDirectOnly) {
-      result = result.where((offer) => isDirectFlight(offer)).toList();
-    }
+    // Direct-only toggle is now handled by the API (stops=B1:S0|B2:S0)
 
     // Quick chip airline (global)
     if (_selectedAirlineCode != null) {

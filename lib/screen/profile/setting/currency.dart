@@ -20,18 +20,6 @@ class _CurrencyState extends State<Currency> {
       'symbol': 'دج',
       'flag': 'dz',
     },
-    {
-      'key': 'currencyFrance',
-      'code': 'EUR',
-      'symbol': '€',
-      'flag': 'fr',
-    },
-    {
-      'key': 'currencyTunisia',
-      'code': 'TND',
-      'symbol': 'د.ت',
-      'flag': 'tn',
-    },
   ];
 
   late Map<String, String> selected;

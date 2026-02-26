@@ -648,36 +648,77 @@ class _SearchResultState extends State<SearchResult>
                         if (widget.dateRange != null && widget.dateRange!.start != widget.dateRange!.end)
                           SliverToBoxAdapter(
                             child: Container(
-                              margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                              margin: EdgeInsets.fromLTRB(isSmallScreen ? 10 : 16, 8, isSmallScreen ? 10 : 16, 0),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isSmallScreen ? 10 : 16,
+                                vertical: isSmallScreen ? 8 : 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: kPrimaryColor.withOpacity(0.08),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(color: kPrimaryColor.withOpacity(0.2)),
                               ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.access_time_rounded, size: 18, color: kPrimaryColor),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    '${lang.S.of(context).searchStayDuration}${widget.dateRange!.duration.inDays} ${widget.dateRange!.duration.inDays > 1 ? lang.S.of(context).datePickerDays : lang.S.of(context).datePickerDay}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: kPrimaryColor,
+                              child: isSmallScreen
+                                  ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.access_time_rounded, size: 16, color: kPrimaryColor),
+                                            const SizedBox(width: 6),
+                                            Flexible(
+                                              child: Text(
+                                                '${lang.S.of(context).searchStayDuration}${widget.dateRange!.duration.inDays} ${widget.dateRange!.duration.inDays > 1 ? lang.S.of(context).datePickerDays : lang.S.of(context).datePickerDay}',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: kPrimaryColor,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 22),
+                                          child: Text(
+                                            '${DateFormat('dd MMM', 'fr').format(widget.dateRange!.start)} - ${DateFormat('dd MMM', 'fr').format(widget.dateRange!.end)}',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                              color: kPrimaryColor.withOpacity(0.7),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Row(
+                                      children: [
+                                        Icon(Icons.access_time_rounded, size: 18, color: kPrimaryColor),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text(
+                                            '${lang.S.of(context).searchStayDuration}${widget.dateRange!.duration.inDays} ${widget.dateRange!.duration.inDays > 1 ? lang.S.of(context).datePickerDays : lang.S.of(context).datePickerDay}',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: isMediumScreen ? 12 : 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: kPrimaryColor,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '${DateFormat('dd MMM', 'fr').format(widget.dateRange!.start)} - ${DateFormat('dd MMM', 'fr').format(widget.dateRange!.end)}',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: isMediumScreen ? 11 : 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: kPrimaryColor.withOpacity(0.7),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    '${DateFormat('dd MMM', 'fr').format(widget.dateRange!.start)} - ${DateFormat('dd MMM', 'fr').format(widget.dateRange!.end)}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: kPrimaryColor.withOpacity(0.7),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
                           ),
 

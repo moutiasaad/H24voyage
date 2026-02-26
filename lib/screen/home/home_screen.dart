@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   // ── Date pickers ──
   void _showCustomDatePicker() async {
-    final isRoundTrip = _ctrl.selectedIndex == 0 || _ctrl.selectedIndex == 2;
+    final isRoundTrip = _ctrl.selectedIndex == 0;
     final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
@@ -78,6 +78,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _showLegDatePicker(int legIndex) async {
+    // The minimum selectable date is the previous leg's departure date (or Flight 1's)
+    DateTime? minDate;
+    if (legIndex == 0) {
+      minDate = _ctrl.departureDate;
+    } else {
+      minDate = _ctrl.multiDestinationLegs[legIndex - 1].departureDate;
+    }
+
     final result = await showModalBottomSheet<Map<String, dynamic>>(
       context: context,
       isScrollControlled: true,
@@ -86,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         initialStartDate: _ctrl.multiDestinationLegs[legIndex].departureDate,
         initialEndDate: null,
         isRoundTrip: false,
+        minDate: minDate,
       ),
     );
     if (result != null) _ctrl.updateLegDate(legIndex, result);

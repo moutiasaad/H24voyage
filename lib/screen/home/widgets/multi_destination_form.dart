@@ -92,11 +92,11 @@ class MultiDestinationForm extends StatelessWidget {
           onSwap: onSwap,
         ),
         const SizedBox(height: 5.0),
-        // Flight 1 - dates
+        // Flight 1 - departure date only
         DateSelectorRow(
           departureDate: departureDate,
-          returnDate: returnDate,
-          showReturnDate: true,
+          returnDate: null,
+          showReturnDate: false,
           onTap: onDateTap,
         ),
         // Additional legs

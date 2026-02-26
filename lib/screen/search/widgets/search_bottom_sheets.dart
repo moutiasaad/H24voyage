@@ -880,36 +880,39 @@ Widget _buildFilterContent(
                 ),
               ),
             ),
-          // Stop chips
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: escaleOptions.where((o) => o != 'Tous').map((option) {
-              final isSelected = escaleOption == option;
-              final int stopCount = option == 'Direct' ? 0
-                  : option.contains('1') ? 1
-                  : 2;
-              final Color activeColor = isSelected ? kPrimaryColor : kSubTitleColor;
-              return GestureDetector(
+          // Stop cards (stacked vertically like Horaires)
+          ...escaleOptions.where((o) => o != 'Tous').map((option) {
+            final isSelected = escaleOption == option;
+            final int stopCount = option == 'Direct' ? 0
+                : option.contains('1') ? 1
+                : 2;
+            final Color activeColor = isSelected ? kPrimaryColor : kSubTitleColor;
+            final String label = stopCount == 0
+                ? lang.S.of(context).cardDirectFlight
+                : (stopCount == 1
+                    ? lang.S.of(context).cardStop('1')
+                    : lang.S.of(context).cardStops('2'));
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: GestureDetector(
                 onTap: () => onEscaleChanged(isSelected ? 'Tous' : option),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? kPrimaryColor.withValues(alpha: 0.06) : kWhite,
-                    borderRadius: BorderRadius.circular(8),
+                    color: isSelected ? kPrimaryColor.withOpacity(0.08) : kWhite,
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: isSelected ? kPrimaryColor : kBorderColorTextField,
-                      width: 1,
+                      width: isSelected ? 1.5 : 1,
                     ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Row(
                     children: [
                       // Flight path icon
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.flight_land, size: 14, color: activeColor),
+                          Icon(Icons.flight_land, size: 16, color: activeColor),
                           ...List.generate(stopCount > 0 ? stopCount : 0, (i) => Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -933,25 +936,23 @@ Widget _buildFilterContent(
                           Text('········', style: TextStyle(color: activeColor, fontSize: 9, height: 1, letterSpacing: 1)),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        stopCount == 0
-                            ? lang.S.of(context).cardDirectFlight
-                            : (stopCount == 1
-                                ? lang.S.of(context).cardStop('1')
-                                : lang.S.of(context).cardStops('2')),
-                        style: GoogleFonts.poppins(
-                          color: isSelected ? kPrimaryColor : kTitleColor,
-                          fontSize: 11,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          label,
+                          style: GoogleFonts.poppins(
+                            color: isSelected ? kPrimaryColor : kTitleColor,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              );
-            }).toList(),
-          ),
+              ),
+            );
+          }).toList(),
         ],
       );
 

@@ -126,11 +126,11 @@ class _SupportMainState extends State<SupportMain> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: isSmallScreen ? 12 : 16),
+                    SizedBox(height: isSmallScreen ? 8 : (isMediumScreen ? 10 : 16)),
 
                     // Stats Tabs
                     _buildStatsTabs(),
-                    SizedBox(height: isSmallScreen ? 16 : 20),
+                    SizedBox(height: isSmallScreen ? 10 : (isMediumScreen ? 14 : 20)),
 
                     // Ticket Cards
                     ..._tickets.map((ticket) => _buildTicketCard(ticket)).toList(),
@@ -147,21 +147,24 @@ class _SupportMainState extends State<SupportMain> {
   }
 
   Widget _buildHeaderWithBanner() {
-    const double bannerHeight = 46;
-    const double overlap = bannerHeight / 2;
+    final bannerHeight = isSmallScreen ? 38.0 : (isMediumScreen ? 40.0 : 46.0);
+    final overlap = bannerHeight / 2;
+    final topPad = isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0);
+    final hPad = isSmallScreen ? 12.0 : 16.0;
+    final titleSize = isSmallScreen ? 16.0 : 18.0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: overlap),
+      margin: EdgeInsets.only(bottom: overlap),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           // Orange header
           Container(
             padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 12,
-              left: 16,
-              right: 16,
-              bottom: overlap + 12,
+              top: MediaQuery.of(context).padding.top + topPad,
+              left: hPad,
+              right: hPad,
+              bottom: overlap + (isSmallScreen ? 8 : 12),
             ),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -192,24 +195,24 @@ class _SupportMainState extends State<SupportMain> {
                           Navigator.pop(context);
                         }
                       },
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back,
                         color: Colors.white,
-                        size: 24,
+                        size: isSmallScreen ? 22 : 24,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: isSmallScreen ? 8 : 12),
                     Text(
                       lang.S.of(context).supportTitle,
                       style: GoogleFonts.poppins(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: titleSize,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: isSmallScreen ? 10 : (isMediumScreen ? 12 : 16)),
 
                 // Filter Chips
                 _buildFilterChips(),
@@ -217,16 +220,16 @@ class _SupportMainState extends State<SupportMain> {
             ),
           ),
 
-          // Overlapping banner - half inside header, half outside
+          // Overlapping banner
           Positioned(
-            left: 24,
-            right: 24,
+            left: isSmallScreen ? 16 : 24,
+            right: isSmallScreen ? 16 : 24,
             bottom: -overlap,
             child: Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(
-                horizontal: isSmallScreen ? 12 : 16,
-                vertical: isSmallScreen ? 10 : 14,
+                horizontal: isSmallScreen ? 10 : (isMediumScreen ? 12 : 16),
+                vertical: isSmallScreen ? 6 : (isMediumScreen ? 8 : 14),
               ),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF4EE),
@@ -243,10 +246,13 @@ class _SupportMainState extends State<SupportMain> {
                 lang.S.of(context).supportBanner,
                 style: GoogleFonts.poppins(
                   color: kPrimaryColor,
-                  fontSize: isSmallScreen ? 11 : 13,
+                  fontSize: isSmallScreen ? 10 : (isMediumScreen ? 11 : 13),
                   fontWeight: FontWeight.w500,
+                  height: 1.3,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
@@ -256,100 +262,74 @@ class _SupportMainState extends State<SupportMain> {
   }
 
   Widget _buildFilterChips() {
-    final chipPaddingH = isSmallScreen ? 10.0 : 14.0;
-    final chipPaddingV = isSmallScreen ? 8.0 : 10.0;
-    final fontSize = isSmallScreen ? 12.0 : 13.0;
-    final iconSize = isSmallScreen ? 16.0 : 18.0;
-    final spacing = isSmallScreen ? 6.0 : 10.0;
+    final chipPaddingH = isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 14.0);
+    final chipPaddingV = isSmallScreen ? 6.0 : (isMediumScreen ? 7.0 : 10.0);
+    final fontSize = isSmallScreen ? 11.0 : (isMediumScreen ? 12.0 : 13.0);
+    final iconSize = isSmallScreen ? 14.0 : (isMediumScreen ? 16.0 : 18.0);
+    final spacing = isSmallScreen ? 6.0 : (isMediumScreen ? 8.0 : 10.0);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-          // Helpdesk Chip (selected)
-          SmallTapEffect(
+    Widget buildChip({
+      required String label,
+      required IconData icon,
+      required VoidCallback? onTap,
+      bool isActive = false,
+    }) {
+      return SmallTapEffect(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isActive ? kPrimaryColor : const Color(0xFFE0E0E0),
+              width: isActive ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: isActive ? kPrimaryColor : kSubTitleColor, size: iconSize),
+              SizedBox(width: isSmallScreen ? 4 : 6),
+              Text(
+                label,
+                style: GoogleFonts.poppins(
+                  color: isActive ? kPrimaryColor : kSubTitleColor,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: [
+          buildChip(
+            label: lang.S.of(context).supportHelpdesk,
+            icon: Icons.menu,
             onTap: () => const FaqScreen().launch(context),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: kPrimaryColor, width: 1.5),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.menu, color: kPrimaryColor, size: iconSize),
-                  SizedBox(width: isSmallScreen ? 4 : 8),
-                  Text(
-                    lang.S.of(context).supportHelpdesk,
-                    style: GoogleFonts.poppins(
-                      color: kPrimaryColor,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            isActive: true,
           ),
           SizedBox(width: spacing),
-
-          // Filter Chip
-          SmallTapEffect(
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE0E0E0)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.tune, color: kSubTitleColor, size: iconSize),
-                  SizedBox(width: isSmallScreen ? 4 : 8),
-                  Text(
-                    lang.S.of(context).supportFilter,
-                    style: GoogleFonts.poppins(
-                      color: kSubTitleColor,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          buildChip(
+            label: lang.S.of(context).supportFilter,
+            icon: Icons.tune,
+            onTap: null,
           ),
           SizedBox(width: spacing),
-
-          // Ticket Chip
-          SmallTapEffect(
+          buildChip(
+            label: lang.S.of(context).supportTicket,
+            icon: Icons.add_circle_outline,
             onTap: () => const CreateTicket().launch(context),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: chipPaddingH, vertical: chipPaddingV),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE0E0E0)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add_circle_outline, color: kSubTitleColor, size: iconSize),
-                  SizedBox(width: isSmallScreen ? 4 : 8),
-                  Text(
-                    lang.S.of(context).supportTicket,
-                    style: GoogleFonts.poppins(
-                      color: kSubTitleColor,
-                      fontSize: fontSize,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
+      ),
     );
   }
 
@@ -376,11 +356,13 @@ class _SupportMainState extends State<SupportMain> {
   }
 
   Widget _buildStatsTabs() {
-    final verticalPadding = isSmallScreen ? 8.0 : 10.0;
-    final horizontalPadding = isSmallScreen ? 4.0 : 8.0;
+    final verticalPadding = isSmallScreen ? 6.0 : (isMediumScreen ? 7.0 : 10.0);
+    final horizontalPadding = isSmallScreen ? 2.0 : (isMediumScreen ? 4.0 : 8.0);
+    final countFontSize = isSmallScreen ? 11.0 : 12.0;
+    final labelFontSize = isSmallScreen ? 10.0 : (isMediumScreen ? 11.0 : 12.0);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 2 : 4, vertical: isSmallScreen ? 4 : 6),
+      padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 2 : 4, vertical: isSmallScreen ? 3 : 6),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(8),
@@ -407,9 +389,9 @@ class _SupportMainState extends State<SupportMain> {
                       '03',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 12,
+                        fontSize: countFontSize,
                         fontWeight: FontWeight.w500,
-                        height: 16 / 12,
+                        height: 1.2,
                         color: isSelected ? Colors.white : kTitleColor,
                       ),
                     ),
@@ -419,9 +401,9 @@ class _SupportMainState extends State<SupportMain> {
                         _tabs(context)[index],
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
+                          fontSize: labelFontSize,
                           fontWeight: FontWeight.w500,
-                          height: 16 / 12,
+                          height: 1.2,
                           color: isSelected ? Colors.white : kSubTitleColor,
                         ),
                       ),
@@ -438,17 +420,18 @@ class _SupportMainState extends State<SupportMain> {
 
   Widget _buildTicketCard(SupportTicket ticket) {
     // Responsive values
-    final cardPadding = isSmallScreen ? 12.0 : 16.0;
-    final idFontSize = isSmallScreen ? 12.0 : 13.0;
+    final cardPadding = isSmallScreen ? 10.0 : (isMediumScreen ? 12.0 : 16.0);
+    final idFontSize = isSmallScreen ? 11.0 : (isMediumScreen ? 12.0 : 13.0);
     final statusFontSize = isSmallScreen ? 10.0 : 12.0;
-    final subjectFontSize = isSmallScreen ? 14.0 : 16.0;
-    final infoFontSize = isSmallScreen ? 11.0 : 12.0;
-    final smallFontSize = isSmallScreen ? 10.0 : 11.0;
-    final avatarSize = isSmallScreen ? 28.0 : 32.0;
-    final iconSize = isSmallScreen ? 14.0 : 16.0;
+    final subjectFontSize = isSmallScreen ? 13.0 : (isMediumScreen ? 14.0 : 16.0);
+    final infoFontSize = isSmallScreen ? 10.0 : (isMediumScreen ? 11.0 : 12.0);
+    final smallFontSize = isSmallScreen ? 9.0 : (isMediumScreen ? 10.0 : 11.0);
+    final avatarSize = isSmallScreen ? 26.0 : (isMediumScreen ? 28.0 : 32.0);
+    final iconSize = isSmallScreen ? 13.0 : (isMediumScreen ? 14.0 : 16.0);
+    final verticalGap = isSmallScreen ? 8.0 : (isMediumScreen ? 10.0 : 12.0);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: isSmallScreen ? 8 : 12),
       child: TappableCard(
         onTap: () => TicketDetail(ticketId: ticket.id).launch(context),
         decoration: BoxDecoration(
@@ -468,7 +451,10 @@ class _SupportMainState extends State<SupportMain> {
               children: [
                 // ID badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isSmallScreen ? 8 : 10,
+                    vertical: isSmallScreen ? 3 : 4,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEAF3FF),
                     borderRadius: BorderRadius.circular(8),
@@ -486,19 +472,22 @@ class _SupportMainState extends State<SupportMain> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: isSmallScreen ? 8 : 12),
                 // Status badge
-                Text(
-                  ticket.statusLabelTranslated(context),
-                  style: GoogleFonts.poppins(
-                    fontSize: statusFontSize,
-                    fontWeight: FontWeight.w500,
-                    color: kPrimaryColor,
+                Flexible(
+                  child: Text(
+                    ticket.statusLabelTranslated(context),
+                    style: GoogleFonts.poppins(
+                      fontSize: statusFontSize,
+                      fontWeight: FontWeight.w500,
+                      color: kPrimaryColor,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: verticalGap),
 
             // Subject
             Text(
@@ -508,14 +497,16 @@ class _SupportMainState extends State<SupportMain> {
                 fontWeight: FontWeight.w600,
                 color: kTitleColor,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: verticalGap),
 
             // Info Row
             _buildInfoRow(ticket, avatarSize, infoFontSize, iconSize, smallFontSize),
 
             // Details Button at bottom right
-            const SizedBox(height: 10),
+            SizedBox(height: isSmallScreen ? 6 : 10),
             Align(
               alignment: Alignment.centerRight,
               child: _buildDetailsLink(context, infoFontSize),
@@ -527,8 +518,8 @@ class _SupportMainState extends State<SupportMain> {
   }
 
   Widget _buildInfoRow(SupportTicket ticket, double avatarSize, double infoFontSize, double iconSize, double smallFontSize) {
-    // For small screens, use two rows layout
-    if (isSmallScreen || screenWidth < 400) {
+    // For small and medium screens, use two rows layout
+    if (screenWidth < 420) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -536,7 +527,7 @@ class _SupportMainState extends State<SupportMain> {
           Row(
             children: [
               _buildAvatar(ticket, avatarSize),
-              const SizedBox(width: 8),
+              SizedBox(width: isSmallScreen ? 6 : 8),
               Expanded(
                 child: Text(
                   ticket.assignedTo,
@@ -550,12 +541,12 @@ class _SupportMainState extends State<SupportMain> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: isSmallScreen ? 6 : 10),
           // Second row: Date + Service
           Row(
             children: [
               _buildDateChip(ticket, iconSize, smallFontSize),
-              const SizedBox(width: 10),
+              SizedBox(width: isSmallScreen ? 6 : 10),
               Expanded(
                 child: _buildServiceChip(ticket, iconSize, smallFontSize),
               ),
@@ -568,25 +559,22 @@ class _SupportMainState extends State<SupportMain> {
     // For larger screens, use single row
     return Row(
       children: [
-        // Avatar
         _buildAvatar(ticket, avatarSize),
         const SizedBox(width: 8),
-        // Name
-        Text(
-          ticket.assignedTo,
-          style: GoogleFonts.poppins(
-            fontSize: infoFontSize,
-            fontWeight: FontWeight.w500,
-            color: kTitleColor,
+        Flexible(
+          child: Text(
+            ticket.assignedTo,
+            style: GoogleFonts.poppins(
+              fontSize: infoFontSize,
+              fontWeight: FontWeight.w500,
+              color: kTitleColor,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         const SizedBox(width: 12),
-
-        // Date with calendar icon
         _buildDateChip(ticket, iconSize, smallFontSize),
         const SizedBox(width: 10),
-
-        // Service with tag icon
         Expanded(
           child: _buildServiceChip(ticket, iconSize, smallFontSize),
         ),

@@ -72,7 +72,7 @@ class _HomeState extends State<Home> {
   String? get _userProfileImage {
     final customer = _profileController.customer;
     if (customer != null) {
-      final image = customer['profileImage'] ?? customer['profileImageUrl'] ?? customer['avatar'];
+      final image = customer['photo'] ?? customer['profileImage'] ?? customer['profileImageUrl'] ?? customer['avatar'];
       if (image is String && image.isNotEmpty) return image;
     }
     return null;
@@ -193,6 +193,8 @@ class _HomeState extends State<Home> {
     required String label,
   }) {
     final bool isSelected = _currentPage == index;
+    final hasImage = _userProfileImage != null;
+
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -200,32 +202,46 @@ class _HomeState extends State<Home> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Profile avatar with orange background
+            // Profile avatar: image > initial letter > default icon
             Container(
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B35), // Orange color
+                color: const Color(0xFFFF6B35),
                 shape: BoxShape.circle,
-                image: _userProfileImage != null
-                    ? DecorationImage(
-                        image: NetworkImage(_userProfileImage!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
               ),
-              child: _userProfileImage == null
-                  ? Center(
-                      child: Text(
-                        _getUserInitial(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+              clipBehavior: Clip.antiAlias,
+              child: hasImage
+                  ? Image.network(
+                      _userProfileImage!,
+                      width: 28,
+                      height: 28,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Center(
+                        child: _isLoggedIn && _userName.isNotEmpty
+                            ? Text(
+                                _getUserInitial(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : const Icon(Icons.person, color: Colors.white, size: 18),
                       ),
                     )
-                  : null,
+                  : Center(
+                      child: _isLoggedIn && _userName.isNotEmpty
+                          ? Text(
+                              _getUserInitial(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : const Icon(Icons.person, color: Colors.white, size: 18),
+                    ),
             ),
             const SizedBox(height: 4),
             Text(

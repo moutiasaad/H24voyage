@@ -449,9 +449,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "email@example.com",
     ),
     "editProfileEmailLabel": MessageLookupByLibrary.simpleMessage("Email"),
-    "editProfileErrorGeneric": MessageLookupByLibrary.simpleMessage("Error"),
+    "editProfileErrorGeneric": MessageLookupByLibrary.simpleMessage(
+      "An unexpected error occurred. Please try again later.",
+    ),
     "editProfileFillNameEmail": MessageLookupByLibrary.simpleMessage(
-      "Please fill in name and email",
+      "Please fill in your name and email address.",
     ),
     "editProfileFullNameHint": MessageLookupByLibrary.simpleMessage(
       "First Last Name",
@@ -466,20 +468,26 @@ class MessageLookup extends MessageLookupByLibrary {
     "editProfilePostCodeLabel": MessageLookupByLibrary.simpleMessage(
       "Postal code",
     ),
+    "editProfileSelectCivility": MessageLookupByLibrary.simpleMessage(
+      "Please select a title.",
+    ),
     "editProfileSelectOption": MessageLookupByLibrary.simpleMessage("Select"),
     "editProfileTitle": MessageLookupByLibrary.simpleMessage("Edit profile"),
     "editProfileUpdate": MessageLookupByLibrary.simpleMessage("Update"),
     "editProfileUpdateError": MessageLookupByLibrary.simpleMessage(
-      "Error updating",
+      "An error occurred while updating. Please try again.",
     ),
     "editProfileUpdated": MessageLookupByLibrary.simpleMessage(
-      "Profile updated",
+      "Your information has been updated successfully.",
     ),
     "editProfileUploadFailed": MessageLookupByLibrary.simpleMessage(
-      "Image upload failed. Try again.",
+      "Unable to upload the image. Please try again.",
     ),
     "editProfileUploadingImage": MessageLookupByLibrary.simpleMessage(
-      "Uploading image...",
+      "Uploading image, please wait...",
+    ),
+    "editProfileValidationError": MessageLookupByLibrary.simpleMessage(
+      "Some information is incorrect. Please check and try again.",
     ),
     "editRouteInfo": m20,
     "editSelect": MessageLookupByLibrary.simpleMessage("Select"),

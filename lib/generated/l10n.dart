@@ -3684,60 +3684,60 @@ class S {
     );
   }
 
-  /// `Please fill in name and email`
+  /// `Please fill in your name and email address.`
   String get editProfileFillNameEmail {
     return Intl.message(
-      'Please fill in name and email',
+      'Please fill in your name and email address.',
       name: 'editProfileFillNameEmail',
       desc: '',
       args: [],
     );
   }
 
-  /// `Uploading image...`
+  /// `Uploading image, please wait...`
   String get editProfileUploadingImage {
     return Intl.message(
-      'Uploading image...',
+      'Uploading image, please wait...',
       name: 'editProfileUploadingImage',
       desc: '',
       args: [],
     );
   }
 
-  /// `Image upload failed. Try again.`
+  /// `Unable to upload the image. Please try again.`
   String get editProfileUploadFailed {
     return Intl.message(
-      'Image upload failed. Try again.',
+      'Unable to upload the image. Please try again.',
       name: 'editProfileUploadFailed',
       desc: '',
       args: [],
     );
   }
 
-  /// `Profile updated`
+  /// `Your information has been updated successfully.`
   String get editProfileUpdated {
     return Intl.message(
-      'Profile updated',
+      'Your information has been updated successfully.',
       name: 'editProfileUpdated',
       desc: '',
       args: [],
     );
   }
 
-  /// `Error updating`
+  /// `An error occurred while updating. Please try again.`
   String get editProfileUpdateError {
     return Intl.message(
-      'Error updating',
+      'An error occurred while updating. Please try again.',
       name: 'editProfileUpdateError',
       desc: '',
       args: [],
     );
   }
 
-  /// `Error`
+  /// `An unexpected error occurred. Please try again later.`
   String get editProfileErrorGeneric {
     return Intl.message(
-      'Error',
+      'An unexpected error occurred. Please try again later.',
       name: 'editProfileErrorGeneric',
       desc: '',
       args: [],
@@ -3889,6 +3889,26 @@ class S {
     return Intl.message(
       'Date of birth',
       name: 'editProfileBirthDateLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please select a title.`
+  String get editProfileSelectCivility {
+    return Intl.message(
+      'Please select a title.',
+      name: 'editProfileSelectCivility',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Some information is incorrect. Please check and try again.`
+  String get editProfileValidationError {
+    return Intl.message(
+      'Some information is incorrect. Please check and try again.',
+      name: 'editProfileValidationError',
       desc: '',
       args: [],
     );

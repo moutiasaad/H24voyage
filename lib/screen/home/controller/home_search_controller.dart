@@ -121,7 +121,7 @@ class HomeSearchController extends ChangeNotifier {
   /// Update dates from date picker result
   void updateDates(Map<String, dynamic> result) {
     departureDate = result['departure'] as DateTime?;
-    final isRoundTrip = selectedIndex == 0 || selectedIndex == 2;
+    final isRoundTrip = selectedIndex == 0;
     if (isRoundTrip) {
       returnDate = result['return'] as DateTime?;
     } else {
@@ -130,13 +130,32 @@ class HomeSearchController extends ChangeNotifier {
     if (departureDate != null && returnDate != null) {
       _selectedDateRange = DateTimeRange(start: departureDate!, end: returnDate!);
     }
+    // For multi-destination, cascade departure date to subsequent legs
+    if (selectedIndex == 2 && departureDate != null) {
+      for (int i = 0; i < multiDestinationLegs.length; i++) {
+        final prevDate = i == 0
+            ? departureDate!
+            : multiDestinationLegs[i - 1].departureDate;
+        if (prevDate != null) {
+          multiDestinationLegs[i].departureDate = prevDate.add(const Duration(days: 1));
+        }
+      }
+    }
     notifyListeners();
   }
 
   /// Update leg date from date picker result
+  /// Also cascades to subsequent legs: each gets the next day after the previous
   void updateLegDate(int legIndex, Map<String, dynamic> result) {
     if (legIndex >= 0 && legIndex < multiDestinationLegs.length) {
       multiDestinationLegs[legIndex].departureDate = result['departure'] as DateTime?;
+      // Cascade: update subsequent legs to next day after the previous
+      for (int i = legIndex + 1; i < multiDestinationLegs.length; i++) {
+        final prevDate = multiDestinationLegs[i - 1].departureDate;
+        if (prevDate != null) {
+          multiDestinationLegs[i].departureDate = prevDate.add(const Duration(days: 1));
+        }
+      }
       notifyListeners();
     }
   }
@@ -176,18 +195,29 @@ class HomeSearchController extends ChangeNotifier {
   }
 
   /// Add a new multi-destination leg with smart defaults
+  /// Departure date is auto-set to the next day after the previous leg's departure date
   void addMultiDestinationLeg() {
     if (multiDestinationLegs.length >= 3) return;
     Airport? newFromAirport;
+    DateTime? newDepartureDate;
+
     if (multiDestinationLegs.isNotEmpty) {
       newFromAirport = multiDestinationLegs.last.toAirport;
+      final prevDate = multiDestinationLegs.last.departureDate;
+      if (prevDate != null) {
+        newDepartureDate = prevDate.add(const Duration(days: 1));
+      }
     } else {
       newFromAirport = toAirport;
+      if (departureDate != null) {
+        newDepartureDate = departureDate!.add(const Duration(days: 1));
+      }
     }
+
     multiDestinationLegs.add(MultiDestinationLeg(
       fromAirport: newFromAirport,
       toAirport: null,
-      departureDate: null,
+      departureDate: newDepartureDate,
     ));
     notifyListeners();
   }
