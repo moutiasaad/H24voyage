@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flight_booking/Model/Airport.dart';
@@ -27,10 +28,13 @@ class SearchResultController extends ChangeNotifier {
 
   // ── Disposal safety ──
   bool _disposed = false;
+  Timer? _airlineChipDebounce;
+  int _reloadGeneration = 0;
 
   @override
   void dispose() {
     _disposed = true;
+    _airlineChipDebounce?.cancel();
     super.dispose();
   }
 
@@ -351,7 +355,7 @@ class SearchResultController extends ChangeNotifier {
     }
   }
 
-  /// Selects a quick-chip airline and reloads from API.
+  /// Selects a quick-chip airline and reloads from API (debounced).
   void selectAirlineChip(String? code) {
     if (_selectedAirlineCode == code) {
       _selectedAirlineCode = null;
@@ -361,8 +365,16 @@ class SearchResultController extends ChangeNotifier {
     // Clear airline filters from filter bottom sheet (Aller + Retour)
     _selectedFilterAirlineCodes = {};
     _retourAirlineCodes = {};
+
+    // Show loading immediately so the UI shows shimmer instead of "aucun résultat"
+    _isReloading = true;
     notifyListeners();
-    reloadFlightsWithFilters();
+
+    // Debounce: cancel previous pending call, wait 300ms before firing API
+    _airlineChipDebounce?.cancel();
+    _airlineChipDebounce = Timer(const Duration(milliseconds: 300), () {
+      reloadFlightsWithFilters();
+    });
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -607,9 +619,11 @@ class SearchResultController extends ChangeNotifier {
   Future<void> reloadFlightsWithFilters() async {
     if (searchCode == null) return;
 
+    final generation = ++_reloadGeneration;
+
     _isReloading = true;
     _isLoadingMore = true;
-    _apiFlights.clear();
+    // Keep old results visible while loading — don't clear _apiFlights here
     _currentPage = 1;
     _hasMorePages = true;
     _totalPages = null;
@@ -620,29 +634,30 @@ class SearchResultController extends ChangeNotifier {
       debugPrint('Reloading flights with filters: ${request.toQueryParams()}');
       final response = await FlightService.getResults(request);
 
-      if (!_disposed) {
-        _apiFlights = response.offers;
-        _currentPage = response.currentPage ?? 1;
-        _totalPages = response.totalPages;
-        _totalFlights = response.total ?? response.offers.length;
-        _updateHasMorePages(response);
-        _isReloading = false;
-        _isLoadingMore = false;
-        // Only apply client-side sort for non-price sorts (price is API-sorted)
-        final isPriceSort = _selectedSortOption == 'cheapest' || _selectedSortOption == 'most_expensive';
-        if (!isPriceSort) {
-          _sortFlights(_selectedSortOption);
-        }
+      // Discard stale response if a newer reload was triggered
+      if (_disposed || generation != _reloadGeneration) return;
 
-        debugPrint(
-          'Reload complete: page=$_currentPage, offers=${_apiFlights.length}, '
-          'hasMore=$_hasMorePages, totalPages=$_totalPages',
-        );
-        notifyListeners();
+      _apiFlights = response.offers;
+      _currentPage = response.currentPage ?? 1;
+      _totalPages = response.totalPages;
+      _totalFlights = response.total ?? response.offers.length;
+      _updateHasMorePages(response);
+      _isReloading = false;
+      _isLoadingMore = false;
+      // Only apply client-side sort for non-price sorts (price is API-sorted)
+      final isPriceSort = _selectedSortOption == 'cheapest' || _selectedSortOption == 'most_expensive';
+      if (!isPriceSort) {
+        _sortFlights(_selectedSortOption);
       }
+
+      debugPrint(
+        'Reload complete: page=$_currentPage, offers=${_apiFlights.length}, '
+        'hasMore=$_hasMorePages, totalPages=$_totalPages',
+      );
+      notifyListeners();
     } catch (e) {
       debugPrint('Error reloading flights: $e');
-      if (!_disposed) {
+      if (!_disposed && generation == _reloadGeneration) {
         _isReloading = false;
         _isLoadingMore = false;
         notifyListeners();

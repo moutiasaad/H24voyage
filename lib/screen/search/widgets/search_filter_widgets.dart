@@ -5,24 +5,6 @@ import 'package:flutter/material.dart';
 import '../../../controllers/search_result_controller.dart';
 import '../../widgets/button_global.dart';
 
-String _getSortShortLabel(BuildContext context, String sortOption) {
-  final t = lang.S.of(context);
-  switch (sortOption) {
-    case 'cheapest':
-      return t.sortCheapestShort;
-    case 'most_expensive':
-      return t.sortExpensiveShort;
-    case 'departure_time':
-      return t.sortDepartureShort;
-    case 'arrival_time':
-      return t.sortArrivalShort;
-    case 'flight_duration':
-      return t.sortDurationShort;
-    default:
-      return t.sortDefaultShort;
-  }
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Widget 1: SearchResultHeader
 // Extracted from _buildHeader in search_result.dart
@@ -289,315 +271,64 @@ class SearchResultHeader extends StatelessWidget {
 class FilterSection extends StatelessWidget {
   final SearchResultController ctrl;
   final bool isSmallScreen;
-  final bool isMediumScreen;
-  final VoidCallback onFilterTap;
-  final VoidCallback onSortTap;
 
   const FilterSection({
     Key? key,
     required this.ctrl,
     required this.isSmallScreen,
-    required this.isMediumScreen,
-    required this.onFilterTap,
-    required this.onSortTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Responsive values
     final horizontalPadding = isSmallScreen ? 10.0 : 16.0;
-    final buttonPaddingH = isSmallScreen ? 8.0 : 14.0;
-    final buttonPaddingV = isSmallScreen ? 6.0 : 8.0;
     final fontSize = isSmallScreen ? 12.0 : 14.0;
-    final iconSize = isSmallScreen ? 14.0 : 18.0;
-    final buttonSpacing = isSmallScreen ? 6.0 : 10.0;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-      child: isSmallScreen
-          // Compact layout for small screens
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Vol direct toggle with count
-                Row(
-                  children: [
-                    Text(
-                      lang.S.of(context).cardDirectFlight,
-                      style: kTextStyle.copyWith(
-                        color: kTitleColor,
-                        fontSize: fontSize,
-                      ),
-                    ),
-                    if (ctrl.hasApiFlights && ctrl.directFlightsCount > 0) ...[
-                      const SizedBox(width: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: kPrimaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${ctrl.directFlightsCount}',
-                          style: kTextStyle.copyWith(
-                            color: kPrimaryColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                    const SizedBox(width: 4),
-                    SizedBox(
-                      height: 22,
-                      child: Switch(
-                        value: ctrl.isDirectOnly,
-                        onChanged: ctrl.directFlightsCount > 0
-                            ? (val) {
-                                ctrl.setDirectOnly(val);
-                              }
-                            : null,
-                        activeColor: kPrimaryColor,
-                        activeTrackColor: kPrimaryColor.withOpacity(0.3),
-                        inactiveThumbColor: ctrl.directFlightsCount > 0 ? kWhite : kSubTitleColor,
-                        inactiveTrackColor: const Color(0xFFE0E0E0),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                      ),
-                    ),
-                    const Spacer(),
-                    // Filter and Sort buttons in a row
-                    _buildCompactFilterButton(context, buttonPaddingH, buttonPaddingV, fontSize, iconSize),
-                    SizedBox(width: buttonSpacing),
-                    _buildCompactSortButton(buttonPaddingH, buttonPaddingV, fontSize, iconSize),
-                  ],
-                ),
-              ],
-            )
-          // Normal layout for medium and large screens - wrapped in scroll view to prevent overflow
-          : SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              child: Row(
-                children: [
-                  // Vol direct toggle with count
-                  Text(
-                    lang.S.of(context).cardDirectFlight,
-                    style: kTextStyle.copyWith(
-                      color: kTitleColor,
-                      fontSize: fontSize,
-                    ),
-                  ),
-                  if (ctrl.hasApiFlights && ctrl.directFlightsCount > 0) ...[
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: kPrimaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${ctrl.directFlightsCount}',
-                        style: kTextStyle.copyWith(
-                          color: kPrimaryColor,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(width: 4),
-                  SizedBox(
-                    height: 24,
-                    child: Switch(
-                      value: ctrl.isDirectOnly,
-                      onChanged: ctrl.directFlightsCount > 0
-                          ? (val) {
-                              ctrl.setDirectOnly(val);
-                            }
-                          : null,
-                      activeColor: kPrimaryColor,
-                      activeTrackColor: kPrimaryColor.withOpacity(0.3),
-                      inactiveThumbColor: ctrl.directFlightsCount > 0 ? kWhite : kSubTitleColor,
-                      inactiveTrackColor: const Color(0xFFE0E0E0),
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-                    ),
-                  ),
-
-                  SizedBox(width: buttonSpacing * 2),
-
-                  // Filtrer button
-                  SmallTapEffect(
-                    onTap: onFilterTap,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: buttonPaddingH, vertical: buttonPaddingV),
-                      decoration: BoxDecoration(
-                        color: ctrl.activeFilterCount > 0 ? kPrimaryColor.withOpacity(0.1) : kWhite,
-                        border: Border.all(color: kPrimaryColor, width: 1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            'assets/filter.png',
-                            width: iconSize,
-                            height: iconSize,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.tune, color: kPrimaryColor, size: iconSize);
-                            },
-                        ),
-                        SizedBox(width: isMediumScreen ? 4 : 8),
-                        Text(
-                          lang.S.of(context).filterTitle,
-                          style: kTextStyle.copyWith(
-                            color: kPrimaryColor,
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (ctrl.activeFilterCount > 0) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '${ctrl.activeFilterCount}',
-                              style: kTextStyle.copyWith(
-                                color: kWhite,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(width: buttonSpacing),
-
-                // Trier button
-                SmallTapEffect(
-                  onTap: onSortTap,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: buttonPaddingH, vertical: buttonPaddingV),
-                    decoration: BoxDecoration(
-                      color: kWhite,
-                      border: Border.all(color: kPrimaryColor, width: 1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/trie.png',
-                          width: iconSize,
-                          height: iconSize,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.swap_vert, color: kPrimaryColor, size: iconSize);
-                          },
-                        ),
-                        SizedBox(width: isMediumScreen ? 4 : 8),
-                        Text(
-                          _getSortShortLabel(context, ctrl.selectedSortOption),
-                          style: kTextStyle.copyWith(
-                            color: kPrimaryColor,
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.keyboard_arrow_down,
-                          color: kPrimaryColor,
-                          size: iconSize,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+      child: Row(
+        children: [
+          Text(
+            lang.S.of(context).cardDirectFlight,
+            style: kTextStyle.copyWith(
+              color: kTitleColor,
+              fontSize: fontSize,
             ),
           ),
-    );
-  }
-
-  // Compact filter button for small screens
-  Widget _buildCompactFilterButton(BuildContext context, double paddingH, double paddingV, double fontSize, double iconSize) {
-    final hasActiveFilters = ctrl.activeFilterCount > 0;
-    return SmallTapEffect(
-      onTap: onFilterTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
-        decoration: BoxDecoration(
-          color: hasActiveFilters ? kPrimaryColor.withOpacity(0.1) : kWhite,
-          border: Border.all(color: kPrimaryColor, width: 1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.tune, color: kPrimaryColor, size: iconSize),
+          if (ctrl.hasApiFlights && ctrl.directFlightsCount > 0) ...[
             const SizedBox(width: 4),
-            Text(
-              lang.S.of(context).filterTitle,
-              style: kTextStyle.copyWith(
-                color: kPrimaryColor,
-                fontSize: fontSize,
-                fontWeight: FontWeight.w500,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: kPrimaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
-            ),
-            if (hasActiveFilters) ...[
-              const SizedBox(width: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
+              child: Text(
+                '${ctrl.directFlightsCount}',
+                style: kTextStyle.copyWith(
                   color: kPrimaryColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${ctrl.activeFilterCount}',
-                  style: kTextStyle.copyWith(
-                    color: kWhite,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  fontSize: isSmallScreen ? 10 : 11,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Compact sort button for small screens
-  Widget _buildCompactSortButton(double paddingH, double paddingV, double fontSize, double iconSize) {
-    return SmallTapEffect(
-      onTap: onSortTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: paddingH, vertical: paddingV),
-        decoration: BoxDecoration(
-          color: kWhite,
-          border: Border.all(color: kPrimaryColor, width: 1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.swap_vert, color: kPrimaryColor, size: iconSize),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_down,
-              color: kPrimaryColor,
-              size: iconSize,
             ),
           ],
-        ),
+          const SizedBox(width: 4),
+          SizedBox(
+            height: isSmallScreen ? 22 : 24,
+            child: Switch(
+              value: ctrl.isDirectOnly,
+              onChanged: ctrl.directFlightsCount > 0
+                  ? (val) { ctrl.setDirectOnly(val); }
+                  : null,
+              activeColor: kPrimaryColor,
+              activeTrackColor: kPrimaryColor.withOpacity(0.3),
+              inactiveThumbColor: ctrl.directFlightsCount > 0 ? kWhite : kSubTitleColor,
+              inactiveTrackColor: const Color(0xFFE0E0E0),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+            ),
+          ),
+        ],
       ),
     );
   }

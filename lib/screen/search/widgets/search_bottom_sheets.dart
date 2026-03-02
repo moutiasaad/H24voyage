@@ -595,17 +595,18 @@ void showFilterBottomSheet(BuildContext context, SearchResultController ctrl) {
                             ctrl.reloadFlightsWithFilters();
                           },
                           child: Container(
+                            width: 126,
                             height: 30,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF0F0F0),
+                              color: kWhite,
                               borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: kSubTitleColor, width: 1.5),
                             ),
                             child: Center(
                               child: Text(
                                 lang.S.of(context).filterReset,
                                 style: GoogleFonts.poppins(
-                                  color: kTitleColor,
+                                  color: kSubTitleColor,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),

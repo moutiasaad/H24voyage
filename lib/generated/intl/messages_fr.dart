@@ -468,18 +468,43 @@ class MessageLookup extends MessageLookupByLibrary {
       "exemple@domaine.com",
     ),
     "editProfileEmailLabel": MessageLookupByLibrary.simpleMessage("E-mail"),
+    "editProfileErrorEmpty": MessageLookupByLibrary.simpleMessage(
+      "Ce champ ne peut pas être vide",
+    ),
     "editProfileErrorGeneric": MessageLookupByLibrary.simpleMessage(
       "Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.",
+    ),
+    "editProfileErrorInvalidDate": MessageLookupByLibrary.simpleMessage(
+      "Format de date invalide",
+    ),
+    "editProfileErrorInvalidEmail": MessageLookupByLibrary.simpleMessage(
+      "Adresse email invalide",
+    ),
+    "editProfileErrorInvalidPhone": MessageLookupByLibrary.simpleMessage(
+      "Numéro de téléphone invalide",
+    ),
+    "editProfileErrorInvalidValue": MessageLookupByLibrary.simpleMessage(
+      "Valeur non autorisée",
+    ),
+    "editProfileErrorMinLength": MessageLookupByLibrary.simpleMessage(
+      "Minimum 2 caractères requis",
+    ),
+    "editProfileErrorRequired": MessageLookupByLibrary.simpleMessage(
+      "Ce champ est requis",
     ),
     "editProfileFillNameEmail": MessageLookupByLibrary.simpleMessage(
       "Veuillez remplir le nom et l\'email",
     ),
+    "editProfileFirstNameHint": MessageLookupByLibrary.simpleMessage("Prénom"),
+    "editProfileFirstNameLabel": MessageLookupByLibrary.simpleMessage("Prénom"),
     "editProfileFullNameHint": MessageLookupByLibrary.simpleMessage(
       "Nom Prénom",
     ),
     "editProfileFullNameLabel": MessageLookupByLibrary.simpleMessage(
       "Nom complet",
     ),
+    "editProfileLastNameHint": MessageLookupByLibrary.simpleMessage("Nom"),
+    "editProfileLastNameLabel": MessageLookupByLibrary.simpleMessage("Nom"),
     "editProfilePersonalInfo": MessageLookupByLibrary.simpleMessage(
       "Informations personnelles",
     ),
@@ -1253,7 +1278,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "supportTitle": MessageLookupByLibrary.simpleMessage("Support client"),
     "tab1": MessageLookupByLibrary.simpleMessage("Aller simple"),
     "tab2": MessageLookupByLibrary.simpleMessage("Aller-retour"),
-    "tab3": MessageLookupByLibrary.simpleMessage("Multi-destinations"),
+    "tab3": MessageLookupByLibrary.simpleMessage("Multi-ville"),
     "ticketDetailCancel": MessageLookupByLibrary.simpleMessage("Annuler"),
     "ticketDetailClose": MessageLookupByLibrary.simpleMessage("Fermer"),
     "ticketDetailCloseDialog": MessageLookupByLibrary.simpleMessage(
@@ -1309,6 +1334,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "welcomeCopyright": MessageLookupByLibrary.simpleMessage(
       "Tous droits réservés. Copyright- h24voyages",
+    ),
+    "welcomeNotRegistered": MessageLookupByLibrary.simpleMessage(
+      "Pas encore inscrit ?",
     ),
     "welcomePrivacyPolicy": MessageLookupByLibrary.simpleMessage(
       "charte de confidentialité",

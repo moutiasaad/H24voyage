@@ -93,6 +93,11 @@ class _SearchResultState extends State<SearchResult>
   late final AnimationController _bounceController;
   late final Animation<double> _bounceScale;
 
+  // ── Floating sort/filter bar (scroll-up reveal) ──
+  late final AnimationController _fabController;
+  late final Animation<Offset> _fabSlide;
+  double _lastScrollOffset = 0;
+
   // ── Bottom status pill ──
   final GlobalKey<FlightStatusPillState> _pillKey = GlobalKey();
   bool _pillDismissed = false;
@@ -166,6 +171,14 @@ class _SearchResultState extends State<SearchResult>
       vsync: this,
       duration: _computeStaggerDuration(_staggerItemCount),
     );
+    // Show floating bar after stagger completes — but only if pill is already gone
+    _staggerController.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        if (_pillDismissed) {
+          _fabController.forward();
+        }
+      }
+    });
 
     _shimmerController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))..repeat();
 
@@ -186,6 +199,19 @@ class _SearchResultState extends State<SearchResult>
       TweenSequenceItem(tween: Tween(begin: 1.2, end: 0.95), weight: 20),
       TweenSequenceItem(tween: Tween(begin: 0.95, end: 1.0), weight: 30),
     ]).animate(_bounceController);
+
+    // Floating sort/filter bar — slides up from bottom on scroll up
+    _fabController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _fabSlide = Tween<Offset>(
+      begin: const Offset(0, 1.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _fabController,
+      curve: Curves.easeOutCubic,
+    ));
 
     _ctrl.addListener(_onControllerChanged);
     _scrollController.addListener(_onScroll);
@@ -218,9 +244,10 @@ class _SearchResultState extends State<SearchResult>
   void _onControllerChanged() {
     if (!mounted) return;
 
-    // Detect reload START → restart pill, fade out existing cards
+    // Detect reload START → restart pill, fade out existing cards, hide fab
     if (!_previousIsReloading && _ctrl.isReloading) {
       _fadeController.reverse();
+      _fabController.reverse(); // hide during reload
       _pillDismissed = false;
       _pillKey.currentState?.restartForReload();
     }
@@ -230,10 +257,13 @@ class _SearchResultState extends State<SearchResult>
       _pillKey.currentState?.completeWithTotal(_ctrl.totalFlights);
       if (_ctrl.hasApiFlights) {
         _fadeController.value = 1.0;
-        _playStaggerAnimation();
-      } else if (_ctrl.hasActiveFilters) {
-        _bounceController.reset();
-        _bounceController.forward();
+        _playStaggerAnimation(); // stagger listener will show fab on complete
+      } else {
+        // No stagger animation — fab will show when pill dismisses
+        if (_ctrl.hasActiveFilters) {
+          _bounceController.reset();
+          _bounceController.forward();
+        }
       }
     }
     _previousIsReloading = _ctrl.isReloading;
@@ -258,6 +288,7 @@ class _SearchResultState extends State<SearchResult>
 
   /// Resets and plays the stagger animation for the current batch of cards.
   void _playStaggerAnimation() {
+    _fabController.reverse(); // hide fab during card animation
     final count = _ctrl.filteredApiFlights.length.clamp(1, 15);
     _staggerItemCount = count;
     _staggerController.duration = _computeStaggerDuration(count);
@@ -272,6 +303,7 @@ class _SearchResultState extends State<SearchResult>
     _shimmerController.dispose();
     _fadeController.dispose();
     _bounceController.dispose();
+    _fabController.dispose();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     _ctrl.removeListener(_onControllerChanged);
@@ -412,18 +444,43 @@ class _SearchResultState extends State<SearchResult>
   }
 
   void _onScroll() {
+    // Pagination
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       _ctrl.loadMoreItems();
     }
+
+    final offset = _scrollController.position.pixels;
+
+    // Don't interfere while stagger animation is playing or pill is still visible
+    if (_staggerController.isAnimating || !_pillDismissed) {
+      _lastScrollOffset = offset;
+      return;
+    }
+
+    // At top of page → show
+    if (offset <= 0) {
+      _fabController.forward();
+    }
+    // Scrolling up → show
+    else if (offset < _lastScrollOffset - 5) {
+      _fabController.forward();
+    }
+    // Scrolling down → hide
+    else if (offset > _lastScrollOffset + 5) {
+      _fabController.reverse();
+    }
+    _lastScrollOffset = offset;
   }
 
   // Build paginated API flights list as slivers
   List<Widget> _buildPaginatedApiFlightsList(String fromCode, String toCode) {
     final allFilteredFlights = _ctrl.filteredApiFlights;
 
-    // Show shimmer skeleton cards while reloading flights
-    if (_ctrl.isReloading) {
+    // Show shimmer skeleton cards while reloading or while chip filter is
+    // pending (each airline chip always has ≥1 flight, so empty = still loading)
+    if (_ctrl.isReloading ||
+        (allFilteredFlights.isEmpty && _ctrl.selectedAirlineCode != null)) {
       return [
         SliverList(
           delegate: SliverChildBuilderDelegate(
@@ -732,9 +789,6 @@ class _SearchResultState extends State<SearchResult>
                   child: FilterSection(
                     ctrl: _ctrl,
                     isSmallScreen: isSmallScreen,
-                    isMediumScreen: isMediumScreen,
-                    onFilterTap: () => showFilterBottomSheet(context, _ctrl),
-                    onSortTap: () => showSortBottomSheet(context, _ctrl),
                   ),
                 ),
 
@@ -872,9 +926,9 @@ class _SearchResultState extends State<SearchResult>
                     ),
                   ),
 
-                        // Bottom spacing for pill clearance
+                        // Bottom spacing for floating bar clearance
                         const SliverToBoxAdapter(
-                          child: SizedBox(height: 70),
+                          child: SizedBox(height: 100),
                         ),
                       ],
                     ),
@@ -897,10 +951,116 @@ class _SearchResultState extends State<SearchResult>
                 totalFlights: _ctrl.totalFlights,
                 isComplete: !_ctrl.isReloading && _ctrl.hasApiFlights,
                 onDismissed: () {
-                  if (mounted) setState(() => _pillDismissed = true);
+                  if (mounted) {
+                    setState(() => _pillDismissed = true);
+                    // Pill is gone — show fab after a short pause
+                    Future.delayed(const Duration(milliseconds: 800), () {
+                      if (mounted && !_staggerController.isAnimating) {
+                        _fabController.forward();
+                      }
+                    });
+                  }
                 },
               ),
             ),
+
+          // Floating Sort & Filter bar — single capsule, appears after animation
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: MediaQuery.of(context).padding.bottom + 24,
+            child: SlideTransition(
+              position: _fabSlide,
+              child: Center(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: kPrimaryColor,
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: kPrimaryColor.withOpacity(0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Sort button
+                      GestureDetector(
+                        onTap: () => showSortBottomSheet(context, _ctrl),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.swap_vert, color: kWhite, size: 18),
+                              const SizedBox(width: 6),
+                              Text(
+                                lang.S.of(context).sortDefaultShort,
+                                style: kTextStyle.copyWith(
+                                  color: kWhite,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Vertical divider
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: kWhite.withOpacity(0.4),
+                      ),
+                      // Filter button
+                      GestureDetector(
+                        onTap: () => showFilterBottomSheet(context, _ctrl),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.tune, color: kWhite, size: 18),
+                              const SizedBox(width: 6),
+                              Text(
+                                lang.S.of(context).filterTitle,
+                                style: kTextStyle.copyWith(
+                                  color: kWhite,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              if (_ctrl.activeFilterCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: kWhite,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    '${_ctrl.activeFilterCount}',
+                                    style: kTextStyle.copyWith(
+                                      color: kPrimaryColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

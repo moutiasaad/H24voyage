@@ -59,10 +59,9 @@ class DateSelectorRow extends StatelessWidget {
                         departureDate != null
                             ? DateFormat('dd MMM yyyy', 'fr')
                                 .format(departureDate!)
-                            : DateFormat('dd MMM yyyy', 'fr')
-                                .format(DateTime.now()),
+                            : '-- --- ----',
                         style: kTextStyle.copyWith(
-                          color: kTitleColor,
+                          color: departureDate != null ? kTitleColor : kSubTitleColor,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -110,11 +109,9 @@ class DateSelectorRow extends StatelessWidget {
                           returnDate != null
                               ? DateFormat('dd MMM yyyy', 'fr')
                                   .format(returnDate!)
-                              : DateFormat('dd MMM yyyy', 'fr').format(
-                                  DateTime.now()
-                                      .add(const Duration(days: 1))),
+                              : '-- --- ----',
                           style: kTextStyle.copyWith(
-                            color: kTitleColor,
+                            color: returnDate != null ? kTitleColor : kSubTitleColor,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),

@@ -16,68 +16,68 @@ class FlightSearchTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: tabController.animation!,
-      builder: (context, child) {
-        final labels = [
-          lang.S.of(context).tab2,
-          lang.S.of(context).tab1,
-          lang.S.of(context).tab3,
-        ];
-        final animValue = tabController.animation!.value;
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final tabWidth = constraints.maxWidth / labels.length;
-            return Stack(
-              children: [
-                // Tab buttons
-                Row(
-                  children: List.generate(labels.length, (index) {
-                    final isSelected = tabController.index == index;
-                    return Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          surfaceTintColor: Colors.transparent,
-                          padding: const EdgeInsets.only(top: 16.0, bottom: 22.0),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: () => onTabChanged(index),
-                        child: Text(
-                          labels[index],
-                          textAlign: TextAlign.center,
-                          style: kTextStyle.copyWith(
-                            color: kTitleColor,
-                            fontSize: 15,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-                // Sliding indicator at bottom of buttons
-                Positioned(
-                  bottom: 4,
-                  left: animValue * tabWidth + 12,
-                  child: Container(
-                    width: tabWidth - 24,
-                    height: 4.0,
-                    decoration: BoxDecoration(
-                      color: kPrimaryColor,
-                      borderRadius: BorderRadius.circular(3.0),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+    return TabBar(
+      controller: tabController,
+      labelColor: kTitleColor,
+      unselectedLabelColor: kSubTitleColor,
+      labelStyle: kTextStyle.copyWith(
+        fontWeight: FontWeight.bold,
+        fontSize: 15,
+      ),
+      unselectedLabelStyle: kTextStyle.copyWith(
+        fontSize: 15,
+      ),
+      dividerColor: const Color(0xFFE2E2E2),
+      indicator: UnderlineTabIndicator(
+        borderSide: const BorderSide(
+          color: kPrimaryColor,
+          width: 4.0,
+        ),
+        borderRadius: BorderRadius.circular(3.0),
+        insets: const EdgeInsets.only(bottom: 8.0),
+      ),
+      onTap: onTabChanged,
+      tabs: [
+        Tab(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                lang.S.of(context).tab2,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+        Tab(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                lang.S.of(context).tab1,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+        Tab(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            alignment: Alignment.center,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                lang.S.of(context).tab3,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

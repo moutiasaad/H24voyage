@@ -58,12 +58,15 @@ class _HomeState extends State<Home> {
     if (mounted) setState(() {});
   }
 
+  String _capitalize(String s) =>
+      s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}';
+
   String get _userName {
     if (_profileController.customer != null) {
       final first = _profileController.firstName;
       final last = _profileController.lastName;
       if (first.isNotEmpty || last.isNotEmpty) {
-        return '$first $last'.trim();
+        return _capitalize(first.trim());
       }
     }
     return '';

@@ -31,6 +31,7 @@ class HomeSearchController extends ChangeNotifier {
   // Dates
   DateTime? departureDate;
   DateTime? returnDate;
+  DateTime? _savedReturnDate; // preserved when switching to one-way
   DateTimeRange? _selectedDateRange;
 
   // Toggle switches
@@ -100,8 +101,20 @@ class HomeSearchController extends ChangeNotifier {
   void setTabIndex(int index) {
     selectedIndex = index;
     if (index == 1) {
+      // Save return date before clearing for one-way
+      if (returnDate != null) {
+        _savedReturnDate = returnDate;
+      }
       returnDate = null;
       _selectedDateRange = null;
+    } else if (index == 0) {
+      // Restore saved return date when switching back to round-trip
+      if (returnDate == null && _savedReturnDate != null) {
+        returnDate = _savedReturnDate;
+        if (departureDate != null) {
+          _selectedDateRange = DateTimeRange(start: departureDate!, end: returnDate!);
+        }
+      }
     }
     notifyListeners();
   }
@@ -288,8 +301,8 @@ class HomeSearchController extends ChangeNotifier {
     );
     toAirport = null;
 
-    departureDate = DateTime.now();
-    returnDate = DateTime.now().add(const Duration(days: 1));
-    _selectedDateRange = DateTimeRange(start: departureDate!, end: returnDate!);
+    departureDate = null;
+    returnDate = null;
+    _selectedDateRange = null;
   }
 }

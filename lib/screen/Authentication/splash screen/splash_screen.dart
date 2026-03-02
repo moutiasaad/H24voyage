@@ -19,8 +19,8 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Wait for the full GIF duration (5 seconds) then navigate
-    Future.delayed(const Duration(milliseconds: 5000), () => _onAnimationFinished());
+    // Wait for the full GIF duration (3.3 seconds) then navigate
+    Future.delayed(const Duration(milliseconds: 3300), () => _onAnimationFinished());
   }
 
   Future<void> _onAnimationFinished() async {
@@ -40,19 +40,26 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<Widget> _determineDestination() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final hasOpenedBefore = prefs.getBool('has_opened_before') ?? false;
       final refreshToken = prefs.getString('refreshToken') ?? '';
       final accessToken = prefs.getString('accessToken') ?? '';
 
       debugPrint('╔══════════════════════════════════════════════════════════');
       debugPrint('║ APP STARTUP - Authentication Check');
+      debugPrint('║ hasOpenedBefore: $hasOpenedBefore');
       debugPrint('║ accessToken present: ${accessToken.isNotEmpty}');
       debugPrint('║ refreshToken present: ${refreshToken.isNotEmpty}');
       debugPrint('╚══════════════════════════════════════════════════════════');
 
       // No tokens means user is not logged in
       if (refreshToken.isEmpty && accessToken.isEmpty) {
-        debugPrint('No token found - redirecting to onboard');
         await _clearAuthData();
+        // Returning user without session → go straight to Home
+        if (hasOpenedBefore) {
+          debugPrint('Returning user (no session) - going to Home');
+          return const Home();
+        }
+        debugPrint('First time user - going to OnBoard');
         return const OnBoard();
       }
 

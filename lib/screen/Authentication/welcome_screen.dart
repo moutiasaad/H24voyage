@@ -32,6 +32,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     final buttonHeight = (50 * ratioH).clamp(42.0, 54.0);
     final buttonTextSize = (15 * ratioW).clamp(13.0, 15.0);
     final horizontalPadding = screenWidth * 0.06;
+    final isVerySmallScreen = screenHeight < 640;
 
     return Scaffold(
       backgroundColor: kWhite,
@@ -113,9 +114,62 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       // Middle section: Buttons
                       Column(
                         children: [
+                          // Skip Button - Continue without login (top)
+                          TappableCard(
+                            onTap: () async {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('has_opened_before', true);
+                              if (!context.mounted) return;
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => const Home()),
+                                (route) => false,
+                              );
+                            },
+                            scaleFactor: 0.97,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF2F2F2),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              height: buttonHeight,
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    color: Color(0xFF333333),
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Flexible(
+                                    child: Text(
+                                      lang.S.of(context).welcomeSkipLogin,
+                                      style: GoogleFonts.poppins(
+                                        color: const Color(0xFF333333),
+                                        fontSize: buttonTextSize,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: 12 * ratioH),
+
                           // Primary Button - Email Login
                           TappableCard(
-                            onTap: () => const SignUp().launch(context),
+                            onTap: () async {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('has_opened_before', true);
+                              if (!context.mounted) return;
+                              const SignUp().launch(context);
+                            },
                             scaleFactor: 0.97,
                             decoration: BoxDecoration(
                               color: const Color(0xFFFF6A00),
@@ -168,7 +222,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                           // Secondary Button - Google Login
                           TappableCard(
-                            onTap: () => const Home().launch(context),
+                            onTap: () async {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('has_opened_before', true);
+                              if (!context.mounted) return;
+                              const Home().launch(context);
+                            },
                             scaleFactor: 0.97,
                             decoration: BoxDecoration(
                               color: const Color(0xFFF2F2F2),
@@ -213,57 +272,47 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                             ),
                           ),
 
-                          SizedBox(height: 24 * ratioH),
-
-                          // Skip button
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (context) => const Home()),
-                                (route) => false,
-                              );
-                            },
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              splashFactory: InkSparkle.splashFactory,
-                              overlayColor: kPrimaryColor.withOpacity(0.08),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  lang.S.of(context).welcomeSkipLogin,
-                                  style: GoogleFonts.poppins(
-                                    color: kSubTitleColor,
-                                    fontSize: subtitleSize,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  color: kSubTitleColor,
-                                  size: subtitleSize,
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
 
                       const Spacer(),
 
-                      // Bottom section: Footer
+                      // Bottom section: "Pas de compte?" + Terms + Copyright
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                lang.S.of(context).noAccTitle1,
+                                style: GoogleFonts.lato(
+                                  color: kSubTitleColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  height: 22 / 14,
+                                ),
+                              ),
+                              TapEffect(
+                                onTap: () => const SignUp().launch(context),
+                                child: Text(
+                                  lang.S.of(context).signUpRegister,
+                                  style: GoogleFonts.lato(
+                                    color: kPrimaryColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    height: 22 / 14,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8 * ratioH),
                           Text(
-                            lang.S.of(context).welcomeTermsIntro,
+                            isVerySmallScreen
+                                ? lang.S.of(context).signUpTermsShort
+                                : lang.S.of(context).welcomeTermsIntro,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               color: kSubTitleColor,
@@ -317,10 +366,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               ],
                             ),
                           ),
-
                           SizedBox(height: 6 * ratioH),
-
-                          // Copyright
                           Text(
                             lang.S.of(context).welcomeCopyright,
                             textAlign: TextAlign.center,
@@ -331,7 +377,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                               height: 20 / 11,
                             ),
                           ),
-
                         ],
                       ),
 

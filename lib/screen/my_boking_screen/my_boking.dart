@@ -204,24 +204,29 @@ class _MyBookingState extends State<MyBooking>
   //  HEADER (no balance)
   // ══════════════════════════════════════════════════
   Widget _buildHeader() {
-    final statusBarHeight = MediaQuery.of(context).padding.top;
     final t = lang.S.of(context);
 
     return Container(
       padding: EdgeInsets.only(
-        top: statusBarHeight + 18, left: 20, right: 20, bottom: 28,
+        top: MediaQuery.of(context).padding.top + 12,
+        left: 16,
+        right: 16,
+        bottom: 16,
       ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFFFF8C42), kAccentOrange, kPrimaryColor],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFF8C42),
+            Color(0xFFFF6B35),
+            kPrimaryColor,
+          ],
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
-        boxShadow: [
-          BoxShadow(color: Color(0x33FF5722), blurRadius: 12, offset: Offset(0, 4)),
-        ],
       ),
       child: Row(
         children: [
@@ -230,37 +235,19 @@ class _MyBookingState extends State<MyBooking>
               if (widget.onBack != null) { widget.onBack!(); }
               else { Navigator.pop(context); }
             },
-            child: Container(
-              width: 38, height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+            child: const Icon(
+              Icons.arrow_back,
+              color: Colors.white,
+              size: 24,
             ),
           ),
-          const SizedBox(width: 14),
-          Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.flight, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 10),
-          Text(t.bookingTitle, style: GoogleFonts.poppins(
-            color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600,
-          )),
-          const Spacer(),
-          SmallTapEffect(
-            onTap: () {},
-            child: Container(
-              width: 38, height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.notifications_outlined, color: Colors.white, size: 20),
+          const SizedBox(width: 12),
+          Text(
+            t.bookingTitle,
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -280,43 +267,48 @@ class _MyBookingState extends State<MyBooking>
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(categories.length, (index) {
-          final isSelected = _selectedCategoryIndex == index;
-          return SmallTapEffect(
-            onTap: () => setState(() {
-              _selectedCategoryIndex = index;
-              _selectedTabIndex = 0;
-              _tabController.animateTo(0);
-            }),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? kPrimaryColor.withValues(alpha: 0.1) : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected ? kPrimaryColor.withValues(alpha: 0.3) : Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F0F0),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: List.generate(categories.length, (index) {
+            final isSelected = _selectedCategoryIndex == index;
+            return Expanded(
+              child: SmallTapEffect(
+                onTap: () => setState(() {
+                  _selectedCategoryIndex = index;
+                  _selectedTabIndex = 0;
+                  _tabController.animateTo(0);
+                }),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isSelected ? kPrimaryColor : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(categories[index].icon, size: 18,
+                        color: isSelected ? Colors.white : const Color(0xFF999999)),
+                      const SizedBox(width: 6),
+                      Text(categories[index].label, style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? Colors.white : const Color(0xFF999999),
+                      )),
+                    ],
+                  ),
                 ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(categories[index].icon, size: 22,
-                    color: isSelected ? kPrimaryColor : const Color(0xFF999999)),
-                  const SizedBox(height: 4),
-                  Text(categories[index].label, style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? kPrimaryColor : const Color(0xFF999999),
-                  )),
-                ],
-              ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }

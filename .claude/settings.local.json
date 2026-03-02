@@ -33,7 +33,9 @@
       "Bash(head:*)",
       "Bash(cd /c/Users/mouti/AndroidStudioProjects/flight-booking-flutter-app-ui-kit-master && python -c \"from PIL import Image; img = Image.open\\('assets/splash_screen.gif'\\); total = sum\\(img.info.get\\('duration', 100\\) for i in range\\(img.n_frames\\) if not img.seek\\(i\\)\\); print\\(f'Frames: {img.n_frames}'\\); img.seek\\(0\\); total_ms = 0; \nfor i in range\\(img.n_frames\\):\n    img.seek\\(i\\)\n    total_ms += img.info.get\\('duration', 100\\)\nprint\\(f'Total duration: {total_ms}ms \\({total_ms/1000:.1f}s\\)'\\)\" 2>&1)",
       "Bash(pip install Pillow -q && python -c \"\nfrom PIL import Image\nimg = Image.open\\('C:/Users/mouti/AndroidStudioProjects/flight-booking-flutter-app-ui-kit-master/assets/splash_screen.gif'\\)\ntotal_ms = 0\nfor i in range\\(img.n_frames\\):\n    img.seek\\(i\\)\n    total_ms += img.info.get\\('duration', 100\\)\nprint\\(f'Frames: {img.n_frames}'\\)\nprint\\(f'Total duration: {total_ms}ms \\({total_ms/1000:.1f}s\\)'\\)\n\" 2>&1)",
-      "Bash(cd \"C:/Users/mouti/AndroidStudioProjects/flight-booking-flutter-app-ui-kit-master\" && flutter pub run intl_utils:generate 2>&1 || dart run intl_utils:generate 2>&1 || flutter gen-l10n 2>&1)"
+      "Bash(cd \"C:/Users/mouti/AndroidStudioProjects/flight-booking-flutter-app-ui-kit-master\" && flutter pub run intl_utils:generate 2>&1 || dart run intl_utils:generate 2>&1 || flutter gen-l10n 2>&1)",
+      "Bash(python3:*)",
+      "Bash(python:*)"
     ]
   }
 }

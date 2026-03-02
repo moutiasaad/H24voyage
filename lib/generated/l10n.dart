@@ -449,9 +449,9 @@ class S {
     return Intl.message('Round Trip', name: 'tab2', desc: '', args: []);
   }
 
-  /// `Multicity`
+  /// `Multi-city`
   String get tab3 {
-    return Intl.message('Multicity', name: 'tab3', desc: '', args: []);
+    return Intl.message('Multi-city', name: 'tab3', desc: '', args: []);
   }
 
   /// `Date`
@@ -1169,6 +1169,16 @@ class S {
     return Intl.message(
       'Continue without signing in',
       name: 'welcomeSkipLogin',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not registered yet?`
+  String get welcomeNotRegistered {
+    return Intl.message(
+      'Not registered yet?',
+      name: 'welcomeNotRegistered',
       desc: '',
       args: [],
     );
@@ -3794,6 +3804,46 @@ class S {
     );
   }
 
+  /// `First name`
+  String get editProfileFirstNameHint {
+    return Intl.message(
+      'First name',
+      name: 'editProfileFirstNameHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First name`
+  String get editProfileFirstNameLabel {
+    return Intl.message(
+      'First name',
+      name: 'editProfileFirstNameLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last name`
+  String get editProfileLastNameHint {
+    return Intl.message(
+      'Last name',
+      name: 'editProfileLastNameHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last name`
+  String get editProfileLastNameLabel {
+    return Intl.message(
+      'Last name',
+      name: 'editProfileLastNameLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `email@example.com`
   String get editProfileEmailHint {
     return Intl.message(
@@ -3909,6 +3959,76 @@ class S {
     return Intl.message(
       'Some information is incorrect. Please check and try again.',
       name: 'editProfileValidationError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This field is required`
+  String get editProfileErrorRequired {
+    return Intl.message(
+      'This field is required',
+      name: 'editProfileErrorRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This field cannot be empty`
+  String get editProfileErrorEmpty {
+    return Intl.message(
+      'This field cannot be empty',
+      name: 'editProfileErrorEmpty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Minimum 2 characters required`
+  String get editProfileErrorMinLength {
+    return Intl.message(
+      'Minimum 2 characters required',
+      name: 'editProfileErrorMinLength',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid email address`
+  String get editProfileErrorInvalidEmail {
+    return Intl.message(
+      'Invalid email address',
+      name: 'editProfileErrorInvalidEmail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Value not allowed`
+  String get editProfileErrorInvalidValue {
+    return Intl.message(
+      'Value not allowed',
+      name: 'editProfileErrorInvalidValue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid phone number`
+  String get editProfileErrorInvalidPhone {
+    return Intl.message(
+      'Invalid phone number',
+      name: 'editProfileErrorInvalidPhone',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid date format`
+  String get editProfileErrorInvalidDate {
+    return Intl.message(
+      'Invalid date format',
+      name: 'editProfileErrorInvalidDate',
       desc: '',
       args: [],
     );

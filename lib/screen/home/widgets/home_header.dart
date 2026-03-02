@@ -145,7 +145,7 @@ class HomeHeader extends StatelessWidget {
                             children: [
                               if (isLoggedIn && lastName.isNotEmpty)
                                 Text(
-                                  lang.S.of(context).homeGreeting(lastName),
+                                  lang.S.of(context).homeGreeting(firstName),
                                   style: kTextStyle.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,

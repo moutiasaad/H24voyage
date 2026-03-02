@@ -18,6 +18,7 @@ import 'setting/currency.dart';
 import 'setting/languase.dart';
 import 'setting/notification.dart';
 import 'Privacy_Policy/privicy_policy.dart';
+import 'voyageur/voyageur_list.dart';
 import '../support/support_main.dart';
 import '../support/faq_screen.dart';
 import '../notification/notification_screen.dart';
@@ -118,6 +119,9 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   late final ProfileController _profileController;
 
+  String _capitalize(String s) =>
+      s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}';
+
   @override
   void initState() {
     super.initState();
@@ -138,6 +142,7 @@ class _ProfileState extends State<Profile> {
         id: 'travelers',
         title: t.profileRegisteredTravelers,
         iconAsset: 'assets/voyageIcon.png',
+        destination: const VoyageurListScreen(),
       ),
       ProfileMenuItem(
         id: 'referral',
@@ -534,8 +539,7 @@ class _ProfileState extends State<Profile> {
         ),
       ),
       title: Text(
-        // Use fetched profile name fallback to empty
-        '${_profileController.firstName} ${_profileController.lastName}'.trim(),
+        '${_capitalize(_profileController.firstName)} ${_capitalize(_profileController.lastName)}'.trim(),
         style: const TextStyle(
           color: Colors.white,
           fontWeight: FontWeight.bold,

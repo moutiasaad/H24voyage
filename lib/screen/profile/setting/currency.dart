@@ -1,8 +1,10 @@
 import 'package:flag/flag_widget.dart';
 import 'package:flight_booking/generated/l10n.dart' as lang;
 import 'package:flight_booking/screen/widgets/constant.dart';
+import 'package:flight_booking/screen/widgets/button_global.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:nb_utils/nb_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Currency extends StatefulWidget {
@@ -38,7 +40,7 @@ class _CurrencyState extends State<Currency> {
     if (code != null) {
       setState(() {
         selected = currencies.firstWhere(
-              (e) => e['code'] == code,
+          (e) => e['code'] == code,
           orElse: () => currencies.first,
         );
       });
@@ -83,7 +85,7 @@ class _CurrencyState extends State<Currency> {
             ),
             child: Row(
               children: [
-                GestureDetector(
+                SmallTapEffect(
                   onTap: () => Navigator.pop(context),
                   child: const Icon(
                     Icons.arrow_back,
@@ -105,43 +107,50 @@ class _CurrencyState extends State<Currency> {
           ),
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.all(10.0),
               itemCount: currencies.length,
-              itemBuilder: (_, index) {
+              itemBuilder: (context, index) {
                 final item = currencies[index];
                 final isSelected = selected['code'] == item['code'];
 
                 return Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: ListTile(
-                      onTap: () async {
-                        setState(() => selected = item);
-                        await _saveCurrency(item);
-                        Navigator.pop(context, item);
-                      },
-                      leading: Flag.fromString(
-                        item['flag']!,
-                        height: 25,
-                        width: 30,
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: TappableCard(
+                    onTap: () async {
+                      setState(() => selected = item);
+                      await _saveCurrency(item);
+                      Navigator.pop(context, item);
+                    },
+                    child: Card(
+                      elevation: 1.3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: const BorderSide(
+                            color: kBorderColorTextField, width: 0.5),
                       ),
-                      title: Text(
-                        '${_getLocalizedCurrencyName(item['key']!, l10n)} '
-                            '(${item['code']}) - ${item['symbol']}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: isSelected ? kPrimaryColor : kTitleColor,
+                      child: ListTile(
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 10.0),
+                        leading: Flag.fromString(
+                          item['flag']!,
+                          height: 25,
+                          width: 30,
                         ),
-                      ),
-                      trailing: Icon(
-                        isSelected
-                            ? Icons.radio_button_checked
-                            : Icons.circle_outlined,
-                        color:
-                        isSelected ? kPrimaryColor : kSubTitleColor,
+                        title: Text(
+                          '${_getLocalizedCurrencyName(item['key']!, l10n)} '
+                          '(${item['code']}) - ${item['symbol']}',
+                          style: kTextStyle.copyWith(
+                            color:
+                                isSelected ? kTitleColor : kSubTitleColor,
+                          ),
+                        ),
+                        trailing: Icon(
+                          isSelected
+                              ? Icons.radio_button_checked
+                              : Icons.circle_outlined,
+                          color:
+                              isSelected ? kPrimaryColor : kSubTitleColor,
+                        ),
                       ),
                     ),
                   ),

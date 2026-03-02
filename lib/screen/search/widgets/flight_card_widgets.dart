@@ -82,6 +82,7 @@ class FlightSegmentRow extends StatelessWidget {
   final BaggageAllowance? baggageAllowance;
   final bool isSmallScreen;
   final VoidCallback? onBaggageTap;
+  final int? cardNumber;
 
   const FlightSegmentRow({
     Key? key,
@@ -102,12 +103,13 @@ class FlightSegmentRow extends StatelessWidget {
     this.baggageAllowance,
     required this.isSmallScreen,
     this.onBaggageTap,
+    this.cardNumber,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     // Colors from design
-    const Color textGray = Color.fromRGBO(130, 130, 130, 1);
+    const Color textGray = Color.fromRGBO(51, 51, 51, 1);
     const Color textBlack = Color.fromRGBO(51, 51, 51, 1);
     const Color textOrange = Color.fromRGBO(255, 87, 34, 1);
     const Color directGreen = Color.fromRGBO(76, 175, 80, 1);
@@ -208,12 +210,33 @@ class FlightSegmentRow extends StatelessWidget {
                 airlineName,
                 style: GoogleFonts.poppins(
                   color: textBlack,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w700,
                   fontSize: isSmallScreen ? 10 : 12,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (cardNumber != null) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isSmallScreen ? 7 : 9,
+                  vertical: isSmallScreen ? 2 : 3,
+                ),
+                decoration: BoxDecoration(
+                  color: kPrimaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '#$cardNumber',
+                  style: GoogleFonts.poppins(
+                    color: kPrimaryColor,
+                    fontSize: isSmallScreen ? 9 : 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
 
@@ -232,7 +255,7 @@ class FlightSegmentRow extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     color: textGray,
                     fontSize: dateFontSize,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     height: 1.4,
                   ),
                 ),
@@ -240,7 +263,7 @@ class FlightSegmentRow extends StatelessWidget {
                   departureTime,
                   style: GoogleFonts.poppins(
                     color: textBlack,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w700,
                     fontSize: timeFontSize,
                     height: 1.4,
                   ),
@@ -250,7 +273,7 @@ class FlightSegmentRow extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     color: textGray,
                     fontSize: dateFontSize,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     height: 1.4,
                   ),
                 ),
@@ -283,7 +306,7 @@ class FlightSegmentRow extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             color: textGray,
                             fontSize: badgeFontSize,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         Text(
@@ -291,7 +314,7 @@ class FlightSegmentRow extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             color: isDirect ? directGreen : textOrange,
                             fontSize: badgeFontSize,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
@@ -301,7 +324,7 @@ class FlightSegmentRow extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           color: textGray,
                           fontSize: badgeFontSize,
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.w600,
                         ),
                         children: [
                           TextSpan(text: '$duration . '),
@@ -310,7 +333,7 @@ class FlightSegmentRow extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               color: isDirect ? directGreen : textOrange,
                               fontSize: badgeFontSize,
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -336,7 +359,7 @@ class FlightSegmentRow extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     color: textGray,
                     fontSize: dateFontSize,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     height: 1.4,
                   ),
                 ),
@@ -344,7 +367,7 @@ class FlightSegmentRow extends StatelessWidget {
                   arrivalTime,
                   style: GoogleFonts.poppins(
                     color: textBlack,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w700,
                     fontSize: timeFontSize,
                     height: 1.4,
                   ),
@@ -354,7 +377,7 @@ class FlightSegmentRow extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     color: textGray,
                     fontSize: dateFontSize,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                     height: 1.4,
                   ),
                 ),
@@ -391,7 +414,7 @@ class FlightSegmentRow extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           color: textGray,
                           fontSize: baggageFontSize,
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       SizedBox(width: isSmallScreen ? 4 : 8),
@@ -410,7 +433,7 @@ class FlightSegmentRow extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             color: textGray,
                             fontSize: baggageFontSize,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w600,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -434,7 +457,7 @@ class FlightSegmentRow extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       color: detailsBlue,
                       fontSize: baggageFontSize,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Icon(
@@ -540,13 +563,11 @@ class FakeFlightCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top badges row: Recommended (left) and Flight Number (right)
+          // Top badge row: Recommended only
           Padding(
             padding: const EdgeInsets.only(left: 12, right: 12, top: 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Recommandé badge (left)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -559,26 +580,6 @@ class FakeFlightCard extends StatelessWidget {
                       color: const Color.fromRGBO(147, 133, 245, 1),
                       fontSize: 10,
                       fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                // Flight number badge (right)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: kPrimaryColor.withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    '#${index + 1}',
-                    style: kTextStyle.copyWith(
-                      color: kPrimaryColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -606,6 +607,7 @@ class FakeFlightCard extends StatelessWidget {
                   onToggleExpand: onToggleOutbound,
                   isSmallScreen: isSmallScreen,
                   onBaggageTap: null,
+                  cardNumber: index + 1,
                 ),
 
                 const SizedBox(height: 8),
@@ -841,18 +843,16 @@ class ApiFlightCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top badges row: Recommended (left) and Flight Number (right)
-          Padding(
-            padding: EdgeInsets.only(
-              left: cardPadding,
-              right: cardPadding,
-              top: isSmallScreen ? 8 : 10,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Recommandé badge (left)
-                if (index == 0)
+          // Top badge row: Recommended only
+          if (index == 0)
+            Padding(
+              padding: EdgeInsets.only(
+                left: cardPadding,
+                right: cardPadding,
+                top: isSmallScreen ? 8 : 10,
+              ),
+              child: Row(
+                children: [
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                     decoration: BoxDecoration(
@@ -867,32 +867,10 @@ class ApiFlightCard extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                  )
-                else
-                  const SizedBox.shrink(),
-                // Flight number badge (right)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: badgePaddingH + 2, vertical: badgePaddingV),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: kPrimaryColor.withOpacity(0.3),
-                      width: 1,
-                    ),
                   ),
-                  child: Text(
-                    '#${index + 1}',
-                    style: kTextStyle.copyWith(
-                      color: kPrimaryColor,
-                      fontSize: badgeFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
           Padding(
             padding: EdgeInsets.all(cardPadding),
@@ -976,6 +954,7 @@ class ApiFlightCard extends StatelessWidget {
                         : null;
                     onBaggageDetailsTap(context, baggage);
                   },
+                  cardNumber: index + 1,
                 ),
 
                 // Return Flight Segment (for round-trip)
@@ -1183,18 +1162,16 @@ class MultiDestinationCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top badges row: Recommended (left) and Flight Number (right)
-          Padding(
-            padding: EdgeInsets.only(
-              left: cardPadding,
-              right: cardPadding,
-              top: isSmallScreen ? 8 : 10,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Recommandé badge (left)
-                if (index == 0)
+          // Top badge row: Recommended only
+          if (index == 0)
+            Padding(
+              padding: EdgeInsets.only(
+                left: cardPadding,
+                right: cardPadding,
+                top: isSmallScreen ? 8 : 10,
+              ),
+              child: Row(
+                children: [
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: badgePaddingH, vertical: badgePaddingV),
                     decoration: BoxDecoration(
@@ -1209,32 +1186,10 @@ class MultiDestinationCard extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                  )
-                else
-                  const SizedBox.shrink(),
-                // Flight number badge (right)
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: badgePaddingH + 2, vertical: badgePaddingV),
-                  decoration: BoxDecoration(
-                    color: kPrimaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: kPrimaryColor.withOpacity(0.3),
-                      width: 1,
-                    ),
                   ),
-                  child: Text(
-                    '#${index + 1}',
-                    style: kTextStyle.copyWith(
-                      color: kPrimaryColor,
-                      fontSize: badgeFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
           // Multi-destination badge
           Padding(
@@ -1394,6 +1349,7 @@ class MultiDestinationCard extends StatelessWidget {
                               : null;
                           onBaggageDetailsTap(context, baggage);
                         },
+                        cardNumber: journeyIndex == 0 ? index + 1 : null,
                       ),
                     ],
                   );
