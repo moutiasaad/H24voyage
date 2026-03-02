@@ -15,6 +15,8 @@ class AirportSelectorPair extends StatelessWidget {
   final ValueChanged<Airport> onFromChanged;
   final ValueChanged<Airport> onToChanged;
   final VoidCallback onSwap;
+  final bool fromError;
+  final bool toError;
 
   const AirportSelectorPair({
     Key? key,
@@ -23,6 +25,8 @@ class AirportSelectorPair extends StatelessWidget {
     required this.onFromChanged,
     required this.onToChanged,
     required this.onSwap,
+    this.fromError = false,
+    this.toError = false,
   }) : super(key: key);
 
   @override
@@ -36,6 +40,9 @@ class AirportSelectorPair extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(8.0),
+                border: fromError
+                    ? Border.all(color: Colors.red, width: 1.2)
+                    : null,
               ),
               onTap: () async {
                 final result = await showModalBottomSheet<Airport>(
@@ -55,9 +62,9 @@ class AirportSelectorPair extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.flight_takeoff,
-                    color: kPrimaryColor,
+                    color: fromError ? Colors.red : kPrimaryColor,
                     size: 26,
                   ),
                   const SizedBox(width: 12),
@@ -97,6 +104,9 @@ class AirportSelectorPair extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(8.0),
+                border: toError
+                    ? Border.all(color: Colors.red, width: 1.2)
+                    : null,
               ),
               onTap: () async {
                 final result = await showModalBottomSheet<Airport>(
@@ -116,9 +126,9 @@ class AirportSelectorPair extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.flight_land,
-                    color: kPrimaryColor,
+                    color: toError ? Colors.red : kPrimaryColor,
                     size: 26,
                   ),
                   const SizedBox(width: 12),

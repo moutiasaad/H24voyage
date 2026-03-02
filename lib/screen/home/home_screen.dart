@@ -35,6 +35,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final PageController _advantagesPageController = PageController();
   final PageController _offersPageController = PageController();
 
+  // Validation error flags
+  bool _fromError = false;
+  bool _toError = false;
+  bool _departureError = false;
+  bool _returnError = false;
+
   @override
   void initState() {
     super.initState();
@@ -59,7 +65,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void _onControllerChanged() => setState(() {});
+  void _onControllerChanged() {
+    // Clear errors for fields that now have values
+    if (_ctrl.fromAirport != null) _fromError = false;
+    if (_ctrl.toAirport != null) _toError = false;
+    if (_ctrl.departureDate != null) _departureError = false;
+    if (_ctrl.returnDate != null) _returnError = false;
+    setState(() {});
+  }
 
   // ── Date pickers ──
   void _showCustomDatePicker() async {
@@ -120,22 +133,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // ── Search navigation ──
   void _onSearch() {
     if (_ctrl.isSearching) return;
-    final t = lang.S.of(context);
 
-    if (_ctrl.fromAirport == null || _ctrl.toAirport == null) {
-      toast(t.homeSelectAirportsError);
-      return;
-    }
-    if (_ctrl.departureDate == null) {
-      toast(t.homeSelectDepartureDate);
-      return;
-    }
+    // Set error flags for all empty required fields
+    setState(() {
+      _fromError = _ctrl.fromAirport == null;
+      _toError = _ctrl.toAirport == null;
+      _departureError = _ctrl.departureDate == null;
+      _returnError = _ctrl.selectedIndex == 0 && _ctrl.returnDate == null;
+    });
+
+    if (_fromError || _toError || _departureError || _returnError) return;
 
     if (_ctrl.selectedIndex == 0) {
-      if (_ctrl.returnDate == null) {
-        toast(t.homeSelectReturnDate);
-        return;
-      }
       _showLoadingAndSearchRoundTrip();
     } else if (_ctrl.selectedIndex == 1) {
       _showLoadingAndSearchOneWay();
@@ -418,6 +427,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         isDirectFlight: _ctrl.isDirectFlight,
                                         withBaggage: _ctrl.withBaggage,
                                         isSearching: _ctrl.isSearching,
+                                        fromError: _fromError,
+                                        toError: _toError,
+                                        departureError: _departureError,
+                                        returnError: _returnError,
                                         onFromChanged: _ctrl.setFromAirport,
                                         onToChanged: _ctrl.setToAirport,
                                         onSwap: _ctrl.swapAirports,

@@ -12,6 +12,8 @@ class DateSelectorRow extends StatelessWidget {
   final DateTime? returnDate;
   final bool showReturnDate;
   final VoidCallback onTap;
+  final bool departureError;
+  final bool returnError;
 
   const DateSelectorRow({
     Key? key,
@@ -19,6 +21,8 @@ class DateSelectorRow extends StatelessWidget {
     required this.returnDate,
     required this.showReturnDate,
     required this.onTap,
+    this.departureError = false,
+    this.returnError = false,
   }) : super(key: key);
 
   @override
@@ -30,15 +34,18 @@ class DateSelectorRow extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFFF5F5F5),
               borderRadius: BorderRadius.circular(8.0),
+              border: departureError
+                  ? Border.all(color: Colors.red, width: 1.2)
+                  : null,
             ),
             onTap: onTap,
             padding:
                 const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   IconlyLight.calendar,
-                  color: kPrimaryColor,
+                  color: departureError ? Colors.red : kPrimaryColor,
                   size: 26,
                 ),
                 const SizedBox(width: 12),
@@ -50,7 +57,7 @@ class DateSelectorRow extends StatelessWidget {
                       Text(
                         lang.S.of(context).homeDeparture,
                         style: kTextStyle.copyWith(
-                          color: Colors.grey.shade600,
+                          color: departureError ? Colors.red : Colors.grey.shade600,
                           fontSize: 13,
                         ),
                       ),
@@ -59,9 +66,13 @@ class DateSelectorRow extends StatelessWidget {
                         departureDate != null
                             ? DateFormat('dd MMM yyyy', 'fr')
                                 .format(departureDate!)
-                            : '-- --- ----',
+                            : 'jj/mm/aaaa',
                         style: kTextStyle.copyWith(
-                          color: departureDate != null ? kTitleColor : kSubTitleColor,
+                          color: departureDate != null
+                              ? kTitleColor
+                              : departureError
+                                  ? Colors.red.shade300
+                                  : kSubTitleColor,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -80,15 +91,18 @@ class DateSelectorRow extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(8.0),
+                border: returnError
+                    ? Border.all(color: Colors.red, width: 1.2)
+                    : null,
               ),
               onTap: onTap,
               padding:
                   const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     IconlyLight.calendar,
-                    color: kPrimaryColor,
+                    color: returnError ? Colors.red : kPrimaryColor,
                     size: 26,
                   ),
                   const SizedBox(width: 12),
@@ -100,7 +114,7 @@ class DateSelectorRow extends StatelessWidget {
                         Text(
                           lang.S.of(context).homeReturn,
                           style: kTextStyle.copyWith(
-                            color: Colors.grey.shade600,
+                            color: returnError ? Colors.red : Colors.grey.shade600,
                             fontSize: 13,
                           ),
                         ),
@@ -109,9 +123,13 @@ class DateSelectorRow extends StatelessWidget {
                           returnDate != null
                               ? DateFormat('dd MMM yyyy', 'fr')
                                   .format(returnDate!)
-                              : '-- --- ----',
+                              : 'jj/mm/aaaa',
                           style: kTextStyle.copyWith(
-                            color: returnDate != null ? kTitleColor : kSubTitleColor,
+                            color: returnDate != null
+                                ? kTitleColor
+                                : returnError
+                                    ? Colors.red.shade300
+                                    : kSubTitleColor,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),

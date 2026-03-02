@@ -14,21 +14,24 @@ class BookingController extends ChangeNotifier {
   List<BookingFlight> _flights = [];
   List<BookingFlight> get flights => _flights;
 
-  /// Active bookings: statusId not cancelled (4) and not failure (12),
-  /// and depDate is today or in the future.
+  /// Active bookings: not cancelled/failure AND departure is today or future.
   List<BookingFlight> get activeFlights => _flights.where((f) {
-        final isCancelled = f.statusId == 4;
-        final isFailure = f.statusId == 12;
-        return !isCancelled && !isFailure;
+        if (f.statusId == 4 || f.statusId == 12) return false;
+        final dep = f.depDate;
+        if (dep == null) return true; // no date → treat as active
+        final today = DateTime.now();
+        final startOfToday = DateTime(today.year, today.month, today.day);
+        return !dep.isBefore(startOfToday);
       }).toList();
 
-  /// Past/completed bookings: departure date is in the past and not cancelled.
+  /// Past bookings: not cancelled/failure AND departure is in the past.
   List<BookingFlight> get pastFlights => _flights.where((f) {
-        final isCancelled = f.statusId == 4;
-        final isFailure = f.statusId == 12;
-        if (isCancelled || isFailure) return false;
-        if (f.depDate == null) return false;
-        return f.depDate!.isBefore(DateTime.now());
+        if (f.statusId == 4 || f.statusId == 12) return false;
+        final dep = f.depDate;
+        if (dep == null) return false;
+        final today = DateTime.now();
+        final startOfToday = DateTime(today.year, today.month, today.day);
+        return dep.isBefore(startOfToday);
       }).toList();
 
   /// Cancelled bookings: statusId == 4 or statusId == 12 (Failure Ticket).

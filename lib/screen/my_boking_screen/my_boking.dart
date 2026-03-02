@@ -26,6 +26,7 @@ class _MyBookingState extends State<MyBooking>
   late TabController _tabController;
   int _selectedCategoryIndex = 0;
   int _selectedTabIndex = 0;
+  bool _slideFromRight = true;
 
   // ── Hotel data (fake) ──
   final List<HotelBooking> _activeHotels = [
@@ -64,9 +65,13 @@ class _MyBookingState extends State<MyBooking>
         setState(() => _selectedTabIndex = _tabController.index);
       }
     });
-    // Fetch flight bookings from API
+    // Fetch flight bookings from API, then auto-select first non-empty tab
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BookingController>().fetchFlightBookings();
+      final ctrl = context.read<BookingController>();
+      ctrl.fetchFlightBookings().then((_) {
+        if (!mounted) return;
+        _autoSelectTab(ctrl);
+      });
     });
   }
 
@@ -74,6 +79,22 @@ class _MyBookingState extends State<MyBooking>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  /// Auto-select the first non-empty tab when the current one is empty.
+  void _autoSelectTab(BookingController ctrl) {
+    if (_selectedCategoryIndex != 0) return;
+    final lists = [ctrl.activeFlights, ctrl.pastFlights, ctrl.cancelledFlights];
+    if (lists[_selectedTabIndex].isNotEmpty) return;
+    for (int i = 0; i < lists.length; i++) {
+      if (lists[i].isNotEmpty) {
+        setState(() {
+          _selectedTabIndex = i;
+          _tabController.animateTo(i);
+        });
+        return;
+      }
+    }
   }
 
   List<dynamic> _currentItems(BookingController ctrl) {
@@ -101,29 +122,49 @@ class _MyBookingState extends State<MyBooking>
               _buildCategoryTabs(),
               _buildStatusTabs(),
               Expanded(
-                child: _selectedCategoryIndex == 0 && ctrl.isLoading
-                    ? _buildLoadingState()
-                    : _selectedCategoryIndex == 0 && ctrl.hasError
-                        ? _buildErrorState(ctrl)
-                        : items.isEmpty
-                            ? _buildEmptyState()
-                            : RefreshIndicator(
-                                color: kPrimaryColor,
-                                onRefresh: () => ctrl.refresh(),
-                                child: ListView.builder(
-                                  padding: const EdgeInsets.only(top: 8, bottom: 20),
-                                  physics: const AlwaysScrollableScrollPhysics(
-                                    parent: BouncingScrollPhysics(),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    final offsetIn = _slideFromRight
+                        ? const Offset(1.0, 0.0)
+                        : const Offset(-1.0, 0.0);
+                    final isIncoming = child.key == ValueKey('cat_${_selectedCategoryIndex}_tab_$_selectedTabIndex');
+                    final offset = isIncoming ? offsetIn : Offset(-offsetIn.dx, 0.0);
+                    return SlideTransition(
+                      position: Tween<Offset>(begin: offset, end: Offset.zero)
+                          .animate(animation),
+                      child: FadeTransition(opacity: animation, child: child),
+                    );
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey('cat_${_selectedCategoryIndex}_tab_$_selectedTabIndex'),
+                    child: _selectedCategoryIndex == 0 && ctrl.isLoading
+                        ? _buildLoadingState()
+                        : _selectedCategoryIndex == 0 && ctrl.hasError
+                            ? _buildErrorState(ctrl)
+                            : items.isEmpty
+                                ? _buildEmptyState()
+                                : RefreshIndicator(
+                                    color: kPrimaryColor,
+                                    onRefresh: () => ctrl.refresh(),
+                                    child: ListView.builder(
+                                      padding: const EdgeInsets.only(top: 8, bottom: 20),
+                                      physics: const AlwaysScrollableScrollPhysics(
+                                        parent: BouncingScrollPhysics(),
+                                      ),
+                                      itemCount: items.length,
+                                      itemBuilder: (context, index) {
+                                        final item = items[index];
+                                        if (item is BookingFlight) return _buildApiFlightCard(item);
+                                        if (item is HotelBooking) return _buildHotelCard(item);
+                                        return const SizedBox.shrink();
+                                      },
+                                    ),
                                   ),
-                                  itemCount: items.length,
-                                  itemBuilder: (context, index) {
-                                    final item = items[index];
-                                    if (item is BookingFlight) return _buildApiFlightCard(item);
-                                    if (item is HotelBooking) return _buildHotelCard(item);
-                                    return const SizedBox.shrink();
-                                  },
-                                ),
-                              ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -274,40 +315,80 @@ class _MyBookingState extends State<MyBooking>
           color: const Color(0xFFF0F0F0),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
-          children: List.generate(categories.length, (index) {
-            final isSelected = _selectedCategoryIndex == index;
-            return Expanded(
-              child: SmallTapEffect(
-                onTap: () => setState(() {
-                  _selectedCategoryIndex = index;
-                  _selectedTabIndex = 0;
-                  _tabController.animateTo(0);
-                }),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isSelected ? kPrimaryColor : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(categories[index].icon, size: 18,
-                        color: isSelected ? Colors.white : const Color(0xFF999999)),
-                      const SizedBox(width: 6),
-                      Text(categories[index].label, style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: isSelected ? Colors.white : const Color(0xFF999999),
-                      )),
-                    ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final tabWidth = (constraints.maxWidth - 8) / categories.length;
+            return Stack(
+              children: [
+                // Sliding highlight
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  left: _selectedCategoryIndex * tabWidth,
+                  top: 0,
+                  bottom: 0,
+                  width: tabWidth,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: kPrimaryColor,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: kPrimaryColor.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+                // Tab labels
+                Row(
+                  children: List.generate(categories.length, (index) {
+                    final isSelected = _selectedCategoryIndex == index;
+                    return Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() {
+                          _slideFromRight = index > _selectedCategoryIndex;
+                          _selectedCategoryIndex = index;
+                          _selectedTabIndex = 0;
+                          _tabController.animateTo(0);
+                        }),
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                child: Icon(
+                                  categories[index].icon,
+                                  key: ValueKey('icon_${index}_$isSelected'),
+                                  size: 18,
+                                  color: isSelected ? Colors.white : const Color(0xFF999999),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 250),
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected ? Colors.white : const Color(0xFF999999),
+                                ),
+                                child: Text(categories[index].label),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
             );
-          }),
+          },
         ),
       ),
     );
@@ -328,6 +409,7 @@ class _MyBookingState extends State<MyBooking>
           final isSelected = _selectedTabIndex == index;
           return SmallTapEffect(
             onTap: () => setState(() {
+              _slideFromRight = index > _selectedTabIndex;
               _selectedTabIndex = index;
               _tabController.animateTo(index);
             }),

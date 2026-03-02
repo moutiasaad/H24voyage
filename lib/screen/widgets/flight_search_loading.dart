@@ -30,12 +30,15 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
   int _providersCount = 0;
   int _combinationsCount = 0;
   int _targetCombinations = 0; // Real total from API
+  bool _apiDone = false;
   Timer? _countTimer;
   bool _searchComplete = false;
+  late final Stopwatch _stopwatch;
 
   @override
   void initState() {
     super.initState();
+    _stopwatch = Stopwatch()..start();
     _rotationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
@@ -50,15 +53,33 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
     _countTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!mounted) return;
       setState(() {
+        // Providers counter
         if (_providersCount < 185) {
           _providersCount += random.nextInt(15) + 5;
           if (_providersCount > 185) _providersCount = 185;
         }
-        // Only animate combinations once real total is known from API
-        if (_targetCombinations > 0 && _combinationsCount < _targetCombinations) {
-          final increment = max(1, (_targetCombinations / 20).round()) + random.nextInt(max(1, (_targetCombinations / 40).round()));
-          _combinationsCount += increment;
-          if (_combinationsCount > _targetCombinations) _combinationsCount = _targetCombinations;
+
+        if (_apiDone && _targetCombinations > 0) {
+          // API done: animate quickly toward real total
+          final remaining = _targetCombinations - _combinationsCount;
+          if (remaining > 0) {
+            final increment = max(1, (remaining / 8).round()) + random.nextInt(max(1, (remaining / 15).round()));
+            _combinationsCount += increment;
+            if (_combinationsCount > _targetCombinations) {
+              _combinationsCount = _targetCombinations;
+            }
+          }
+        } else if (!_apiDone) {
+          // While waiting for API: slowly climb to 50 over ~5 seconds
+          // Using elapsed time to control the pace
+          final elapsed = _stopwatch.elapsedMilliseconds;
+          final progress = (elapsed / 5000).clamp(0.0, 1.0);
+          // Ease-out curve: fast at start, slows down near 50
+          final eased = 1.0 - pow(1.0 - progress, 2.5);
+          final target = (eased * 50).round();
+          if (_combinationsCount < target) {
+            _combinationsCount = target;
+          }
         }
       });
     });
@@ -68,17 +89,18 @@ class _FlightSearchLoadingState extends State<FlightSearchLoading>
     try {
       await widget.searchFunction();
 
-      // Get real total from API and let the timer animate toward it
       final realTotal = widget.getTotalFlights?.call() ?? 0;
-      setState(() {
-        _targetCombinations = realTotal;
-        _providersCount = 185;
-      });
+      if (mounted) {
+        setState(() {
+          _apiDone = true;
+          _targetCombinations = realTotal;
+          _providersCount = 185;
+        });
+      }
 
-      // Wait for the counter animation to finish
+      // Wait for the counter to animate to the real total
       await Future.delayed(const Duration(milliseconds: 1500));
 
-      // Ensure final value is exact
       if (mounted) {
         setState(() {
           _searchComplete = true;

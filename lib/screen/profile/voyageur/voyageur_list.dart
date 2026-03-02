@@ -166,19 +166,27 @@ class _VoyageurListScreenState extends State<VoyageurListScreen> {
           const Spacer(),
           SmallTapEffect(
             onTap: () => _openDetail(null),
-            child: Row(
-              children: [
-                const Icon(Icons.add, color: Colors.white, size: 20),
-                const SizedBox(width: 4),
-                Text(
-                  'Ajouter',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6B35),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add, color: Colors.white, size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Ajouter',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

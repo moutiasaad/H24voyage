@@ -4,11 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 /// Animated bottom pill: search progress → result count → dismiss.
 ///
-/// Timeline (total 6.5s):
+/// Timeline (total 4.4s):
 /// Phase 1 (0→1.8s):  Dark pill slides up, progress bar sweeps, loading text
-/// Phase 2 (1.8→2.6s): Bg dark→green, text → "N vols disponibles", checkmark
-/// Phase 3 (2.6→4.2s): Green pill with checkmark holds (1.6s)
-/// Phase 4 (4.2→6.5s): Pill shrinks → circle → fades out
+/// Phase 2 (1.8→2.4s): Bg dark→green, text → "N vols disponibles", checkmark
+/// Phase 3 (2.4→3.4s): Green pill with checkmark holds (1.0s)
+/// Phase 4 (3.4→4.4s): Pill shrinks → circle → fades out (1.0s)
 class FlightStatusPill extends StatefulWidget {
   final int totalFlights;
   final bool isComplete;
@@ -45,11 +45,11 @@ class FlightStatusPillState extends State<FlightStatusPill>
   int? _pendingTotal;
   bool _loadingPhaseComplete = false;
 
-  // 6.5s total
-  static const _masterDuration = Duration(milliseconds: 6500);
+  // 4.4s total
+  static const _masterDuration = Duration(milliseconds: 4400);
 
-  // Phase 1 ends at 1.8s → 1800/6500 ≈ 0.277
-  static const _phase1End = 0.277;
+  // Phase 1 ends at 1.8s → 1800/4400 ≈ 0.409
+  static const _phase1End = 0.409;
 
   @override
   void initState() {
@@ -67,19 +67,19 @@ class FlightStatusPillState extends State<FlightStatusPill>
 
     // ── Phase 1: Entrance (0→1.8s) ──
 
-    // Slide up: 0→600ms (0→0.092)
+    // Slide up: 0→600ms (0→0.136)
     _slideUp = Tween<double>(begin: 80.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _masterController,
-        curve: const Interval(0.0, 0.092, curve: Curves.easeOutCubic),
+        curve: const Interval(0.0, 0.136, curve: Curves.easeOutCubic),
       ),
     );
 
-    // Fade in: 0→350ms (0→0.054)
+    // Fade in: 0→350ms (0→0.080)
     _pillOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _masterController,
-        curve: const Interval(0.0, 0.054, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.080, curve: Curves.easeOut),
       ),
     );
 
@@ -90,7 +90,7 @@ class FlightStatusPillState extends State<FlightStatusPill>
       ),
     );
 
-    // ── Phase 2: Color + checkmark (1.8→2.6s = 0.277→0.40) ──
+    // ── Phase 2: Color + checkmark (1.8→2.4s = 0.409→0.545) ──
 
     _bgColor = ColorTween(
       begin: const Color(0xFF1E1E2C),
@@ -98,11 +98,11 @@ class FlightStatusPillState extends State<FlightStatusPill>
     ).animate(
       CurvedAnimation(
         parent: _masterController,
-        curve: const Interval(0.277, 0.40, curve: Curves.easeOut),
+        curve: const Interval(0.409, 0.545, curve: Curves.easeOut),
       ),
     );
 
-    // Checkmark: 1.9→2.6s (0.292→0.40)
+    // Checkmark: 1.9→2.5s (0.432→0.568)
     _checkScale = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.2), weight: 55),
       TweenSequenceItem(tween: Tween(begin: 1.2, end: 0.95), weight: 20),
@@ -110,27 +110,27 @@ class FlightStatusPillState extends State<FlightStatusPill>
     ]).animate(
       CurvedAnimation(
         parent: _masterController,
-        curve: const Interval(0.292, 0.42, curve: Curves.easeOut),
+        curve: const Interval(0.432, 0.568, curve: Curves.easeOut),
       ),
     );
 
-    // ── Phase 3: Hold (2.6→4.2s = 0.40→0.646) ──
+    // ── Phase 3: Hold (2.4→3.4s = 0.545→0.773) ──
 
-    // ── Phase 4: Shrink + fade (4.2→6.5s = 0.646→1.0) ──
+    // ── Phase 4: Shrink + fade (3.4→4.4s = 0.773→1.0) ──
 
-    // Pill shrinks: 4.2→5.8s (0.646→0.892)
+    // Pill shrinks: 3.4→4.1s (0.773→0.932)
     _pillWidth = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _masterController,
-        curve: const Interval(0.646, 0.892, curve: Curves.easeInCubic),
+        curve: const Interval(0.773, 0.932, curve: Curves.easeInCubic),
       ),
     );
 
-    // Fade out: 5.8→6.5s (0.892→1.0)
+    // Fade out: 4.1→4.4s (0.932→1.0)
     _dismissOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _masterController,
-        curve: const Interval(0.892, 1.0, curve: Curves.easeOut),
+        curve: const Interval(0.932, 1.0, curve: Curves.easeOut),
       ),
     );
 

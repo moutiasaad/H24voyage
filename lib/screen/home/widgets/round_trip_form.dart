@@ -23,6 +23,10 @@ class RoundTripForm extends StatelessWidget {
   final bool isDirectFlight;
   final bool withBaggage;
   final bool isSearching;
+  final bool fromError;
+  final bool toError;
+  final bool departureError;
+  final bool returnError;
   final ValueChanged<Airport> onFromChanged;
   final ValueChanged<Airport> onToChanged;
   final VoidCallback onSwap;
@@ -44,6 +48,10 @@ class RoundTripForm extends StatelessWidget {
     required this.isDirectFlight,
     required this.withBaggage,
     required this.isSearching,
+    this.fromError = false,
+    this.toError = false,
+    this.departureError = false,
+    this.returnError = false,
     required this.onFromChanged,
     required this.onToChanged,
     required this.onSwap,
@@ -64,6 +72,8 @@ class RoundTripForm extends StatelessWidget {
           onFromChanged: onFromChanged,
           onToChanged: onToChanged,
           onSwap: onSwap,
+          fromError: fromError,
+          toError: toError,
         ),
         const SizedBox(height: 10.0),
         DateSelectorRow(
@@ -71,6 +81,8 @@ class RoundTripForm extends StatelessWidget {
           returnDate: returnDate,
           showReturnDate: selectedIndex == 0,
           onTap: onDateTap,
+          departureError: departureError,
+          returnError: returnError,
         ),
         const SizedBox(height: 10.0),
         PassengerClassSelector(
