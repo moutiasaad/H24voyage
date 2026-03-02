@@ -142,11 +142,9 @@ class _MyBookingState extends State<MyBooking>
                     key: ValueKey('cat_${_selectedCategoryIndex}_tab_$_selectedTabIndex'),
                     child: _selectedCategoryIndex == 0 && ctrl.isLoading
                         ? _buildLoadingState()
-                        : _selectedCategoryIndex == 0 && ctrl.hasError
-                            ? _buildErrorState(ctrl)
-                            : items.isEmpty
-                                ? _buildEmptyState()
-                                : RefreshIndicator(
+                        : items.isEmpty
+                            ? _buildEmptyState()
+                            : RefreshIndicator(
                                     color: kPrimaryColor,
                                     onRefresh: () => ctrl.refresh(),
                                     child: ListView.builder(
@@ -189,54 +187,12 @@ class _MyBookingState extends State<MyBooking>
           ),
           const SizedBox(height: 16),
           Text(
-            lang.S.of(context).bookingLoadError.split('.').first + '...',
+            'Chargement...',
             style: GoogleFonts.inter(
               fontSize: 14, color: kSubTitleColor,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // ══════════════════════════════════════════════════
-  //  ERROR STATE
-  // ══════════════════════════════════════════════════
-  Widget _buildErrorState(BookingController ctrl) {
-    final t = lang.S.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 64, height: 64,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFEBEE), shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.error_outline_rounded,
-                color: Color(0xFFF44336), size: 32),
-            ),
-            const SizedBox(height: 16),
-            Text(t.bookingLoadError, textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14, color: kSubTitleColor, height: 1.5)),
-            const SizedBox(height: 20),
-            SmallTapEffect(
-              onTap: () => ctrl.refresh(),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [kPrimaryColor, kAccentOrange]),
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: Text(t.bookingRetry, style: GoogleFonts.poppins(
-                  color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
